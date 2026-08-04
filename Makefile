@@ -1,4 +1,4 @@
-# jackoviz — JACK + FFTW3 + Datoviz spectrogram surface
+# jackoviz — JACK + FFTW3 + Datoviz spectrogram (2D image / 3D surface)
 #
 # Dependencies:
 #   - JACK (pkg-config: jack)
@@ -46,4 +46,4 @@ run: jackoviz
 	./jackoviz -s system:capture_1
 
 clean:
-	rm -f jackoviz
+	rm -f jackoviz jackoviz-2d jackoviz-3d

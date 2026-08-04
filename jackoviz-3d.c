@@ -1,5 +1,5 @@
 /*
- * jackoviz.c — realtime mono JACK capture → Kaiser-windowed FFTW3 → Datoviz spectrogram
+ * jackoviz.c — realtime mono JACK capture → Kaiser-windowed FFTW3 → Datoviz 3D surface
  *
  * POSIX (macOS / Linux). Build with the accompanying Makefile.
  *
@@ -7,7 +7,6 @@
  *   ./jackoviz [-n 2048|8192] [-b beta] [-c client] [-s source] [--frames N]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
- * Keys: 2 = 2D STFT image, 3 = 3D surface.
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -75,12 +74,6 @@ typedef struct SpecRing
     uint32_t write_col; /* monotonically increasing */
     int shm_fd;
 } SpecRing;
-
-typedef enum
-{
-    VIEW_MODE_3D = 0,
-    VIEW_MODE_2D = 1,
-} ViewMode;
 
 static bool is_pow2_u32(uint32_t x) { return x != 0u && (x & (x - 1u)) == 0u; }
 
@@ -246,24 +239,19 @@ typedef struct Jackoviz
     /* Spectrogram history */
     SpecRing spec;
     uint32_t history;
-    uint32_t n_plot_bins; /* bins kept: 0 … PLOT_FREQ_MAX_HZ */
-    double* heights;      /* 3D: row-major time × freq */
-    DvzColor* colors;     /* 3D: viridis colors matching heights */
-    float* field_values;  /* 2D: row-major freq × time */
+    uint32_t n_plot_bins; /* bins kept for the surface: 0 … PLOT_FREQ_MAX_HZ */
+    double* heights;      /* row-major history × n_plot_bins for Datoviz */
+    DvzColor* colors;     /* viridis colors matching heights */
 
     /* Datoviz */
     DvzScene* scene;
     DvzFigure* figure;
-    DvzPanel* panel_3d;
-    DvzPanel* panel_2d;
+    DvzPanel* panel;
     DvzVisual* mesh;
     DvzGeometry* geometry;
-    DvzVisual* image;
-    DvzSampledField* field;
     DvzApp* app;
     DvzView* view;
     DvzAnimation* timer;
-    ViewMode view_mode;
 
     uint32_t frame_limit;
     uint32_t frames_drawn;
@@ -336,17 +324,16 @@ static void process_available_audio(Jackoviz* app)
     }
 }
 
-static void fill_spectrogram_buffers(Jackoviz* app)
+static void fill_surface_heights(Jackoviz* app)
 {
-    const uint32_t n_time = app->history;
-    const uint32_t n_freq = app->n_plot_bins;
+    const uint32_t rows = app->history;
+    const uint32_t cols = app->n_plot_bins;
     const uint32_t available =
-        app->spec.write_col < n_time ? app->spec.write_col : n_time;
-    const uint32_t surface_count = n_time * n_freq;
+        app->spec.write_col < rows ? app->spec.write_col : rows;
+    const uint32_t vertex_count = rows * cols;
 
-    memset(app->heights, 0, (size_t)surface_count * sizeof(double));
-    memset(app->field_values, 0, (size_t)surface_count * sizeof(float));
-    for (uint32_t i = 0; i < surface_count; i++)
+    memset(app->heights, 0, (size_t)vertex_count * sizeof(double));
+    for (uint32_t i = 0; i < vertex_count; i++)
         (void)dvz_colormap_builtin_sample(
             DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
 
@@ -357,109 +344,39 @@ static void fill_spectrogram_buffers(Jackoviz* app)
     if (hist == NULL)
         return;
 
-    /* Newest spectrum at high time index (3D far edge / 2D right edge).
-     * 3D heights: time × freq.  2D field: freq × time. */
-    const uint32_t t0 = n_time - available;
+    /* Newest spectrum at the far edge (high row index).
+     * Take only 0 … PLOT_FREQ_MAX_HZ bins; map dB → [0, 1] height + viridis. */
+    const uint32_t row0 = rows - available;
     const double db_span = DB_CEIL - DB_FLOOR;
-    for (uint32_t t = 0; t < available; t++)
+    for (uint32_t r = 0; r < available; r++)
     {
-        const double* src = hist + (size_t)t * (size_t)app->spec.stride;
-        double* hdst = app->heights + (size_t)(t0 + t) * (size_t)n_freq;
-        DvzColor* coldst = app->colors + (size_t)(t0 + t) * (size_t)n_freq;
-        for (uint32_t f = 0; f < n_freq; f++)
+        const double* src = hist + (size_t)r * (size_t)app->spec.stride;
+        double* dst = app->heights + (size_t)(row0 + r) * (size_t)cols;
+        DvzColor* coldst = app->colors + (size_t)(row0 + r) * (size_t)cols;
+        for (uint32_t c = 0; c < cols; c++)
         {
-            double v = (src[f] - DB_FLOOR) / db_span;
-            if (v < 0.0)
-                v = 0.0;
-            if (v > 1.0)
-                v = 1.0;
-            hdst[f] = v;
-            (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, v, &coldst[f]);
-            coldst[f].a = 255;
-            app->field_values[(size_t)f * (size_t)n_time + (size_t)(t0 + t)] = (float)v;
+            double t = (src[c] - DB_FLOOR) / db_span;
+            if (t < 0.0)
+                t = 0.0;
+            if (t > 1.0)
+                t = 1.0;
+            dst[c] = t;
+            (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, t, &coldst[c]);
+            coldst[c].a = 255;
         }
     }
 }
 
-static bool upload_spectrogram(Jackoviz* app)
+static bool upload_surface(Jackoviz* app)
 {
-    fill_spectrogram_buffers(app);
+    fill_surface_heights(app);
     const uint32_t vertex_count = app->history * app->n_plot_bins;
-
     if (dvz_geometry_surface_grid_update_heights(
             app->geometry, app->heights, vertex_count) != DVZ_OK)
         return false;
     if (app->geometry->colors != NULL)
         memcpy(app->geometry->colors, app->colors, (size_t)vertex_count * sizeof(DvzColor));
-    if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
-        return false;
-
-    if (app->field != NULL)
-    {
-        DvzFieldDataView view = dvz_field_data_view();
-        view.data = app->field_values;
-        view.bytes_per_row = (uint64_t)app->history * sizeof(float);
-        view.rows_per_image = app->n_plot_bins;
-        if (dvz_sampled_field_set_data(app->field, &view) != DVZ_OK)
-            return false;
-    }
-    return true;
-}
-
-static void set_view_mode(Jackoviz* app, ViewMode mode)
-{
-    if (app == NULL || app->panel_3d == NULL || app->panel_2d == NULL)
-        return;
-    if (app->view_mode == mode)
-        return;
-
-    app->view_mode = mode;
-
-    /* Datoviz rejects zero-extent panels; park the inactive one in a tiny corner. */
-    DvzPanelDesc full = dvz_panel_desc();
-    full.x = 0.0f;
-    full.y = 0.0f;
-    full.width = 1.0f;
-    full.height = 1.0f;
-    DvzPanelDesc parked = full;
-    parked.width = 0.001f;
-    parked.height = 0.001f;
-
-    if (mode == VIEW_MODE_2D)
-    {
-        (void)dvz_panel_set_desc(app->panel_2d, &full);
-        (void)dvz_panel_set_desc(app->panel_3d, &parked);
-        (void)dvz_visual_set_visible(app->mesh, false);
-        (void)dvz_visual_set_visible(app->image, true);
-        (void)dvz_panel_connect_input(app->panel_3d, NULL);
-        if (app->view != NULL)
-            (void)dvz_view_connect_panel(app->view, app->panel_2d);
-        fprintf(stderr, "view: 2D STFT spectrogram\n");
-    }
-    else
-    {
-        (void)dvz_panel_set_desc(app->panel_3d, &full);
-        (void)dvz_panel_set_desc(app->panel_2d, &parked);
-        (void)dvz_visual_set_visible(app->mesh, true);
-        (void)dvz_visual_set_visible(app->image, false);
-        (void)dvz_panel_connect_input(app->panel_2d, NULL);
-        if (app->view != NULL)
-            (void)dvz_view_connect_panel(app->view, app->panel_3d);
-        fprintf(stderr, "view: 3D surface\n");
-    }
-}
-
-static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
-{
-    (void)router;
-    Jackoviz* app = (Jackoviz*)user_data;
-    if (app == NULL || event == NULL || event->type != DVZ_KEYBOARD_EVENT_PRESS)
-        return;
-
-    if (event->key == DVZ_KEY_2)
-        set_view_mode(app, VIEW_MODE_2D);
-    else if (event->key == DVZ_KEY_3)
-        set_view_mode(app, VIEW_MODE_3D);
+    return dvz_mesh_set_geometry(app->mesh, app->geometry) == DVZ_OK;
 }
 
 static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
@@ -474,7 +391,7 @@ static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick
         return;
 
     process_available_audio(app);
-    (void)upload_spectrogram(app);
+    (void)upload_surface(app);
 
     app->frames_drawn++;
     if (app->frame_limit != 0u && app->frames_drawn >= app->frame_limit)
@@ -497,8 +414,7 @@ static void usage(const char* prog)
         "  -b     Kaiser beta (default %.1f)\n"
         "  -c     JACK client name (default jackoviz)\n"
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
-        "  --frames N  exit after N rendered frames (smoke / CI)\n"
-        "Keys: 2 = 2D STFT image, 3 = 3D surface\n",
+        "  --frames N  exit after N rendered frames (smoke / CI)\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_KAISER_BETA);
 }
 
@@ -634,6 +550,7 @@ static bool setup_fft(Jackoviz* app)
         return false;
     }
 
+    /* heights sized after JACK sample rate is known (see configure_plot_band). */
     return true;
 }
 
@@ -648,6 +565,7 @@ static uint32_t bins_up_to_hz(uint32_t fft_size, uint32_t n_bins, jack_nframes_t
     const double nyquist = 0.5 * (double)fs;
     if (max_hz >= nyquist)
         return n_bins;
+    /* Include every bin with f_k <= max_hz. */
     const uint32_t last = (uint32_t)floor(max_hz * (double)fft_size / (double)fs);
     uint32_t count = last + 1u;
     if (count < 2u)
@@ -664,14 +582,11 @@ static bool configure_plot_band(Jackoviz* app)
 
     free(app->heights);
     free(app->colors);
-    free(app->field_values);
     app->heights =
         (double*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(double));
     app->colors =
         (DvzColor*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(DvzColor));
-    app->field_values =
-        (float*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(float));
-    if (app->heights == NULL || app->colors == NULL || app->field_values == NULL)
+    if (app->heights == NULL || app->colors == NULL)
         return false;
 
     for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
@@ -693,27 +608,12 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
 
     app->figure = dvz_figure(app->scene, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    if (app->figure == NULL)
-        return false;
-
-    app->panel_3d = dvz_panel_full(app->figure);
-    if (app->panel_3d == NULL)
-        return false;
-
-    /* 2D panel starts parked; shown when the user presses "2". */
-    DvzPanelDesc panel_2d_desc = dvz_panel_desc();
-    panel_2d_desc.x = 0.0f;
-    panel_2d_desc.y = 0.0f;
-    panel_2d_desc.width = 0.001f;
-    panel_2d_desc.height = 0.001f;
-    app->panel_2d = dvz_panel(app->figure, &panel_2d_desc);
-    if (app->panel_2d == NULL)
+    app->panel = app->figure != NULL ? dvz_panel_full(app->figure) : NULL;
+    if (app->figure == NULL || app->panel == NULL)
         return false;
 
     DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
-    if (dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
-        return false;
-    if (dvz_panel_set_background_color(app->panel_2d, bg) != DVZ_OK)
+    if (dvz_panel_set_background_color(app->panel, bg) != DVZ_OK)
         return false;
 
     DvzCameraDesc camera = dvz_camera_desc();
@@ -729,10 +629,9 @@ static bool setup_datoviz(Jackoviz* app)
     camera.projection.fov_y = 0.66f;
     camera.projection.near_clip = 0.05f;
     camera.projection.far_clip = 100.0f;
-    if (dvz_panel_set_camera_desc(app->panel_3d, &camera) != DVZ_OK)
+    if (dvz_panel_set_camera_desc(app->panel, &camera) != DVZ_OK)
         return false;
 
-    /* ---- 3D surface ---- */
     DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
     desc.rows = app->history;
     desc.cols = app->n_plot_bins;
@@ -760,6 +659,7 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->mesh == NULL)
         return false;
 
+    /* Light from above; modest specular for a slightly reflective surface. */
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = -1.0f;
     material.light_direction[1] = 1.0f;
@@ -772,81 +672,12 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
     if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
         return false;
-    if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
+    if (dvz_panel_add_visual(app->panel, app->mesh, NULL) != DVZ_OK)
         return false;
 
     DvzController* arcball = dvz_arcball(app->scene, NULL);
     if (arcball == NULL ||
-        dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
-        return false;
-
-    /* ---- 2D STFT image (time × frequency) ---- */
-    DvzScaleDesc scale_desc = dvz_scale_desc();
-    scale_desc.kind = DVZ_SCALE_CONTINUOUS;
-    DvzScale* scale = dvz_scale(app->scene, &scale_desc);
-    if (scale == NULL)
-        return false;
-    if (dvz_scale_set_domain(scale, 0.0, 1.0) != DVZ_OK)
-        return false;
-    DvzColormap* cmap = dvz_colormap_builtin(app->scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
-    if (cmap == NULL || dvz_scale_set_colormap(scale, cmap) != DVZ_OK)
-        return false;
-
-    vec3 positions[4] = {
-        {-0.95f, -0.90f, 0.0f},
-        {-0.95f, +0.90f, 0.0f},
-        {+0.95f, -0.90f, 0.0f},
-        {+0.95f, +0.90f, 0.0f},
-    };
-    vec2 texcoords[4] = {
-        {0.0f, 0.0f},
-        {0.0f, 1.0f},
-        {1.0f, 0.0f},
-        {1.0f, 1.0f},
-    };
-
-    app->image = dvz_image(app->scene, 0);
-    if (app->image == NULL)
-        return false;
-    if (dvz_visual_set_data(app->image, "position", positions, 4) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_data(app->image, "texcoords", texcoords, 4) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_scale(app->image, "color", scale) != DVZ_OK)
-        return false;
-    if (dvz_image_set_sampling(app->image, DVZ_IMAGE_SAMPLING_NEAREST) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_depth_test(app->image, false) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_visible(app->image, false) != DVZ_OK)
-        return false;
-
-    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
-    field_desc.dim = DVZ_FIELD_DIM_2D;
-    field_desc.format = DVZ_FIELD_FORMAT_R32_FLOAT;
-    field_desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
-    field_desc.color_role = DVZ_COLOR_ROLE_DATA;
-    field_desc.width = app->history;
-    field_desc.height = app->n_plot_bins;
-    field_desc.depth = 1;
-    app->field = dvz_sampled_field(app->scene, &field_desc);
-    if (app->field == NULL)
-        return false;
-
-    DvzFieldDataView field_view = dvz_field_data_view();
-    field_view.data = app->field_values;
-    field_view.bytes_per_row = (uint64_t)app->history * sizeof(float);
-    field_view.rows_per_image = app->n_plot_bins;
-    if (dvz_sampled_field_set_data(app->field, &field_view) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_field(app->image, "field", app->field) != DVZ_OK)
-        return false;
-    if (dvz_panel_add_visual(app->panel_2d, app->image, NULL) != DVZ_OK)
-        return false;
-
-    DvzController* panzoom = dvz_panzoom(app->scene, NULL);
-    if (panzoom == NULL ||
-        dvz_panel_bind_controller(app->panel_2d, panzoom, DVZ_DIM_MASK_XY) != DVZ_OK)
+        dvz_panel_bind_controller(app->panel, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
         return false;
 
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
@@ -867,18 +698,7 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
 
     app->view = dvz_view_window(app->app, app->figure, WINDOW_WIDTH, WINDOW_HEIGHT, "jackoviz");
-    if (app->view == NULL)
-        return false;
-
-    app->view_mode = VIEW_MODE_3D;
-    (void)dvz_panel_connect_input(app->panel_2d, NULL);
-
-    DvzInputRouter* input = dvz_view_input(app->view);
-    if (input == NULL ||
-        dvz_input_subscribe_keyboard(input, on_keyboard, app) == DVZ_CALLBACK_ID_NONE)
-        return false;
-
-    return true;
+    return app->view != NULL;
 }
 
 static void teardown(Jackoviz* app)
@@ -919,7 +739,6 @@ static void teardown(Jackoviz* app)
     free(app->mag_db);
     free(app->heights);
     free(app->colors);
-    free(app->field_values);
     spec_ring_destroy(&app->spec);
 }
 
@@ -970,7 +789,7 @@ int main(int argc, char** argv)
 
     fprintf(
         stderr,
-        "Spectrogram %u × %u (time × bins, 0–%.0f Hz). Keys: 2=2D, 3=3D. Close window to quit.\n",
+        "Spectrogram surface %u × %u (time × bins, 0–%.0f Hz). Drag to orbit; close window to quit.\n",
         app.history, app.n_plot_bins, PLOT_FREQ_MAX_HZ);
 
     dvz_app_run(app.app, frame_limit == 0u ? 0u : frame_limit);
