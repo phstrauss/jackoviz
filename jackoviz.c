@@ -52,6 +52,7 @@
 #define WINDOW_HEIGHT        720u
 #define DB_FLOOR             (-90.0)
 #define DB_CEIL              (0.0)
+#define PLOT_FREQ_MAX_HZ     8000.0
 
 /*************************************************************************************************/
 /*  Doubly-mapped 2-D ringbuffer (time × frequency)                                              */
@@ -238,7 +239,9 @@ typedef struct Jackoviz
     /* Spectrogram history */
     SpecRing spec;
     uint32_t history;
-    double* heights; /* row-major history × n_bins for Datoviz */
+    uint32_t n_plot_bins; /* bins kept for the surface: 0 … PLOT_FREQ_MAX_HZ */
+    double* heights;      /* row-major history × n_plot_bins for Datoviz */
+    DvzColor* colors;     /* viridis colors matching heights */
 
     /* Datoviz */
     DvzScene* scene;
@@ -324,11 +327,16 @@ static void process_available_audio(Jackoviz* app)
 static void fill_surface_heights(Jackoviz* app)
 {
     const uint32_t rows = app->history;
-    const uint32_t cols = app->n_bins;
+    const uint32_t cols = app->n_plot_bins;
     const uint32_t available =
         app->spec.write_col < rows ? app->spec.write_col : rows;
+    const uint32_t vertex_count = rows * cols;
 
-    memset(app->heights, 0, (size_t)rows * (size_t)cols * sizeof(double));
+    memset(app->heights, 0, (size_t)vertex_count * sizeof(double));
+    for (uint32_t i = 0; i < vertex_count; i++)
+        (void)dvz_colormap_builtin_sample(
+            DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
+
     if (available == 0u)
         return;
 
@@ -336,24 +344,38 @@ static void fill_surface_heights(Jackoviz* app)
     if (hist == NULL)
         return;
 
-    /* Newest spectrum at the far edge (high row index). dB → [0, 1] for the surface. */
+    /* Newest spectrum at the far edge (high row index).
+     * Take only 0 … PLOT_FREQ_MAX_HZ bins; map dB → [0, 1] height + viridis. */
     const uint32_t row0 = rows - available;
     const double db_span = DB_CEIL - DB_FLOOR;
     for (uint32_t r = 0; r < available; r++)
     {
         const double* src = hist + (size_t)r * (size_t)app->spec.stride;
         double* dst = app->heights + (size_t)(row0 + r) * (size_t)cols;
+        DvzColor* coldst = app->colors + (size_t)(row0 + r) * (size_t)cols;
         for (uint32_t c = 0; c < cols; c++)
-            dst[c] = (src[c] - DB_FLOOR) / db_span;
+        {
+            double t = (src[c] - DB_FLOOR) / db_span;
+            if (t < 0.0)
+                t = 0.0;
+            if (t > 1.0)
+                t = 1.0;
+            dst[c] = t;
+            (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, t, &coldst[c]);
+            coldst[c].a = 255;
+        }
     }
 }
 
 static bool upload_surface(Jackoviz* app)
 {
     fill_surface_heights(app);
+    const uint32_t vertex_count = app->history * app->n_plot_bins;
     if (dvz_geometry_surface_grid_update_heights(
-            app->geometry, app->heights, app->history * app->n_bins) != DVZ_OK)
+            app->geometry, app->heights, vertex_count) != DVZ_OK)
         return false;
+    if (app->geometry->colors != NULL)
+        memcpy(app->geometry->colors, app->colors, (size_t)vertex_count * sizeof(DvzColor));
     return dvz_mesh_set_geometry(app->mesh, app->geometry) == DVZ_OK;
 }
 
@@ -528,8 +550,55 @@ static bool setup_fft(Jackoviz* app)
         return false;
     }
 
-    app->heights = (double*)calloc((size_t)app->history * (size_t)app->n_bins, sizeof(double));
-    return app->heights != NULL;
+    /* heights sized after JACK sample rate is known (see configure_plot_band). */
+    return true;
+}
+
+/*
+ * Number of r2c bins whose centre frequency is ≤ max_hz (inclusive), given fs.
+ * bin k ↔ k * fs / fft_size.
+ */
+static uint32_t bins_up_to_hz(uint32_t fft_size, uint32_t n_bins, jack_nframes_t fs, double max_hz)
+{
+    if (fs == 0u || fft_size == 0u)
+        return n_bins;
+    const double nyquist = 0.5 * (double)fs;
+    if (max_hz >= nyquist)
+        return n_bins;
+    /* Include every bin with f_k <= max_hz. */
+    const uint32_t last = (uint32_t)floor(max_hz * (double)fft_size / (double)fs);
+    uint32_t count = last + 1u;
+    if (count < 2u)
+        count = 2u;
+    if (count > n_bins)
+        count = n_bins;
+    return count;
+}
+
+static bool configure_plot_band(Jackoviz* app)
+{
+    app->n_plot_bins =
+        bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, PLOT_FREQ_MAX_HZ);
+
+    free(app->heights);
+    free(app->colors);
+    app->heights =
+        (double*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(double));
+    app->colors =
+        (DvzColor*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(DvzColor));
+    if (app->heights == NULL || app->colors == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
+        (void)dvz_colormap_builtin_sample(
+            DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
+
+    const double f_max =
+        (double)(app->n_plot_bins - 1u) * (double)app->sample_rate / (double)app->fft_size;
+    fprintf(
+        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz)\n", f_max, app->n_plot_bins,
+        app->n_bins, (unsigned)app->sample_rate);
+    return true;
 }
 
 static bool setup_datoviz(Jackoviz* app)
@@ -565,22 +634,22 @@ static bool setup_datoviz(Jackoviz* app)
 
     DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
     desc.rows = app->history;
-    desc.cols = app->n_bins;
+    desc.cols = app->n_plot_bins;
     desc.heights = app->heights;
+    desc.colors = app->colors;
     desc.origin[0] = -2.6;
     desc.origin[1] = 0.0;
     desc.origin[2] = +1.8;
-    desc.col_basis[0] = 5.2 / (double)(app->n_bins - 1u);
+    desc.col_basis[0] = 5.2 / (double)(app->n_plot_bins > 1u ? app->n_plot_bins - 1u : 1u);
     desc.col_basis[1] = 0.0;
     desc.col_basis[2] = 0.0;
     desc.row_basis[0] = 0.0;
     desc.row_basis[1] = 0.0;
-    desc.row_basis[2] = -3.6 / (double)(app->history - 1u);
+    desc.row_basis[2] = -3.6 / (double)(app->history > 1u ? app->history - 1u : 1u);
     desc.height_axis[0] = 0.0;
     desc.height_axis[1] = 1.0;
     desc.height_axis[2] = 0.0;
     desc.height_scale = 1.35;
-    desc.color = dvz_color_rgba(72, 196, 210, 230);
 
     app->geometry = dvz_geometry_surface_grid(&desc);
     if (app->geometry == NULL)
@@ -590,14 +659,15 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->mesh == NULL)
         return false;
 
+    /* Light from above; modest specular for a slightly reflective surface. */
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.35f;
-    material.light_direction[1] = -0.85f;
-    material.light_direction[2] = -0.25f;
-    material.phong.ambient = 0.45f;
-    material.phong.diffuse = 0.85f;
-    material.phong.specular = 0.25f;
-    material.phong.shininess = 28.0f;
+    material.light_direction[0] = 0.15f;
+    material.light_direction[1] = 0.95f;
+    material.light_direction[2] = 0.25f;
+    material.phong.ambient = 0.28f;
+    material.phong.diffuse = 0.72f;
+    material.phong.specular = 0.42f;
+    material.phong.shininess = 48.0f;
     if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
         return false;
     if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
@@ -668,6 +738,7 @@ static void teardown(Jackoviz* app)
     fftw_free(app->freq_buf);
     free(app->mag_db);
     free(app->heights);
+    free(app->colors);
     spec_ring_destroy(&app->spec);
 }
 
@@ -705,6 +776,11 @@ int main(int argc, char** argv)
         fprintf(stderr, "JACK setup failed (is jackd running?)\n");
         goto done;
     }
+    if (!configure_plot_band(&app))
+    {
+        fprintf(stderr, "plot band setup failed\n");
+        goto done;
+    }
     if (!setup_datoviz(&app))
     {
         fprintf(stderr, "Datoviz setup failed\n");
@@ -713,8 +789,8 @@ int main(int argc, char** argv)
 
     fprintf(
         stderr,
-        "Spectrogram surface %u × %u (time × bins). Drag to orbit; close window to quit.\n",
-        app.history, app.n_bins);
+        "Spectrogram surface %u × %u (time × bins, 0–%.0f Hz). Drag to orbit; close window to quit.\n",
+        app.history, app.n_plot_bins, PLOT_FREQ_MAX_HZ);
 
     dvz_app_run(app.app, frame_limit == 0u ? 0u : frame_limit);
     rc = EXIT_SUCCESS;
