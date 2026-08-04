@@ -661,9 +661,9 @@ static bool setup_datoviz(Jackoviz* app)
 
     /* Light from above; modest specular for a slightly reflective surface. */
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = 0.15f;
-    material.light_direction[1] = 0.95f;
-    material.light_direction[2] = 0.25f;
+    material.light_direction[0] = -1.0f;
+    material.light_direction[1] = 1.0f;
+    material.light_direction[2] = 1.0f;
     material.phong.ambient = 0.28f;
     material.phong.diffuse = 0.72f;
     material.phong.specular = 0.42f;
