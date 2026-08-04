@@ -4,7 +4,7 @@
  * POSIX (macOS / Linux). Build with the accompanying Makefile.
  *
  * Usage:
- *   ./jackoviz [-n 2048|8192] [-b beta] [-c client] [-s source] [--frames N]
+ *   ./jackoviz [-n 1024|2048|4096|8192] [-b beta] [-c client] [-s source] [--frames N]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 2 = 2D STFT image, 3 = 3D surface.
@@ -496,7 +496,7 @@ static void usage(const char* prog)
 {
     fprintf(
         stderr,
-        "Usage: %s [-n 2048|8192] [-b beta] [-c client] [-s jack_source] [--frames N]\n"
+        "Usage: %s [-n 1024|2048|4096|8192] [-b beta] [-c client] [-s jack_source] [--frames N]\n"
         "  -n     FFT size (default %u)\n"
         "  -b     Kaiser beta (default %.1f)\n"
         "  -c     JACK client name (default jackoviz)\n"
@@ -521,9 +521,9 @@ static int parse_args(
         if (strcmp(argv[i], "-n") == 0 && i + 1 < argc)
         {
             unsigned long v = strtoul(argv[++i], NULL, 10);
-            if (v != 2048ul && v != 8192ul)
+            if (v != 1024ul && v != 2048ul && v != 4096ul && v != 8192ul)
             {
-                fprintf(stderr, "FFT size must be 2048 or 8192\n");
+                fprintf(stderr, "FFT size must be 1024, 2048, 4096, or 8192\n");
                 return -1;
             }
             *fft_size = (uint32_t)v;
