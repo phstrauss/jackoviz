@@ -247,9 +247,10 @@ typedef struct Jackoviz
     SpecRing spec;
     uint32_t history;
     uint32_t n_plot_bins; /* bins kept: 0 … PLOT_FREQ_MAX_HZ */
-    double* heights;      /* 3D: row-major time × freq */
+    double plot_freq_max; /* Hz covered by n_plot_bins */
+    double* heights;      /* 3D: row-major time × freq, normalized [0,1] */
     DvzColor* colors;     /* 3D: viridis colors matching heights */
-    float* field_values;  /* 2D: row-major freq × time */
+    float* field_values;  /* 2D: row-major freq × time, dB */
 
     /* Datoviz */
     DvzScene* scene;
@@ -345,7 +346,8 @@ static void fill_spectrogram_buffers(Jackoviz* app)
     const uint32_t surface_count = n_time * n_freq;
 
     memset(app->heights, 0, (size_t)surface_count * sizeof(double));
-    memset(app->field_values, 0, (size_t)surface_count * sizeof(float));
+    for (size_t i = 0; i < (size_t)surface_count; i++)
+        app->field_values[i] = (float)DB_FLOOR;
     for (uint32_t i = 0; i < surface_count; i++)
         (void)dvz_colormap_builtin_sample(
             DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
@@ -357,18 +359,20 @@ static void fill_spectrogram_buffers(Jackoviz* app)
     if (hist == NULL)
         return;
 
-    /* Newest spectrum at high time index (3D far edge / 2D right edge).
-     * 3D heights: time × freq.  2D field: freq × time. */
+    /* Newest spectrum at high time index for the 3D surface (far edge).
+     * 2D columns are mirrored so on-screen time increases to the right. */
     const uint32_t t0 = n_time - available;
     const double db_span = DB_CEIL - DB_FLOOR;
     for (uint32_t t = 0; t < available; t++)
     {
         const double* src = hist + (size_t)t * (size_t)app->spec.stride;
+        const uint32_t col_2d = n_time - 1u - (t0 + t);
         double* hdst = app->heights + (size_t)(t0 + t) * (size_t)n_freq;
         DvzColor* coldst = app->colors + (size_t)(t0 + t) * (size_t)n_freq;
         for (uint32_t f = 0; f < n_freq; f++)
         {
-            double v = (src[f] - DB_FLOOR) / db_span;
+            const double db = src[f];
+            double v = (db - DB_FLOOR) / db_span;
             if (v < 0.0)
                 v = 0.0;
             if (v > 1.0)
@@ -376,7 +380,7 @@ static void fill_spectrogram_buffers(Jackoviz* app)
             hdst[f] = v;
             (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, v, &coldst[f]);
             coldst[f].a = 255;
-            app->field_values[(size_t)f * (size_t)n_time + (size_t)(t0 + t)] = (float)v;
+            app->field_values[(size_t)f * (size_t)n_time + (size_t)col_2d] = (float)db;
         }
     }
 }
@@ -675,14 +679,17 @@ static bool configure_plot_band(Jackoviz* app)
         return false;
 
     for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
+    {
+        app->field_values[i] = (float)DB_FLOOR;
         (void)dvz_colormap_builtin_sample(
             DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
+    }
 
-    const double f_max =
+    app->plot_freq_max =
         (double)(app->n_plot_bins - 1u) * (double)app->sample_rate / (double)app->fft_size;
     fprintf(
-        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz)\n", f_max, app->n_plot_bins,
-        app->n_bins, (unsigned)app->sample_rate);
+        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz)\n", app->plot_freq_max,
+        app->n_plot_bins, app->n_bins, (unsigned)app->sample_rate);
     return true;
 }
 
@@ -780,23 +787,46 @@ static bool setup_datoviz(Jackoviz* app)
         dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
         return false;
 
-    /* ---- 2D STFT image (time × frequency) ---- */
+    /* ---- 2D STFT image (time × frequency) with axes, grid, colorbar ---- */
+    const double x_max = (double)app->history;
+    const double y_max = app->plot_freq_max;
+    if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_X, 0.0, x_max) != DVZ_OK)
+        return false;
+    if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_Y, 0.0, y_max) != DVZ_OK)
+        return false;
+
+    DvzPanelBorderDesc border = dvz_panel_border_desc();
+    border.color = dvz_color_rgba(160, 170, 190, 220);
+    border.width_px = 1.5f;
+    border.inset_px = 0.0f;
+    if (dvz_panel_set_border(app->panel_2d, &border) != DVZ_OK)
+        return false;
+
     DvzScaleDesc scale_desc = dvz_scale_desc();
     scale_desc.kind = DVZ_SCALE_CONTINUOUS;
+    scale_desc.label = "level";
+    scale_desc.unit = "dB";
     DvzScale* scale = dvz_scale(app->scene, &scale_desc);
     if (scale == NULL)
         return false;
-    if (dvz_scale_set_domain(scale, 0.0, 1.0) != DVZ_OK)
+    if (dvz_scale_set_domain(scale, DB_FLOOR, DB_CEIL) != DVZ_OK)
+        return false;
+    if (dvz_scale_set_view_range(scale, DB_FLOOR, DB_CEIL) != DVZ_OK)
+        return false;
+    if (dvz_scale_set_format(
+            scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
+                       .trim_trailing_zeros = true}) != DVZ_OK)
         return false;
     DvzColormap* cmap = dvz_colormap_builtin(app->scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     if (cmap == NULL || dvz_scale_set_colormap(scale, cmap) != DVZ_OK)
         return false;
 
+    /* Data-space quad matching panel domain: X = time, Y = frequency. */
     vec3 positions[4] = {
-        {-0.95f, -0.90f, 0.0f},
-        {-0.95f, +0.90f, 0.0f},
-        {+0.95f, -0.90f, 0.0f},
-        {+0.95f, +0.90f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+        {0.0f, (float)y_max, 0.0f},
+        {(float)x_max, 0.0f, 0.0f},
+        {(float)x_max, (float)y_max, 0.0f},
     };
     vec2 texcoords[4] = {
         {0.0f, 0.0f},
@@ -842,6 +872,46 @@ static bool setup_datoviz(Jackoviz* app)
     if (dvz_visual_set_field(app->image, "field", app->field) != DVZ_OK)
         return false;
     if (dvz_panel_add_visual(app->panel_2d, app->image, NULL) != DVZ_OK)
+        return false;
+
+    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+    axes.x_label = "time (frames)";
+    axes.y_label = "frequency (Hz)";
+    if (dvz_panel_set_axes_2d(app->panel_2d, &axes) != DVZ_OK)
+        return false;
+
+    DvzAxis* x_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_Y);
+    if (x_axis == NULL || y_axis == NULL)
+        return false;
+    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
+        return false;
+
+    /* Viridis colorbar with explicit dB ticks every 10 dB. */
+    static const double db_tick_values[] = {
+        -100.0, -90.0, -80.0, -70.0, -60.0, -50.0, -40.0, -30.0, -20.0};
+    DvzColorbar* colorbar = dvz_colorbar(
+        app->panel_2d, scale,
+        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "dB",
+            .reserve_px = 96.0f,
+            .ramp_width_px = 18.0f,
+            .plot_gap_px = 12.0f,
+            .tick_length_px = 5.0f,
+            .label_gap_px = 6.0f,
+        });
+    if (colorbar == NULL)
+        return false;
+    if (dvz_colorbar_set_format(
+            colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
+                          .trim_trailing_zeros = true}) != DVZ_OK)
+        return false;
+    DvzColorbarTicks cb_ticks = dvz_colorbar_ticks();
+    cb_ticks.count = (uint32_t)(sizeof(db_tick_values) / sizeof(db_tick_values[0]));
+    cb_ticks.values = db_tick_values;
+    if (dvz_colorbar_set_ticks(colorbar, &cb_ticks) != DVZ_OK)
         return false;
 
     DvzController* panzoom = dvz_panzoom(app->scene, NULL);
