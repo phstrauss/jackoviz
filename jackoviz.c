@@ -45,13 +45,13 @@
 /*************************************************************************************************/
 
 #define DEFAULT_FFT_SIZE     2048u
-#define DEFAULT_KAISER_BETA  8.6
-#define DEFAULT_HISTORY      256u /* spectrogram time columns (power of two) */
+#define DEFAULT_KAISER_BETA  4.5
+#define DEFAULT_HISTORY      128u /* spectrogram time columns (power of two) */
 #define AUDIO_RB_BYTES       (1u << 18) /* 256 KiB of float samples */
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
-#define DB_FLOOR             (-90.0)
-#define DB_CEIL              (0.0)
+#define DB_FLOOR             (-100.0)
+#define DB_CEIL              (-20.0)
 #define PLOT_FREQ_MAX_HZ     8000.0
 
 /*************************************************************************************************/
