@@ -38,6 +38,8 @@ make DATOVIZ_ROOT=/path/to/datoviz
 ./jackoviz --frames 120            # smoke: exit after 120 frames
 ```
 
+Press key "0" for a basic scope, "1" for a real-time STFT frequency-magnitude analyzer, "2" for a spectrogram, "3" for a 3D spectogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
+
 Drag in the window to orbit the surface (arcball). Close the window to quit.
 
 ## Layout of the spectrogram ringbuffer
