@@ -7,7 +7,7 @@
  *   ./jackoviz [-n 1024|2048|4096|8192] [-b beta] [-c client] [-s source] [--frames N]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
- * Keys: 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface.
+ * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface.
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -81,6 +81,7 @@ typedef enum
     VIEW_MODE_3D = 0,
     VIEW_MODE_2D = 1,
     VIEW_MODE_1D = 2,
+    VIEW_MODE_SCOPE = 3,
 } ViewMode;
 
 static bool is_pow2_u32(uint32_t x) { return x != 0u && (x & (x - 1u)) == 0u; }
@@ -264,6 +265,11 @@ typedef struct Jackoviz
     vec3* spectrum_pos;   /* 1D: freq × dB line vertices */
     DvzColor* spectrum_color;
     float* spectrum_width;
+    float* scope_wave;    /* latest raw time-domain frame */
+    vec3* scope_pos;      /* scope: time × amplitude */
+    DvzColor* scope_color;
+    float* scope_width;
+    bool scope_have_data;
 
     /* Datoviz */
     DvzScene* scene;
@@ -271,11 +277,13 @@ typedef struct Jackoviz
     DvzPanel* panel_3d;
     DvzPanel* panel_2d;
     DvzPanel* panel_1d;
+    DvzPanel* panel_scope;
     DvzVisual* mesh;
     DvzGeometry* geometry;
     DvzVisual* image;
     DvzSampledField* field;
     DvzVisual* spectrum; /* 1D path */
+    DvzVisual* scope;    /* oscilloscope path */
     DvzApp* app;
     DvzView* view;
     DvzAnimation* timer;
@@ -342,6 +350,13 @@ static void process_available_audio(Jackoviz* app)
     {
         if (jack_ringbuffer_read(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
             break;
+
+        /* Keep the newest raw frame for the oscilloscope view. */
+        if (app->scope_wave != NULL)
+        {
+            memcpy(app->scope_wave, scratch, frame_bytes);
+            app->scope_have_data = true;
+        }
 
         for (uint32_t i = 0; i < app->fft_size; i++)
             app->time_buf[i] = (double)scratch[i] * app->window[i];
@@ -454,9 +469,36 @@ static bool upload_spectrum(Jackoviz* app)
     return dvz_visual_set_data_many(app->spectrum, updates, 3) == DVZ_OK;
 }
 
+static bool upload_scope(Jackoviz* app)
+{
+    if (app->scope == NULL || app->scope_pos == NULL || app->fft_size == 0u)
+        return false;
+
+    const double ms_per_sample =
+        1000.0 / (double)(app->sample_rate > 0u ? app->sample_rate : 1u);
+
+    for (uint32_t i = 0; i < app->fft_size; i++)
+    {
+        float y = 0.0f;
+        if (app->scope_have_data && app->scope_wave != NULL)
+            y = app->scope_wave[i];
+        app->scope_pos[i][0] = (float)((double)i * ms_per_sample);
+        app->scope_pos[i][1] = y;
+        app->scope_pos[i][2] = 0.0f;
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = app->scope_pos, .item_count = app->fft_size},
+        {.attr_name = "color", .data = app->scope_color, .item_count = app->fft_size},
+        {.attr_name = "stroke_width_px", .data = app->scope_width, .item_count = app->fft_size},
+    };
+    return dvz_visual_set_data_many(app->scope, updates, 3) == DVZ_OK;
+}
+
 static void set_view_mode(Jackoviz* app, ViewMode mode)
 {
-    if (app == NULL || app->panel_3d == NULL || app->panel_2d == NULL || app->panel_1d == NULL)
+    if (app == NULL || app->panel_3d == NULL || app->panel_2d == NULL || app->panel_1d == NULL ||
+        app->panel_scope == NULL)
         return;
     if (app->view_mode == mode)
         return;
@@ -473,17 +515,28 @@ static void set_view_mode(Jackoviz* app, ViewMode mode)
     parked.width = 0.001f;
     parked.height = 0.001f;
 
+    (void)dvz_panel_set_desc(app->panel_scope, &parked);
     (void)dvz_panel_set_desc(app->panel_1d, &parked);
     (void)dvz_panel_set_desc(app->panel_2d, &parked);
     (void)dvz_panel_set_desc(app->panel_3d, &parked);
     (void)dvz_visual_set_visible(app->mesh, false);
     (void)dvz_visual_set_visible(app->image, false);
     (void)dvz_visual_set_visible(app->spectrum, false);
+    (void)dvz_visual_set_visible(app->scope, false);
+    (void)dvz_panel_connect_input(app->panel_scope, NULL);
     (void)dvz_panel_connect_input(app->panel_1d, NULL);
     (void)dvz_panel_connect_input(app->panel_2d, NULL);
     (void)dvz_panel_connect_input(app->panel_3d, NULL);
 
-    if (mode == VIEW_MODE_1D)
+    if (mode == VIEW_MODE_SCOPE)
+    {
+        (void)dvz_panel_set_desc(app->panel_scope, &full);
+        (void)dvz_visual_set_visible(app->scope, true);
+        if (app->view != NULL)
+            (void)dvz_view_connect_panel(app->view, app->panel_scope);
+        fprintf(stderr, "view: oscilloscope (time × amplitude)\n");
+    }
+    else if (mode == VIEW_MODE_1D)
     {
         (void)dvz_panel_set_desc(app->panel_1d, &full);
         (void)dvz_visual_set_visible(app->spectrum, true);
@@ -516,7 +569,9 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
     if (app == NULL || event == NULL || event->type != DVZ_KEYBOARD_EVENT_PRESS)
         return;
 
-    if (event->key == DVZ_KEY_1)
+    if (event->key == DVZ_KEY_0)
+        set_view_mode(app, VIEW_MODE_SCOPE);
+    else if (event->key == DVZ_KEY_1)
         set_view_mode(app, VIEW_MODE_1D);
     else if (event->key == DVZ_KEY_2)
         set_view_mode(app, VIEW_MODE_2D);
@@ -538,6 +593,7 @@ static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick
     process_available_audio(app);
     (void)upload_spectrogram(app);
     (void)upload_spectrum(app);
+    (void)upload_scope(app);
 
     app->frames_drawn++;
     if (app->frame_limit != 0u && app->frames_drawn >= app->frame_limit)
@@ -561,7 +617,7 @@ static void usage(const char* prog)
         "  -c     JACK client name (default jackoviz)\n"
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
-        "Keys: 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface\n",
+        "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_KAISER_BETA);
 }
 
@@ -680,9 +736,26 @@ static bool setup_fft(Jackoviz* app)
     app->time_buf = (double*)fftw_malloc(sizeof(double) * app->fft_size);
     app->freq_buf = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * app->n_bins);
     app->mag_db = (double*)calloc(app->n_bins, sizeof(double));
+    app->scope_wave = (float*)calloc(app->fft_size, sizeof(float));
+    app->scope_pos = (vec3*)calloc(app->fft_size, sizeof(vec3));
+    app->scope_color = (DvzColor*)calloc(app->fft_size, sizeof(DvzColor));
+    app->scope_width = (float*)calloc(app->fft_size, sizeof(float));
     if (app->window == NULL || app->time_buf == NULL || app->freq_buf == NULL ||
-        app->mag_db == NULL)
+        app->mag_db == NULL || app->scope_wave == NULL || app->scope_pos == NULL ||
+        app->scope_color == NULL || app->scope_width == NULL)
         return false;
+
+    {
+        const DvzColor line_color = dvz_color_rgba(250, 183, 3, 255);
+        for (uint32_t i = 0; i < app->fft_size; i++)
+        {
+            app->scope_color[i] = line_color;
+            app->scope_width[i] = 1.75f;
+            app->scope_pos[i][0] = 0.0f;
+            app->scope_pos[i][1] = 0.0f;
+            app->scope_pos[i][2] = 0.0f;
+        }
+    }
 
     kaiser_window(app->window, app->fft_size, app->kaiser_beta);
     app->plan = fftw_plan_dft_r2c_1d(
@@ -782,7 +855,7 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->panel_3d == NULL)
         return false;
 
-    /* 2D / 1D panels start parked; shown on key 2 / 1. */
+    /* 2D / 1D / scope panels start parked; shown on keys 2 / 1 / 0. */
     DvzPanelDesc parked_desc = dvz_panel_desc();
     parked_desc.x = 0.0f;
     parked_desc.y = 0.0f;
@@ -790,7 +863,8 @@ static bool setup_datoviz(Jackoviz* app)
     parked_desc.height = 0.001f;
     app->panel_2d = dvz_panel(app->figure, &parked_desc);
     app->panel_1d = dvz_panel(app->figure, &parked_desc);
-    if (app->panel_2d == NULL || app->panel_1d == NULL)
+    app->panel_scope = dvz_panel(app->figure, &parked_desc);
+    if (app->panel_2d == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
         return false;
 
     DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
@@ -799,6 +873,8 @@ static bool setup_datoviz(Jackoviz* app)
     if (dvz_panel_set_background_color(app->panel_2d, bg) != DVZ_OK)
         return false;
     if (dvz_panel_set_background_color(app->panel_1d, bg) != DVZ_OK)
+        return false;
+    if (dvz_panel_set_background_color(app->panel_scope, bg) != DVZ_OK)
         return false;
 
     DvzCameraDesc camera = dvz_camera_desc();
@@ -1050,6 +1126,60 @@ static bool setup_datoviz(Jackoviz* app)
         dvz_panel_bind_controller(app->panel_1d, panzoom_1d, DVZ_DIM_MASK_XY) != DVZ_OK)
         return false;
 
+    /* ---- Oscilloscope (time × amplitude) ---- */
+    const double scope_ms =
+        1000.0 * (double)app->fft_size / (double)(app->sample_rate > 0u ? app->sample_rate : 1u);
+    if (dvz_panel_set_domain(app->panel_scope, DVZ_DIM_X, 0.0, scope_ms) != DVZ_OK)
+        return false;
+    if (dvz_panel_set_domain(app->panel_scope, DVZ_DIM_Y, -1.0, 1.0) != DVZ_OK)
+        return false;
+    if (dvz_panel_set_border(app->panel_scope, &border) != DVZ_OK)
+        return false;
+
+    DvzPanelAxes2DDesc axes_scope = dvz_panel_axes_2d_desc();
+    axes_scope.x_label = "time (ms)";
+    axes_scope.y_label = "amplitude";
+    if (dvz_panel_set_axes_2d(app->panel_scope, &axes_scope) != DVZ_OK)
+        return false;
+    DvzAxis* x_axis_scope = dvz_panel_axis(app->panel_scope, DVZ_DIM_X);
+    DvzAxis* y_axis_scope = dvz_panel_axis(app->panel_scope, DVZ_DIM_Y);
+    if (x_axis_scope == NULL || y_axis_scope == NULL)
+        return false;
+    if (dvz_axis_set_grid(x_axis_scope, true) != DVZ_OK ||
+        dvz_axis_set_grid(y_axis_scope, true) != DVZ_OK)
+        return false;
+
+    app->scope = dvz_path(app->scene, 0);
+    if (app->scope == NULL)
+        return false;
+    {
+        const uint32_t subpath_len = app->fft_size;
+        DvzVisualDataUpdate updates[] = {
+            {.attr_name = "position", .data = app->scope_pos, .item_count = app->fft_size},
+            {.attr_name = "color", .data = app->scope_color, .item_count = app->fft_size},
+            {.attr_name = "stroke_width_px", .data = app->scope_width, .item_count = app->fft_size},
+        };
+        if (dvz_visual_set_data_many(app->scope, updates, 3) != DVZ_OK)
+            return false;
+        if (dvz_path_set_subpaths(app->scope, 1, &subpath_len) != DVZ_OK)
+            return false;
+    }
+    if (dvz_path_set_caps(app->scope, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) != DVZ_OK)
+        return false;
+    if (dvz_path_set_join(app->scope, DVZ_PATH_JOIN_ROUND, 4.0f) != DVZ_OK)
+        return false;
+    if (dvz_visual_set_depth_test(app->scope, false) != DVZ_OK)
+        return false;
+    if (dvz_visual_set_visible(app->scope, false) != DVZ_OK)
+        return false;
+    if (dvz_panel_add_visual(app->panel_scope, app->scope, NULL) != DVZ_OK)
+        return false;
+
+    DvzController* panzoom_scope = dvz_panzoom(app->scene, NULL);
+    if (panzoom_scope == NULL ||
+        dvz_panel_bind_controller(app->panel_scope, panzoom_scope, DVZ_DIM_MASK_XY) != DVZ_OK)
+        return false;
+
     DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
     timer_desc.mode = DVZ_TIMER_EVERY_FRAME;
     timer_desc.callback = on_timer;
@@ -1072,6 +1202,7 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
 
     app->view_mode = VIEW_MODE_3D;
+    (void)dvz_panel_connect_input(app->panel_scope, NULL);
     (void)dvz_panel_connect_input(app->panel_1d, NULL);
     (void)dvz_panel_connect_input(app->panel_2d, NULL);
 
@@ -1125,6 +1256,10 @@ static void teardown(Jackoviz* app)
     free(app->spectrum_pos);
     free(app->spectrum_color);
     free(app->spectrum_width);
+    free(app->scope_wave);
+    free(app->scope_pos);
+    free(app->scope_color);
+    free(app->scope_width);
     spec_ring_destroy(&app->spec);
 }
 
@@ -1175,7 +1310,7 @@ int main(int argc, char** argv)
 
     fprintf(
         stderr,
-        "Spectrogram %u × %u (time × bins, 0–%.0f Hz). Keys: 1=spectrum, 2=2D, 3=3D. "
+        "Spectrogram %u × %u (time × bins, 0–%.0f Hz). Keys: 0=scope, 1=spectrum, 2=2D, 3=3D. "
         "Close window to quit.\n",
         app.history, app.n_plot_bins, PLOT_FREQ_MAX_HZ);
 
