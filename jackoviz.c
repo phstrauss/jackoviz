@@ -4,7 +4,7 @@
  * POSIX (macOS / Linux). Build with the accompanying Makefile.
  *
  * Usage:
- *   ./jackoviz [-n 1024|2048|4096|8192] [-b beta] [-c client] [-s source] [--frames N]
+ *   ./jackoviz [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s source] [--frames N]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface.
@@ -51,9 +51,9 @@
 #define AUDIO_RB_BYTES       (1u << 18) /* 256 KiB of float samples */
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
-#define DB_FLOOR             (-100.0)
-#define DB_CEIL              (-20.0)
-#define PLOT_FREQ_MAX_HZ     8000.0
+#define DB_FLOOR                  (-100.0)
+#define DB_CEIL                   (-20.0)
+#define DEFAULT_PLOT_FREQ_MAX_HZ  8000.0
 
 /*************************************************************************************************/
 /*  Doubly-mapped 2-D ringbuffer (time × frequency)                                              */
@@ -257,7 +257,8 @@ typedef struct Jackoviz
     /* Spectrogram history */
     SpecRing spec;
     uint32_t history;
-    uint32_t n_plot_bins; /* bins kept: 0 … PLOT_FREQ_MAX_HZ */
+    uint32_t n_plot_bins; /* bins kept: 0 … plot_freq_limit */
+    double plot_freq_limit; /* CLI -f: requested max display frequency (Hz) */
     double plot_freq_max; /* Hz covered by n_plot_bins */
     double* heights;      /* 3D: row-major time × freq, normalized [0,1] */
     DvzColor* colors;     /* 3D: viridis colors matching heights */
@@ -611,22 +612,25 @@ static void usage(const char* prog)
 {
     fprintf(
         stderr,
-        "Usage: %s [-n 1024|2048|4096|8192] [-b beta] [-c client] [-s jack_source] [--frames N]\n"
+        "Usage: %s [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s jack_source] "
+        "[--frames N]\n"
         "  -n     FFT size (default %u)\n"
+        "  -f     max plot frequency in Hz (default %.0f)\n"
         "  -b     Kaiser beta (default %.1f)\n"
         "  -c     JACK client name (default jackoviz)\n"
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface\n",
-        prog, DEFAULT_FFT_SIZE, DEFAULT_KAISER_BETA);
+        prog, DEFAULT_FFT_SIZE, DEFAULT_PLOT_FREQ_MAX_HZ, DEFAULT_KAISER_BETA);
 }
 
 static int parse_args(
-    int argc, char** argv, uint32_t* fft_size, double* beta, const char** client_name,
-    const char** source, uint32_t* frame_limit)
+    int argc, char** argv, uint32_t* fft_size, double* beta, double* plot_freq_limit,
+    const char** client_name, const char** source, uint32_t* frame_limit)
 {
     *fft_size = DEFAULT_FFT_SIZE;
     *beta = DEFAULT_KAISER_BETA;
+    *plot_freq_limit = DEFAULT_PLOT_FREQ_MAX_HZ;
     *client_name = "jackoviz";
     *source = NULL;
     *frame_limit = 0u;
@@ -642,6 +646,15 @@ static int parse_args(
                 return -1;
             }
             *fft_size = (uint32_t)v;
+        }
+        else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc)
+        {
+            *plot_freq_limit = strtod(argv[++i], NULL);
+            if (!(*plot_freq_limit > 0.0))
+            {
+                fprintf(stderr, "max plot frequency must be > 0\n");
+                return -1;
+            }
         }
         else if (strcmp(argv[i], "-b") == 0 && i + 1 < argc)
         {
@@ -796,7 +809,7 @@ static uint32_t bins_up_to_hz(uint32_t fft_size, uint32_t n_bins, jack_nframes_t
 static bool configure_plot_band(Jackoviz* app)
 {
     app->n_plot_bins =
-        bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, PLOT_FREQ_MAX_HZ);
+        bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, app->plot_freq_limit);
 
     free(app->heights);
     free(app->colors);
@@ -1271,11 +1284,13 @@ int main(int argc, char** argv)
 {
     uint32_t fft_size = DEFAULT_FFT_SIZE;
     double beta = DEFAULT_KAISER_BETA;
+    double plot_freq_limit = DEFAULT_PLOT_FREQ_MAX_HZ;
     const char* client_name = "jackoviz";
     const char* source = NULL;
     uint32_t frame_limit = 0u;
 
-    const int parg = parse_args(argc, argv, &fft_size, &beta, &client_name, &source, &frame_limit);
+    const int parg = parse_args(
+        argc, argv, &fft_size, &beta, &plot_freq_limit, &client_name, &source, &frame_limit);
     if (parg != 0)
         return parg < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 
@@ -1283,6 +1298,7 @@ int main(int argc, char** argv)
     memset(&app, 0, sizeof(app));
     app.fft_size = fft_size;
     app.kaiser_beta = beta;
+    app.plot_freq_limit = plot_freq_limit;
     app.frame_limit = frame_limit;
     app.running = true;
 
@@ -1312,7 +1328,7 @@ int main(int argc, char** argv)
         stderr,
         "Spectrogram %u × %u (time × bins, 0–%.0f Hz). Keys: 0=scope, 1=spectrum, 2=2D, 3=3D. "
         "Close window to quit.\n",
-        app.history, app.n_plot_bins, PLOT_FREQ_MAX_HZ);
+        app.history, app.n_plot_bins, app.plot_freq_max);
 
     dvz_app_run(app.app, frame_limit == 0u ? 0u : frame_limit);
     rc = EXIT_SUCCESS;

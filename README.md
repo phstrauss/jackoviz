@@ -19,6 +19,7 @@ Realtime mono audio → Kaiser-windowed FFT → 3D Datoviz surface spectrogram.
 | POSIX | macOS / Linux (`shm_open` + mirrored `mmap`) |
 
 ## Build
+First, clone and build [Datoviz](https://datoviz.org/) v0.4.0, then :
 
 ```bash
 # default: DATOVIZ_ROOT=$HOME/work/datoviz
