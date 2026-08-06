@@ -3,6 +3,12 @@
 Scientific visualization of audio signals.
 Realtime mono audio → Kaiser-windowed FFT → 3D Datoviz spectrogram.
 
+Screenshots (Suzanne Vega singing Tom's Diner):
+
+![2D STFT](./screenshots/stft-2d.png "2D short-time FFT")
+![2D Spectrogram](./screenshots/spectrogram-2d.png "2D spectrogram")
+![3D Spectrogram](./screenshots/spectrogram-3d.png "3D spectrogram")
+
 ## Pipeline
 
 1. **JACK** process callback writes one input channel into a lock-free `jack_ringbuffer`.

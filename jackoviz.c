@@ -650,9 +650,9 @@ static int parse_args(
         else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc)
         {
             *plot_freq_limit = strtod(argv[++i], NULL);
-            if (!(*plot_freq_limit > 0.0))
+            if (!(*plot_freq_limit > 0.0 && *plot_freq_limit <= 48000.))
             {
-                fprintf(stderr, "max plot frequency must be > 0\n");
+                fprintf(stderr, "max plot frequency must be > 0 and <= 48000\n");
                 return -1;
             }
         }
