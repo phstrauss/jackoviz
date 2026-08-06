@@ -650,18 +650,18 @@ static int parse_args(
         else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc)
         {
             *plot_freq_limit = strtod(argv[++i], NULL);
-            if (!(*plot_freq_limit > 0.0 && *plot_freq_limit <= 48000.))
+            if (!(*plot_freq_limit >= 1000.0 && *plot_freq_limit <= 48000.))
             {
-                fprintf(stderr, "max plot frequency must be > 0 and <= 48000\n");
+                fprintf(stderr, "max plot frequency must be between 1000 and 48000Hz\n");
                 return -1;
             }
         }
         else if (strcmp(argv[i], "-b") == 0 && i + 1 < argc)
         {
             *beta = strtod(argv[++i], NULL);
-            if (!(*beta > 0.0))
+            if (!(*beta > 0.0 && *beta <= 8.0))
             {
-                fprintf(stderr, "Kaiser beta must be > 0\n");
+                fprintf(stderr, "Kaiser beta must be above 0.0 and below or equal 8.0\n");
                 return -1;
             }
         }
