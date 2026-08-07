@@ -30,7 +30,7 @@
 
 #include <fftw3.h>
 #include <jack/jack.h>
-#include <jack/ringbuffer.h>
+#include "jvz_jack_ringbuffer.h"
 
 #include <datoviz.h>
 
@@ -49,7 +49,7 @@
 #define DEFAULT_FFT_SIZE     2048u
 #define DEFAULT_KAISER_BETA  4.5
 #define DEFAULT_HISTORY      128u /* spectrogram time columns (power of two) */
-#define AUDIO_RB_BYTES       (1u << 18) /* 256 KiB of float samples */
+#define AUDIO_RB_BYTES       64*4*1024 /* 64 KiB of float samples */
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
 #define DB_CEIL_DEFAULT           (-20.0)
@@ -251,7 +251,7 @@ typedef struct Jackoviz
     /* JACK */
     jack_client_t* client;
     jack_port_t* in_port;
-    jack_ringbuffer_t* audio_rb;
+    jvz_jack_ringbuffer_t* audio_rb;
     jack_nframes_t sample_rate;
 
     /* FFT */
@@ -321,8 +321,8 @@ static int jack_process(jack_nframes_t nframes, void* arg)
         return 0;
 
     const size_t bytes = (size_t)nframes * sizeof(float);
-    if (jack_ringbuffer_write_space(app->audio_rb) >= bytes)
-        (void)jack_ringbuffer_write(app->audio_rb, (const char*)in, bytes);
+    if (jvz_jack_ringbuffer_write_space(app->audio_rb) >= bytes)
+        (void)jvz_jack_ringbuffer_write(app->audio_rb, (const char*)in, bytes);
     /* else drop — prefer realtime safety over completeness */
 
     return 0;
@@ -365,35 +365,12 @@ static void process_available_audio(Jackoviz* app)
     if (app->fft_size > 8192u)
         return;
 
-    size_t new = jack_ringbuffer_read_space(app->audio_rb);
-
-    if (new > 0) {
-        /* if (jack_ringbuffer_peek(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
-            break; */
-
-        size_t npeeked = jack_ringbuffer_peek(app->audio_rb, (char*)scratch, frame_bytes);
-        jack_ringbuffer_read_advance(app->audio_rb, newsamples);
-        printf("npeeked: %d\n", (int) npeeked);
-
-        /* Keep the newest raw frame for the oscilloscope view. */
-        if (app->scope_wave != NULL)
-        {
-            memcpy(app->scope_wave, scratch, frame_bytes);
-            app->scope_have_data = true;
-        }
-
-        for (uint32_t i = 0; i < app->fft_size; i++)
-            app->time_buf[i] = (double)scratch[i] * app->window[i];
-
-        fftw_execute(app->plan);
-        spectrum_to_db(app->freq_buf, app->mag_db, app->n_bins, app->fft_size);
-        spec_ring_push(&app->spec, app->mag_db);
-    }
-
-    /* while (newsamples >= frame_bytes)
+    while (jvz_jack_ringbuffer_read_space(app->audio_rb) > 0)
     {
-        if (jack_ringbuffer_read(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
+        /* Peek the newest FFT window (history / future overlap); then consume a hop. */
+        if (jvz_jack_ringbuffer_read_lastn(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
             break;
+        jvz_jack_ringbuffer_read_advance(app->audio_rb, frame_bytes);
 
         // Keep the newest raw frame for the oscilloscope view.
         if (app->scope_wave != NULL)
@@ -408,7 +385,7 @@ static void process_available_audio(Jackoviz* app)
         fftw_execute(app->plan);
         spectrum_to_db(app->freq_buf, app->mag_db, app->n_bins, app->fft_size);
         spec_ring_push(&app->spec, app->mag_db);
-    } */
+    }
 }
 
 static void fill_spectrogram_buffers(Jackoviz* app)
@@ -818,13 +795,13 @@ static bool setup_jack(Jackoviz* app, const char* client_name, const char* sourc
         return false;
     }
 
-    app->audio_rb = jack_ringbuffer_create(AUDIO_RB_BYTES);
+    app->audio_rb = jvz_jack_ringbuffer_create(AUDIO_RB_BYTES);
     if (app->audio_rb == NULL)
     {
-        fprintf(stderr, "jack_ringbuffer_create failed\n");
+        fprintf(stderr, "jvz_jack_ringbuffer_create failed\n");
         return false;
     }
-    jack_ringbuffer_mlock(app->audio_rb);
+    jvz_jack_ringbuffer_mlock(app->audio_rb);
 
     jack_set_process_callback(app->client, jack_process, app);
     jack_on_shutdown(app->client, jack_shutdown, app);
@@ -1344,7 +1321,7 @@ static void teardown(Jackoviz* app)
     }
     if (app->audio_rb != NULL)
     {
-        jack_ringbuffer_free(app->audio_rb);
+        jvz_jack_ringbuffer_free(app->audio_rb);
         app->audio_rb = NULL;
     }
 

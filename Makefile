@@ -35,15 +35,24 @@ else
   EXTRA_LIBS :=
 endif
 
+SRCS := jackoviz.c jvz_jack_ringbuffer.c
+OBJS := $(SRCS:.c=.o)
+
 .PHONY: all clean run
 
 all: jackoviz
 
-jackoviz: jackoviz.c
-	$(CC) $(CFLAGS) $(PKG_CFLAGS) $(DVZ_CFLAGS) -o $@ $< $(LDFLAGS) $(PKG_LIBS) $(DVZ_LIBS) $(EXTRA_LIBS)
+jackoviz: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(PKG_LIBS) $(DVZ_LIBS) $(EXTRA_LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(PKG_CFLAGS) $(DVZ_CFLAGS) -c -o $@ $<
+
+jackoviz.o: jackoviz.c
+jvz_jack_ringbuffer.o: jvz_jack_ringbuffer.c jvz_jack_ringbuffer.h
 
 run: jackoviz
 	./jackoviz -s system:capture_1
 
 clean:
-	rm -f jackoviz jackoviz-2d jackoviz-3d
+	rm -f jackoviz jackoviz-2d jackoviz-3d $(OBJS)
