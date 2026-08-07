@@ -49,6 +49,8 @@ make DATOVIZ_ROOT=/path/to/datoviz
 
 Press key "0" for a basic scope, "1" for a real-time STFT frequency-magnitude analyzer, "2" for a spectrogram, "3" for a 3D spectogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
+You can adjust the plot floor and ceiling by hitting the "f" and "c" keys, respectively.
+
 Drag in the window to orbit the surface (arcball). Close the window to quit.
 
 ## Layout of the spectrogram ringbuffer
