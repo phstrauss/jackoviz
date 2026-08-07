@@ -11,7 +11,7 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 
 ## Pipeline
 
-1. **JACK** process callback writes one input channel into a lock-free `jack_ringbuffer`.
+1. **JACK** process callback writes one input channel into a lock-free `jvz_jack_ringbuffer`.
 2. On each Datoviz frame, when at least **2048** new samples are available, a **Kaiser-windowed** real FFT is run with **FFTW3**.
 3. Magnitude spectra (dB, normalized) are appended as columns into a **bidimensional doubly-mapped** ringbuffer (time × frequency), so a wrapping history can be read as one contiguous block.
 4. That history drives a Datoviz **`dvz_geometry_surface_grid`** mesh, updated every frame.
@@ -52,6 +52,8 @@ Press key "0" for a basic scope, "1" for a real-time STFT frequency-magnitude an
 You can adjust the plot floor and ceiling by hitting the "f" and "c" keys, respectively.
 
 Drag in the window to orbit the surface (arcball). Close the window to quit.
+
+The time resolution is, using our customized jack ringbuffer, finer when using a small (128, 256 samples) jack audio buffer depth.
 
 ## Layout of the spectrogram ringbuffer
 
