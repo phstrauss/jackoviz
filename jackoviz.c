@@ -46,9 +46,9 @@
 /*  Tunables                                                                                     */
 /*************************************************************************************************/
 
-#define DEFAULT_FFT_SIZE     2048u
+#define DEFAULT_FFT_SIZE     4096u
 #define DEFAULT_KAISER_BETA  4.5
-#define DEFAULT_HISTORY      128u /* spectrogram time columns (power of two) */
+#define DEFAULT_HISTORY      256u /* spectrogram time columns (power of two) */
 #define AUDIO_RB_BYTES       64*4*1024 /* 64 KiB of float samples */
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
