@@ -43,7 +43,7 @@ make DATOVIZ_ROOT=/path/to/datoviz
 ./jackoviz                         # connect manually in QjackCtl / jack_connect
 ./jackoviz -f 4000                 # set the maximum ploted frequency to 4kHz
 ./jackoviz -s system:capture_1     # auto-connect capture
-./jackoviz -n 8192 -b 10.0         # longer FFT, sharper Kaiser window
+./jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
 ./jackoviz --frames 120            # smoke: exit after 120 frames
 ```
 
