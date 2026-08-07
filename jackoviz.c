@@ -365,10 +365,15 @@ static void process_available_audio(Jackoviz* app)
     if (app->fft_size > 8192u)
         return;
 
-    while (jack_ringbuffer_read_space(app->audio_rb) >= frame_bytes)
-    {
-        if (jack_ringbuffer_read(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
-            break;
+    size_t new = jack_ringbuffer_read_space(app->audio_rb);
+
+    if (new > 0) {
+        /* if (jack_ringbuffer_peek(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
+            break; */
+
+        size_t npeeked = jack_ringbuffer_peek(app->audio_rb, (char*)scratch, frame_bytes);
+        jack_ringbuffer_read_advance(app->audio_rb, newsamples);
+        printf("npeeked: %d\n", (int) npeeked);
 
         /* Keep the newest raw frame for the oscilloscope view. */
         if (app->scope_wave != NULL)
@@ -384,6 +389,26 @@ static void process_available_audio(Jackoviz* app)
         spectrum_to_db(app->freq_buf, app->mag_db, app->n_bins, app->fft_size);
         spec_ring_push(&app->spec, app->mag_db);
     }
+
+    /* while (newsamples >= frame_bytes)
+    {
+        if (jack_ringbuffer_read(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
+            break;
+
+        // Keep the newest raw frame for the oscilloscope view.
+        if (app->scope_wave != NULL)
+        {
+            memcpy(app->scope_wave, scratch, frame_bytes);
+            app->scope_have_data = true;
+        }
+
+        for (uint32_t i = 0; i < app->fft_size; i++)
+            app->time_buf[i] = (double)scratch[i] * app->window[i];
+
+        fftw_execute(app->plan);
+        spectrum_to_db(app->freq_buf, app->mag_db, app->n_bins, app->fft_size);
+        spec_ring_push(&app->spec, app->mag_db);
+    } */
 }
 
 static void fill_spectrogram_buffers(Jackoviz* app)
