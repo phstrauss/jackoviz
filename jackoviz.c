@@ -49,7 +49,7 @@
 #define DEFAULT_FFT_SIZE     4096u
 #define DEFAULT_KAISER_BETA  4.5
 #define DEFAULT_HISTORY      256u /* spectrogram time columns (power of two) */
-#define AUDIO_RB_BYTES       64*4*1024 /* 64 KiB of float samples */
+#define AUDIO_RB_BYTES       64*sizeof(float)*1024 /* 64 KiB of float samples */
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
 #define DB_CEIL_DEFAULT           (-20.0)
@@ -365,12 +365,13 @@ static void process_available_audio(Jackoviz* app)
     if (app->fft_size > 8192u)
         return;
 
-    while (jvz_jack_ringbuffer_read_space(app->audio_rb) > 0)
+    size_t newbytes = jvz_jack_ringbuffer_read_space(app->audio_rb);
+    if (newbytes > 0)
     {
         /* Peek the newest FFT window (history / future overlap); then consume a hop. */
         if (jvz_jack_ringbuffer_read_lastn(app->audio_rb, (char*)scratch, frame_bytes) != frame_bytes)
-            break;
-        jvz_jack_ringbuffer_read_advance(app->audio_rb, frame_bytes);
+            return;
+        jvz_jack_ringbuffer_read_advance(app->audio_rb, newbytes);
 
         // Keep the newest raw frame for the oscilloscope view.
         if (app->scope_wave != NULL)
