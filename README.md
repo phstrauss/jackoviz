@@ -53,10 +53,10 @@ You can adjust the plot floor and ceiling by hitting the "f" and "c" keys, respe
 
 Drag in the window to orbit the surface (arcball). Close the window to quit.
 
-The time resolution is, using our customized jack ringbuffer, finer when using a small (128, 256 samples) jack audio buffer depth.
+The time resolution is, using our customized jack ringbuffer, finer when using a small (64, 128 or 256 samples) jack audio buffer depth.
 
 ## Layout of the spectrogram ringbuffer
 
-- Capacity: 128 time columns (power of two), each with `fft_size/2+1` bins.
+- Capacity: 256 time columns (power of two), each with `fft_size/2+1` bins.
 - Backing store: one shared-memory region of `capacity × bins × sizeof(double)` bytes, **mapped twice** into a contiguous `2×` virtual range.
 - Pushing a column writes at `write_col % capacity`; reading the last *H* columns uses the mirror so the view never needs a wrap copy.
