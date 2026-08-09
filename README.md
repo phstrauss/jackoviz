@@ -46,12 +46,14 @@ make DATOVIZ_ROOT=/path/to/datoviz
 ./jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
 ./jackoviz --frames 120            # smoke: exit after 120 frames
 ./jackoviz --fast                  # scope + 1D spectrum only (lighter CPU)
-./jackoviz --fast -s system:capture_1
 ```
 
 Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnitude analyzer, **2** for a spectrogram, **3** for a 3D spectrogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
-You can adjust the plot floor and ceiling by hitting the **f** and **c** keys, respectively.
+Keyboard controls:
+
+- **f** / **c** — cycle the plot dB floor and ceiling
+- **w** — toggle the oscilloscope and 1D spectrum line width between 1 and 2 pixels
 
 **`--fast`** skips the 2D and 3D spectrogram panels and their per-frame uploads (`upload_spectrogram`), keeping only the oscilloscope and 1D spectrum views. Keys **2** and **3** do nothing in this mode; the app starts on the 1D spectrum.
 

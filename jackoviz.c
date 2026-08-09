@@ -9,7 +9,7 @@
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface,
- *       f = cycle dB floor, c = cycle dB ceiling.
+ *       f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px).
  * --fast keeps only scope + 1D spectrum (keys 2/3 disabled).
  */
 
@@ -343,6 +343,7 @@ typedef struct Jackoviz
     uint32_t frames_drawn;
     bool running;
     bool fast; /* --fast: scope + 1D only; skip 2D/3D spectrogram */
+    float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -688,6 +689,32 @@ static void set_view_mode(Jackoviz* app, ViewMode mode)
     }
 }
 
+static void apply_line_width(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    const float w = app->line_width_px;
+    if (app->spectrum_width != NULL)
+    {
+        for (uint32_t k = 0; k < app->n_plot_bins; k++)
+            app->spectrum_width[k] = w;
+    }
+    if (app->scope_width != NULL)
+    {
+        for (uint32_t i = 0; i < app->fft_size; i++)
+            app->scope_width[i] = w;
+    }
+}
+
+static void toggle_line_width(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    app->line_width_px = (app->line_width_px < 1.5f) ? 2.0f : 1.0f;
+    apply_line_width(app);
+    fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
+}
+
 static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
 {
     (void)router;
@@ -713,6 +740,8 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
         cycle_db_floor(app);
     else if (event->key == DVZ_KEY_C)
         cycle_db_ceil(app);
+    else if (event->key == DVZ_KEY_W)
+        toggle_line_width(app);
 }
 
 static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
@@ -758,7 +787,7 @@ static void usage(const char* prog)
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
         "  --fast      scope + 1D spectrum only (skip 2D/3D spectrogram uploads)\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface, "
-        "f = cycle dB floor, c = cycle dB ceiling\n"
+        "f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px)\n"
         "      (keys 2/3 are disabled with --fast)\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_PLOT_FREQ_MAX_HZ, DEFAULT_KAISER_BETA);
 }
@@ -907,7 +936,7 @@ static bool setup_fft(Jackoviz* app)
         for (uint32_t i = 0; i < app->fft_size; i++)
         {
             app->scope_color[i] = line_color;
-            app->scope_width[i] = 1.75f;
+            app->scope_width[i] = app->line_width_px > 0.0f ? app->line_width_px : 2.0f;
             app->scope_pos[i][0] = 0.0f;
             app->scope_pos[i][1] = 0.0f;
             app->scope_pos[i][2] = 0.0f;
@@ -994,7 +1023,7 @@ static bool configure_plot_band(Jackoviz* app)
     for (uint32_t k = 0; k < app->n_plot_bins; k++)
     {
         app->spectrum_color[k] = line_color;
-        app->spectrum_width[k] = 2.0f;
+        app->spectrum_width[k] = app->line_width_px;
         app->spectrum_pos[k][0] = 0.0f;
         app->spectrum_pos[k][1] = (float)app->db_floor;
         app->spectrum_pos[k][2] = 0.0f;
@@ -1480,6 +1509,7 @@ int main(int argc, char** argv)
     app.db_ceil_index = 2u; /* -20 dB in DB_CEIL_OPTIONS */
     app.frame_limit = frame_limit;
     app.fast = fast;
+    app.line_width_px = 2.0f;
     app.running = true;
 
     int rc = EXIT_FAILURE;
@@ -1509,8 +1539,8 @@ int main(int argc, char** argv)
         fprintf(
             stderr,
             "Fast mode: scope + 1D spectrum only (0–%.0f Hz, %u bins). "
-            "Keys: 0=scope, 1=spectrum, f=dB floor, c=dB ceiling (2/3 disabled). "
-            "Close window to quit.\n",
+            "Keys: 0=scope, 1=spectrum, f=dB floor, c=dB ceiling, w=line width "
+            "(2/3 disabled). Close window to quit.\n",
             app.plot_freq_max, app.n_plot_bins);
     }
     else
@@ -1518,7 +1548,7 @@ int main(int argc, char** argv)
         fprintf(
             stderr,
             "Spectrogram %u × %u (time × bins, 0–%.0f Hz). "
-            "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling. "
+            "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling, w=line width. "
             "Close window to quit.\n",
             app.history, app.n_plot_bins, app.plot_freq_max);
     }
