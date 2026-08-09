@@ -4,11 +4,13 @@
  * POSIX (macOS / Linux). Build with the accompanying Makefile.
  *
  * Usage:
- *   ./jackoviz [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s source] [--frames N]
+ *   ./jackoviz [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s source]
+ *              [--frames N] [--fast]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface,
  *       f = cycle dB floor, c = cycle dB ceiling.
+ * --fast keeps only scope + 1D spectrum (keys 2/3 disabled).
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -340,6 +342,7 @@ typedef struct Jackoviz
     uint32_t frame_limit;
     uint32_t frames_drawn;
     bool running;
+    bool fast; /* --fast: scope + 1D only; skip 2D/3D spectrogram */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -609,8 +612,13 @@ static void cycle_db_ceil(Jackoviz* app)
 
 static void set_view_mode(Jackoviz* app, ViewMode mode)
 {
-    if (app == NULL || app->panel_3d == NULL || app->panel_2d == NULL || app->panel_1d == NULL ||
-        app->panel_scope == NULL)
+    if (app == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
+        return;
+    /* --fast disables spectrogram views; keys 2/3 are intentional no-ops. */
+    if (app->fast && (mode == VIEW_MODE_2D || mode == VIEW_MODE_3D))
+        return;
+    if ((mode == VIEW_MODE_2D && app->panel_2d == NULL) ||
+        (mode == VIEW_MODE_3D && app->panel_3d == NULL))
         return;
     if (app->view_mode == mode)
         return;
@@ -629,16 +637,22 @@ static void set_view_mode(Jackoviz* app, ViewMode mode)
 
     (void)dvz_panel_set_desc(app->panel_scope, &parked);
     (void)dvz_panel_set_desc(app->panel_1d, &parked);
-    (void)dvz_panel_set_desc(app->panel_2d, &parked);
-    (void)dvz_panel_set_desc(app->panel_3d, &parked);
-    (void)dvz_visual_set_visible(app->mesh, false);
-    (void)dvz_visual_set_visible(app->image, false);
+    if (app->panel_2d != NULL)
+        (void)dvz_panel_set_desc(app->panel_2d, &parked);
+    if (app->panel_3d != NULL)
+        (void)dvz_panel_set_desc(app->panel_3d, &parked);
+    if (app->mesh != NULL)
+        (void)dvz_visual_set_visible(app->mesh, false);
+    if (app->image != NULL)
+        (void)dvz_visual_set_visible(app->image, false);
     (void)dvz_visual_set_visible(app->spectrum, false);
     (void)dvz_visual_set_visible(app->scope, false);
     (void)dvz_panel_connect_input(app->panel_scope, NULL);
     (void)dvz_panel_connect_input(app->panel_1d, NULL);
-    (void)dvz_panel_connect_input(app->panel_2d, NULL);
-    (void)dvz_panel_connect_input(app->panel_3d, NULL);
+    if (app->panel_2d != NULL)
+        (void)dvz_panel_connect_input(app->panel_2d, NULL);
+    if (app->panel_3d != NULL)
+        (void)dvz_panel_connect_input(app->panel_3d, NULL);
 
     if (mode == VIEW_MODE_SCOPE)
     {
@@ -686,9 +700,15 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
     else if (event->key == DVZ_KEY_1)
         set_view_mode(app, VIEW_MODE_1D);
     else if (event->key == DVZ_KEY_2)
-        set_view_mode(app, VIEW_MODE_2D);
+    {
+        if (!app->fast)
+            set_view_mode(app, VIEW_MODE_2D);
+    }
     else if (event->key == DVZ_KEY_3)
-        set_view_mode(app, VIEW_MODE_3D);
+    {
+        if (!app->fast)
+            set_view_mode(app, VIEW_MODE_3D);
+    }
     else if (event->key == DVZ_KEY_F)
         cycle_db_floor(app);
     else if (event->key == DVZ_KEY_C)
@@ -707,7 +727,8 @@ static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick
         return;
 
     process_available_audio(app);
-    (void)upload_spectrogram(app);
+    if (!app->fast)
+        (void)upload_spectrogram(app);
     (void)upload_spectrum(app);
     (void)upload_scope(app);
 
@@ -728,21 +749,23 @@ static void usage(const char* prog)
     fprintf(
         stderr,
         "Usage: %s [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s jack_source] "
-        "[--frames N]\n"
+        "[--frames N] [--fast]\n"
         "  -n     FFT size (default %u)\n"
         "  -f     max plot frequency in Hz (default %.0f)\n"
         "  -b     Kaiser beta (default %.1f)\n"
         "  -c     JACK client name (default jackoviz)\n"
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
+        "  --fast      scope + 1D spectrum only (skip 2D/3D spectrogram uploads)\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface, "
-        "f = cycle dB floor, c = cycle dB ceiling\n",
+        "f = cycle dB floor, c = cycle dB ceiling\n"
+        "      (keys 2/3 are disabled with --fast)\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_PLOT_FREQ_MAX_HZ, DEFAULT_KAISER_BETA);
 }
 
 static int parse_args(
     int argc, char** argv, uint32_t* fft_size, double* beta, double* plot_freq_limit,
-    const char** client_name, const char** source, uint32_t* frame_limit)
+    const char** client_name, const char** source, uint32_t* frame_limit, bool* fast)
 {
     *fft_size = DEFAULT_FFT_SIZE;
     *beta = DEFAULT_KAISER_BETA;
@@ -750,6 +773,7 @@ static int parse_args(
     *client_name = "jackoviz";
     *source = NULL;
     *frame_limit = 0u;
+    *fast = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -792,6 +816,10 @@ static int parse_args(
         else if (strcmp(argv[i], "--frames") == 0 && i + 1 < argc)
         {
             *frame_limit = (uint32_t)strtoul(argv[++i], NULL, 10);
+        }
+        else if (strcmp(argv[i], "--fast") == 0)
+        {
+            *fast = true;
         }
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -933,27 +961,36 @@ static bool configure_plot_band(Jackoviz* app)
     free(app->spectrum_pos);
     free(app->spectrum_color);
     free(app->spectrum_width);
-    app->heights =
-        (double*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(double));
-    app->colors =
-        (DvzColor*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(DvzColor));
-    app->field_values =
-        (float*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(float));
+    app->heights = NULL;
+    app->colors = NULL;
+    app->field_values = NULL;
     app->spectrum_pos = (vec3*)calloc(app->n_plot_bins, sizeof(vec3));
     app->spectrum_color = (DvzColor*)calloc(app->n_plot_bins, sizeof(DvzColor));
     app->spectrum_width = (float*)calloc(app->n_plot_bins, sizeof(float));
-    if (app->heights == NULL || app->colors == NULL || app->field_values == NULL ||
-        app->spectrum_pos == NULL || app->spectrum_color == NULL || app->spectrum_width == NULL)
+    if (app->spectrum_pos == NULL || app->spectrum_color == NULL || app->spectrum_width == NULL)
         return false;
 
-    const DvzColor line_color = dvz_color_rgba(94, 213, 220, 255);
-    viridis_lut_init();
-    const DvzColor floor_color = g_viridis_lut[0];
-    for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
+    if (!app->fast)
     {
-        app->field_values[i] = (float)app->db_floor;
-        app->colors[i] = floor_color;
+        app->heights =
+            (double*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(double));
+        app->colors =
+            (DvzColor*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(DvzColor));
+        app->field_values =
+            (float*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(float));
+        if (app->heights == NULL || app->colors == NULL || app->field_values == NULL)
+            return false;
+
+        viridis_lut_init();
+        const DvzColor floor_color = g_viridis_lut[0];
+        for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
+        {
+            app->field_values[i] = (float)app->db_floor;
+            app->colors[i] = floor_color;
+        }
     }
+
+    const DvzColor line_color = dvz_color_rgba(94, 213, 220, 255);
     for (uint32_t k = 0; k < app->n_plot_bins; k++)
     {
         app->spectrum_color[k] = line_color;
@@ -981,226 +1018,243 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->figure == NULL)
         return false;
 
-    app->panel_3d = dvz_panel_full(app->figure);
-    if (app->panel_3d == NULL)
-        return false;
-
-    /* 2D / 1D / scope panels start parked; shown on keys 2 / 1 / 0. */
+    /* Datoviz rejects zero-extent panels; park inactive panels in a tiny corner. */
     DvzPanelDesc parked_desc = dvz_panel_desc();
     parked_desc.x = 0.0f;
     parked_desc.y = 0.0f;
     parked_desc.width = 0.001f;
     parked_desc.height = 0.001f;
-    app->panel_2d = dvz_panel(app->figure, &parked_desc);
-    app->panel_1d = dvz_panel(app->figure, &parked_desc);
-    app->panel_scope = dvz_panel(app->figure, &parked_desc);
-    if (app->panel_2d == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
-        return false;
+
+    if (app->fast)
+    {
+        /* Default view is 1D spectrum; scope starts parked. No 2D/3D panels. */
+        app->panel_1d = dvz_panel_full(app->figure);
+        app->panel_scope = dvz_panel(app->figure, &parked_desc);
+        if (app->panel_1d == NULL || app->panel_scope == NULL)
+            return false;
+    }
+    else
+    {
+        app->panel_3d = dvz_panel_full(app->figure);
+        if (app->panel_3d == NULL)
+            return false;
+        /* 2D / 1D / scope panels start parked; shown on keys 2 / 1 / 0. */
+        app->panel_2d = dvz_panel(app->figure, &parked_desc);
+        app->panel_1d = dvz_panel(app->figure, &parked_desc);
+        app->panel_scope = dvz_panel(app->figure, &parked_desc);
+        if (app->panel_2d == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
+            return false;
+    }
 
     DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
-    if (dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
+    if (app->panel_3d != NULL && dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
         return false;
-    if (dvz_panel_set_background_color(app->panel_2d, bg) != DVZ_OK)
+    if (app->panel_2d != NULL && dvz_panel_set_background_color(app->panel_2d, bg) != DVZ_OK)
         return false;
     if (dvz_panel_set_background_color(app->panel_1d, bg) != DVZ_OK)
         return false;
     if (dvz_panel_set_background_color(app->panel_scope, bg) != DVZ_OK)
         return false;
 
-    DvzCameraDesc camera = dvz_camera_desc();
-    camera.view.eye[0] = -0.4f;
-    camera.view.eye[1] = 2.4f;
-    camera.view.eye[2] = 4.6f;
-    camera.view.target[0] = 0.0f;
-    camera.view.target[1] = 0.35f;
-    camera.view.target[2] = 0.0f;
-    camera.view.up[0] = 0.0f;
-    camera.view.up[1] = 1.0f;
-    camera.view.up[2] = 0.0f;
-    camera.projection.fov_y = 0.66f;
-    camera.projection.near_clip = 0.05f;
-    camera.projection.far_clip = 100.0f;
-    if (dvz_panel_set_camera_desc(app->panel_3d, &camera) != DVZ_OK)
-        return false;
-
-    /* ---- 3D surface ---- */
-    DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
-    desc.rows = app->history;
-    desc.cols = app->n_plot_bins;
-    desc.heights = app->heights;
-    desc.colors = app->colors;
-    desc.origin[0] = -2.6;
-    desc.origin[1] = 0.0;
-    desc.origin[2] = +1.8;
-    desc.col_basis[0] = 5.2 / (double)(app->n_plot_bins > 1u ? app->n_plot_bins - 1u : 1u);
-    desc.col_basis[1] = 0.0;
-    desc.col_basis[2] = 0.0;
-    desc.row_basis[0] = 0.0;
-    desc.row_basis[1] = 0.0;
-    desc.row_basis[2] = -3.6 / (double)(app->history > 1u ? app->history - 1u : 1u);
-    desc.height_axis[0] = 0.0;
-    desc.height_axis[1] = 1.0;
-    desc.height_axis[2] = 0.0;
-    desc.height_scale = 1.35;
-
-    app->geometry = dvz_geometry_surface_grid(&desc);
-    if (app->geometry == NULL)
-        return false;
-
-    app->mesh = dvz_mesh(app->scene, 0);
-    if (app->mesh == NULL)
-        return false;
-
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -1.0f;
-    material.light_direction[1] = 1.0f;
-    material.light_direction[2] = 1.0f;
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.72f;
-    material.phong.specular = 0.42f;
-    material.phong.shininess = 48.0f;
-    if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
-        return false;
-    if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
-        return false;
-    if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
-        return false;
-
-    DvzController* arcball = dvz_arcball(app->scene, NULL);
-    if (arcball == NULL ||
-        dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
-        return false;
-
-    /* ---- 2D STFT image (time × frequency) with axes, grid, colorbar ---- */
-    const double x_max = (double)app->history;
-    const double y_max = app->plot_freq_max;
-    if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_X, 0.0, x_max) != DVZ_OK)
-        return false;
-    if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_Y, 0.0, y_max) != DVZ_OK)
-        return false;
-
     DvzPanelBorderDesc border = dvz_panel_border_desc();
     border.color = dvz_color_rgba(160, 170, 190, 220);
     border.width_px = 1.5f;
     border.inset_px = 0.0f;
-    if (dvz_panel_set_border(app->panel_2d, &border) != DVZ_OK)
-        return false;
 
-    DvzScaleDesc scale_desc = dvz_scale_desc();
-    scale_desc.kind = DVZ_SCALE_CONTINUOUS;
-    scale_desc.label = "level";
-    scale_desc.unit = "dB";
-    app->db_scale = dvz_scale(app->scene, &scale_desc);
-    if (app->db_scale == NULL)
-        return false;
-    if (dvz_scale_set_domain(app->db_scale, app->db_floor, app->db_ceil) != DVZ_OK)
-        return false;
-    if (dvz_scale_set_view_range(app->db_scale, app->db_floor, app->db_ceil) != DVZ_OK)
-        return false;
-    if (dvz_scale_set_format(
-            app->db_scale, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
-                               .trim_trailing_zeros = true}) != DVZ_OK)
-        return false;
-    DvzColormap* cmap = dvz_colormap_builtin(app->scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
-    if (cmap == NULL || dvz_scale_set_colormap(app->db_scale, cmap) != DVZ_OK)
-        return false;
+    if (!app->fast)
+    {
+        DvzCameraDesc camera = dvz_camera_desc();
+        camera.view.eye[0] = -0.4f;
+        camera.view.eye[1] = 2.4f;
+        camera.view.eye[2] = 4.6f;
+        camera.view.target[0] = 0.0f;
+        camera.view.target[1] = 0.35f;
+        camera.view.target[2] = 0.0f;
+        camera.view.up[0] = 0.0f;
+        camera.view.up[1] = 1.0f;
+        camera.view.up[2] = 0.0f;
+        camera.projection.fov_y = 0.66f;
+        camera.projection.near_clip = 0.05f;
+        camera.projection.far_clip = 100.0f;
+        if (dvz_panel_set_camera_desc(app->panel_3d, &camera) != DVZ_OK)
+            return false;
 
-    /* Data-space quad matching panel domain: X = time, Y = frequency. */
-    vec3 positions[4] = {
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, (float)y_max, 0.0f},
-        {(float)x_max, 0.0f, 0.0f},
-        {(float)x_max, (float)y_max, 0.0f},
-    };
-    vec2 texcoords[4] = {
-        {0.0f, 0.0f},
-        {0.0f, 1.0f},
-        {1.0f, 0.0f},
-        {1.0f, 1.0f},
-    };
+        /* ---- 3D surface ---- */
+        DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
+        desc.rows = app->history;
+        desc.cols = app->n_plot_bins;
+        desc.heights = app->heights;
+        desc.colors = app->colors;
+        desc.origin[0] = -2.6;
+        desc.origin[1] = 0.0;
+        desc.origin[2] = +1.8;
+        desc.col_basis[0] = 5.2 / (double)(app->n_plot_bins > 1u ? app->n_plot_bins - 1u : 1u);
+        desc.col_basis[1] = 0.0;
+        desc.col_basis[2] = 0.0;
+        desc.row_basis[0] = 0.0;
+        desc.row_basis[1] = 0.0;
+        desc.row_basis[2] = -3.6 / (double)(app->history > 1u ? app->history - 1u : 1u);
+        desc.height_axis[0] = 0.0;
+        desc.height_axis[1] = 1.0;
+        desc.height_axis[2] = 0.0;
+        desc.height_scale = 1.35;
 
-    app->image = dvz_image(app->scene, 0);
-    if (app->image == NULL)
-        return false;
-    if (dvz_visual_set_data(app->image, "position", positions, 4) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_data(app->image, "texcoords", texcoords, 4) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_scale(app->image, "color", app->db_scale) != DVZ_OK)
-        return false;
-    if (dvz_image_set_sampling(app->image, DVZ_IMAGE_SAMPLING_NEAREST) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_depth_test(app->image, false) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_visible(app->image, false) != DVZ_OK)
-        return false;
+        app->geometry = dvz_geometry_surface_grid(&desc);
+        if (app->geometry == NULL)
+            return false;
 
-    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
-    field_desc.dim = DVZ_FIELD_DIM_2D;
-    field_desc.format = DVZ_FIELD_FORMAT_R32_FLOAT;
-    field_desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
-    field_desc.color_role = DVZ_COLOR_ROLE_DATA;
-    field_desc.width = app->history;
-    field_desc.height = app->n_plot_bins;
-    field_desc.depth = 1;
-    app->field = dvz_sampled_field(app->scene, &field_desc);
-    if (app->field == NULL)
-        return false;
+        app->mesh = dvz_mesh(app->scene, 0);
+        if (app->mesh == NULL)
+            return false;
 
-    DvzFieldDataView field_view = dvz_field_data_view();
-    field_view.data = app->field_values;
-    field_view.bytes_per_row = (uint64_t)app->history * sizeof(float);
-    field_view.rows_per_image = app->n_plot_bins;
-    if (dvz_sampled_field_set_data(app->field, &field_view) != DVZ_OK)
-        return false;
-    if (dvz_visual_set_field(app->image, "field", app->field) != DVZ_OK)
-        return false;
-    if (dvz_panel_add_visual(app->panel_2d, app->image, NULL) != DVZ_OK)
-        return false;
+        DvzMaterialDesc material = dvz_phong_material_desc();
+        material.light_direction[0] = -1.0f;
+        material.light_direction[1] = 1.0f;
+        material.light_direction[2] = 1.0f;
+        material.phong.ambient = 0.28f;
+        material.phong.diffuse = 0.72f;
+        material.phong.specular = 0.42f;
+        material.phong.shininess = 48.0f;
+        if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
+            return false;
+        if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
+            return false;
+        if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
+            return false;
 
-    DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
-    axes.x_label = "time (frames)";
-    axes.y_label = "frequency (Hz)";
-    if (dvz_panel_set_axes_2d(app->panel_2d, &axes) != DVZ_OK)
-        return false;
+        DvzController* arcball = dvz_arcball(app->scene, NULL);
+        if (arcball == NULL ||
+            dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
+            return false;
 
-    DvzAxis* x_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_X);
-    DvzAxis* y_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_Y);
-    if (x_axis == NULL || y_axis == NULL)
-        return false;
-    if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
-        return false;
+        /* ---- 2D STFT image (time × frequency) with axes, grid, colorbar ---- */
+        const double x_max = (double)app->history;
+        const double y_max = app->plot_freq_max;
+        if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_X, 0.0, x_max) != DVZ_OK)
+            return false;
+        if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_Y, 0.0, y_max) != DVZ_OK)
+            return false;
+        if (dvz_panel_set_border(app->panel_2d, &border) != DVZ_OK)
+            return false;
 
-    /* Viridis colorbar with explicit dB ticks every 10 dB. */
-    rebuild_db_ticks(app);
-    app->colorbar = dvz_colorbar(
-        app->panel_2d, app->db_scale,
-        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
-            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
-            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
-            .title = "dB",
-            .reserve_px = 96.0f,
-            .ramp_width_px = 18.0f,
-            .plot_gap_px = 12.0f,
-            .tick_length_px = 5.0f,
-            .label_gap_px = 6.0f,
-        });
-    if (app->colorbar == NULL)
-        return false;
-    if (dvz_colorbar_set_format(
-            app->colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
-                               .trim_trailing_zeros = true}) != DVZ_OK)
-        return false;
-    DvzColorbarTicks cb_ticks = dvz_colorbar_ticks();
-    cb_ticks.count = app->db_tick_count;
-    cb_ticks.values = app->db_tick_values;
-    if (dvz_colorbar_set_ticks(app->colorbar, &cb_ticks) != DVZ_OK)
-        return false;
+        DvzScaleDesc scale_desc = dvz_scale_desc();
+        scale_desc.kind = DVZ_SCALE_CONTINUOUS;
+        scale_desc.label = "level";
+        scale_desc.unit = "dB";
+        app->db_scale = dvz_scale(app->scene, &scale_desc);
+        if (app->db_scale == NULL)
+            return false;
+        if (dvz_scale_set_domain(app->db_scale, app->db_floor, app->db_ceil) != DVZ_OK)
+            return false;
+        if (dvz_scale_set_view_range(app->db_scale, app->db_floor, app->db_ceil) != DVZ_OK)
+            return false;
+        if (dvz_scale_set_format(
+                app->db_scale,
+                &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
+                    .trim_trailing_zeros = true}) != DVZ_OK)
+            return false;
+        DvzColormap* cmap = dvz_colormap_builtin(app->scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+        if (cmap == NULL || dvz_scale_set_colormap(app->db_scale, cmap) != DVZ_OK)
+            return false;
 
-    DvzController* panzoom = dvz_panzoom(app->scene, NULL);
-    if (panzoom == NULL ||
-        dvz_panel_bind_controller(app->panel_2d, panzoom, DVZ_DIM_MASK_XY) != DVZ_OK)
-        return false;
+        /* Data-space quad matching panel domain: X = time, Y = frequency. */
+        vec3 positions[4] = {
+            {0.0f, 0.0f, 0.0f},
+            {0.0f, (float)y_max, 0.0f},
+            {(float)x_max, 0.0f, 0.0f},
+            {(float)x_max, (float)y_max, 0.0f},
+        };
+        vec2 texcoords[4] = {
+            {0.0f, 0.0f},
+            {0.0f, 1.0f},
+            {1.0f, 0.0f},
+            {1.0f, 1.0f},
+        };
+
+        app->image = dvz_image(app->scene, 0);
+        if (app->image == NULL)
+            return false;
+        if (dvz_visual_set_data(app->image, "position", positions, 4) != DVZ_OK)
+            return false;
+        if (dvz_visual_set_data(app->image, "texcoords", texcoords, 4) != DVZ_OK)
+            return false;
+        if (dvz_visual_set_scale(app->image, "color", app->db_scale) != DVZ_OK)
+            return false;
+        if (dvz_image_set_sampling(app->image, DVZ_IMAGE_SAMPLING_NEAREST) != DVZ_OK)
+            return false;
+        if (dvz_visual_set_depth_test(app->image, false) != DVZ_OK)
+            return false;
+        if (dvz_visual_set_visible(app->image, false) != DVZ_OK)
+            return false;
+
+        DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+        field_desc.dim = DVZ_FIELD_DIM_2D;
+        field_desc.format = DVZ_FIELD_FORMAT_R32_FLOAT;
+        field_desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
+        field_desc.color_role = DVZ_COLOR_ROLE_DATA;
+        field_desc.width = app->history;
+        field_desc.height = app->n_plot_bins;
+        field_desc.depth = 1;
+        app->field = dvz_sampled_field(app->scene, &field_desc);
+        if (app->field == NULL)
+            return false;
+
+        DvzFieldDataView field_view = dvz_field_data_view();
+        field_view.data = app->field_values;
+        field_view.bytes_per_row = (uint64_t)app->history * sizeof(float);
+        field_view.rows_per_image = app->n_plot_bins;
+        if (dvz_sampled_field_set_data(app->field, &field_view) != DVZ_OK)
+            return false;
+        if (dvz_visual_set_field(app->image, "field", app->field) != DVZ_OK)
+            return false;
+        if (dvz_panel_add_visual(app->panel_2d, app->image, NULL) != DVZ_OK)
+            return false;
+
+        DvzPanelAxes2DDesc axes = dvz_panel_axes_2d_desc();
+        axes.x_label = "time (frames)";
+        axes.y_label = "frequency (Hz)";
+        if (dvz_panel_set_axes_2d(app->panel_2d, &axes) != DVZ_OK)
+            return false;
+
+        DvzAxis* x_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_X);
+        DvzAxis* y_axis = dvz_panel_axis(app->panel_2d, DVZ_DIM_Y);
+        if (x_axis == NULL || y_axis == NULL)
+            return false;
+        if (dvz_axis_set_grid(x_axis, true) != DVZ_OK || dvz_axis_set_grid(y_axis, true) != DVZ_OK)
+            return false;
+
+        /* Viridis colorbar with explicit dB ticks every 10 dB. */
+        rebuild_db_ticks(app);
+        app->colorbar = dvz_colorbar(
+            app->panel_2d, app->db_scale,
+            &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
+                .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                .title = "dB",
+                .reserve_px = 96.0f,
+                .ramp_width_px = 18.0f,
+                .plot_gap_px = 12.0f,
+                .tick_length_px = 5.0f,
+                .label_gap_px = 6.0f,
+            });
+        if (app->colorbar == NULL)
+            return false;
+        if (dvz_colorbar_set_format(
+                app->colorbar,
+                &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 0,
+                    .trim_trailing_zeros = true}) != DVZ_OK)
+            return false;
+        DvzColorbarTicks cb_ticks = dvz_colorbar_ticks();
+        cb_ticks.count = app->db_tick_count;
+        cb_ticks.values = app->db_tick_values;
+        if (dvz_colorbar_set_ticks(app->colorbar, &cb_ticks) != DVZ_OK)
+            return false;
+
+        DvzController* panzoom = dvz_panzoom(app->scene, NULL);
+        if (panzoom == NULL ||
+            dvz_panel_bind_controller(app->panel_2d, panzoom, DVZ_DIM_MASK_XY) != DVZ_OK)
+            return false;
+    }
 
     /* ---- 1D spectrum XY plot (frequency × dB) ---- */
     if (dvz_panel_set_domain(app->panel_1d, DVZ_DIM_X, 0.0, app->plot_freq_max) != DVZ_OK)
@@ -1245,7 +1299,7 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
     if (dvz_visual_set_depth_test(app->spectrum, false) != DVZ_OK)
         return false;
-    if (dvz_visual_set_visible(app->spectrum, false) != DVZ_OK)
+    if (dvz_visual_set_visible(app->spectrum, app->fast) != DVZ_OK)
         return false;
     if (dvz_panel_add_visual(app->panel_1d, app->spectrum, NULL) != DVZ_OK)
         return false;
@@ -1330,10 +1384,13 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->view == NULL)
         return false;
 
-    app->view_mode = VIEW_MODE_3D;
+    app->view_mode = app->fast ? VIEW_MODE_1D : VIEW_MODE_3D;
     (void)dvz_panel_connect_input(app->panel_scope, NULL);
     (void)dvz_panel_connect_input(app->panel_1d, NULL);
-    (void)dvz_panel_connect_input(app->panel_2d, NULL);
+    if (app->panel_2d != NULL)
+        (void)dvz_panel_connect_input(app->panel_2d, NULL);
+    if (app->fast && app->view != NULL)
+        (void)dvz_view_connect_panel(app->view, app->panel_1d);
 
     DvzInputRouter* input = dvz_view_input(app->view);
     if (input == NULL ||
@@ -1404,9 +1461,11 @@ int main(int argc, char** argv)
     const char* client_name = "jackoviz";
     const char* source = NULL;
     uint32_t frame_limit = 0u;
+    bool fast = false;
 
     const int parg = parse_args(
-        argc, argv, &fft_size, &beta, &plot_freq_limit, &client_name, &source, &frame_limit);
+        argc, argv, &fft_size, &beta, &plot_freq_limit, &client_name, &source, &frame_limit,
+        &fast);
     if (parg != 0)
         return parg < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 
@@ -1420,6 +1479,7 @@ int main(int argc, char** argv)
     app.db_ceil = DB_CEIL_DEFAULT;
     app.db_ceil_index = 2u; /* -20 dB in DB_CEIL_OPTIONS */
     app.frame_limit = frame_limit;
+    app.fast = fast;
     app.running = true;
 
     int rc = EXIT_FAILURE;
@@ -1444,12 +1504,24 @@ int main(int argc, char** argv)
         goto done;
     }
 
-    fprintf(
-        stderr,
-        "Spectrogram %u × %u (time × bins, 0–%.0f Hz). "
-        "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling. "
-        "Close window to quit.\n",
-        app.history, app.n_plot_bins, app.plot_freq_max);
+    if (app.fast)
+    {
+        fprintf(
+            stderr,
+            "Fast mode: scope + 1D spectrum only (0–%.0f Hz, %u bins). "
+            "Keys: 0=scope, 1=spectrum, f=dB floor, c=dB ceiling (2/3 disabled). "
+            "Close window to quit.\n",
+            app.plot_freq_max, app.n_plot_bins);
+    }
+    else
+    {
+        fprintf(
+            stderr,
+            "Spectrogram %u × %u (time × bins, 0–%.0f Hz). "
+            "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling. "
+            "Close window to quit.\n",
+            app.history, app.n_plot_bins, app.plot_freq_max);
+    }
 
     dvz_app_run(app.app, frame_limit == 0u ? 0u : frame_limit);
     rc = EXIT_SUCCESS;

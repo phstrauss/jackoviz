@@ -41,15 +41,19 @@ make DATOVIZ_ROOT=/path/to/datoviz
 ```bash
 # jackd must already be running
 ./jackoviz                         # connect manually in QjackCtl / jack_connect
-./jackoviz -f 4000                 # set the maximum ploted frequency to 4kHz
+./jackoviz -f 4000                 # set the maximum plotted frequency to 4kHz
 ./jackoviz -s system:capture_1     # auto-connect capture
 ./jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
 ./jackoviz --frames 120            # smoke: exit after 120 frames
+./jackoviz --fast                  # scope + 1D spectrum only (lighter CPU)
+./jackoviz --fast -s system:capture_1
 ```
 
-Press key "0" for a basic scope, "1" for a real-time STFT frequency-magnitude analyzer, "2" for a spectrogram, "3" for a 3D spectogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
+Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnitude analyzer, **2** for a spectrogram, **3** for a 3D spectrogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
-You can adjust the plot floor and ceiling by hitting the "f" and "c" keys, respectively.
+You can adjust the plot floor and ceiling by hitting the **f** and **c** keys, respectively.
+
+**`--fast`** skips the 2D and 3D spectrogram panels and their per-frame uploads (`upload_spectrogram`), keeping only the oscilloscope and 1D spectrum views. Keys **2** and **3** do nothing in this mode; the app starts on the 1D spectrum.
 
 Drag in the window to orbit the surface (arcball). Close the window to quit.
 
