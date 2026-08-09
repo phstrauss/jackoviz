@@ -60,10 +60,39 @@
 #define DB_FLOOR_OPTION_COUNT     5u
 #define DB_CEIL_OPTION_COUNT      3u
 #define DB_TICK_MAX               16u
+#define VIRIDIS_LUT_SIZE          256u
 
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
 static const double DB_CEIL_OPTIONS[DB_CEIL_OPTION_COUNT] = {0.0, -10.0, -20.0};
+
+/* CPU viridis LUT for 3D mesh vertex colors (mesh has no scalar colormap path yet). */
+static DvzColor g_viridis_lut[VIRIDIS_LUT_SIZE];
+static bool g_viridis_lut_ready = false;
+
+static void viridis_lut_init(void)
+{
+    if (g_viridis_lut_ready)
+        return;
+    for (uint32_t i = 0; i < VIRIDIS_LUT_SIZE; i++)
+    {
+        const double t = (double)i / (double)(VIRIDIS_LUT_SIZE - 1u);
+        (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, t, &g_viridis_lut[i]);
+        g_viridis_lut[i].a = 255;
+    }
+    g_viridis_lut_ready = true;
+}
+
+/* Map normalized t ∈ [0, 1] to a memoized viridis RGBA. */
+static DvzColor viridis_lut_sample(double t)
+{
+    if (t <= 0.0)
+        return g_viridis_lut[0];
+    if (t >= 1.0)
+        return g_viridis_lut[VIRIDIS_LUT_SIZE - 1u];
+    const uint32_t i = (uint32_t)(t * (double)(VIRIDIS_LUT_SIZE - 1u) + 0.5);
+    return g_viridis_lut[i < VIRIDIS_LUT_SIZE ? i : VIRIDIS_LUT_SIZE - 1u];
+}
 
 /*************************************************************************************************/
 /*  Doubly-mapped 2-D ringbuffer (time × frequency)                                              */
@@ -397,12 +426,14 @@ static void fill_spectrogram_buffers(Jackoviz* app)
         app->spec.write_col < n_time ? app->spec.write_col : n_time;
     const uint32_t surface_count = n_time * n_freq;
 
+    viridis_lut_init();
     memset(app->heights, 0, (size_t)surface_count * sizeof(double));
-    for (size_t i = 0; i < (size_t)surface_count; i++)
-        app->field_values[i] = (float)app->db_floor;
+    const DvzColor floor_color = g_viridis_lut[0];
     for (uint32_t i = 0; i < surface_count; i++)
-        (void)dvz_colormap_builtin_sample(
-            DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
+    {
+        app->field_values[i] = (float)app->db_floor;
+        app->colors[i] = floor_color;
+    }
 
     if (available == 0u)
         return;
@@ -430,8 +461,7 @@ static void fill_spectrogram_buffers(Jackoviz* app)
             if (v > 1.0)
                 v = 1.0;
             hdst[f] = v;
-            (void)dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_VIRIDIS, v, &coldst[f]);
-            coldst[f].a = 255;
+            coldst[f] = viridis_lut_sample(v);
             app->field_values[(size_t)f * (size_t)n_time + (size_t)col_2d] = (float)db;
         }
     }
@@ -917,11 +947,12 @@ static bool configure_plot_band(Jackoviz* app)
         return false;
 
     const DvzColor line_color = dvz_color_rgba(94, 213, 220, 255);
+    viridis_lut_init();
+    const DvzColor floor_color = g_viridis_lut[0];
     for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
     {
         app->field_values[i] = (float)app->db_floor;
-        (void)dvz_colormap_builtin_sample(
-            DVZ_BUILTIN_COLORMAP_VIRIDIS, 0.0, &app->colors[i]);
+        app->colors[i] = floor_color;
     }
     for (uint32_t k = 0; k < app->n_plot_bins; k++)
     {
