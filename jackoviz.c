@@ -36,6 +36,7 @@
 #include <fftw3.h>
 #include <jack/jack.h>
 #include "jvz_jack_ringbuffer.h"
+#include "jackoviz.h"
 
 #include <datoviz.h>
 
@@ -123,14 +124,6 @@ typedef struct SpecRing
     uint32_t write_col; /* monotonically increasing */
     int shm_fd;
 } SpecRing;
-
-typedef enum
-{
-    VIEW_MODE_3D = 0,
-    VIEW_MODE_2D = 1,
-    VIEW_MODE_1D = 2,
-    VIEW_MODE_SCOPE = 3,
-} ViewMode;
 
 static bool is_pow2_u32(uint32_t x) { return x != 0u && (x & (x - 1u)) == 0u; }
 
@@ -1236,7 +1229,8 @@ static void cycle_plot_freq(Jackoviz* app)
 
 void set_kaiser_beta(Jackoviz* app, double beta)
 {
-    if (app == NULL || beta < 1.0 || beta > 10.0)
+    if (app == NULL || app->window == NULL || beta < 1.0 || beta > 10.0)
+        return;
     app->kaiser_beta = beta;
     kaiser_window(app->window, app->fft_size, app->kaiser_beta);
 }
@@ -1770,6 +1764,10 @@ int main(int argc, char** argv)
             "m=plot Hz, w=line width, p=pause. Close window to quit.\n",
             app.history, app.n_plot_bins, app.plot_freq_max);
     }
+
+#if defined(JVZ_HAS_GRPC)
+    jvz_grpc_serve_async(&app, NULL);
+#endif
 
     dvz_app_run(app.app, frame_limit == 0u ? 0u : frame_limit);
     rc = EXIT_SUCCESS;

@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package jvz;
+
+option cc_enable_arenas = true;
+
+// Remote control surface for jackoviz setters (mirrors set_* in jackoviz.c).
+service JvzController {
+  rpc SetDbFloor(SetDbFloorRequest) returns (SetResponse);
+  rpc SetDbCeil(SetDbCeilRequest) returns (SetResponse);
+  rpc SetViewMode(SetViewModeRequest) returns (SetResponse);
+  rpc SetLineWidth(SetLineWidthRequest) returns (SetResponse);
+  rpc SetPause(SetPauseRequest) returns (SetResponse);
+  rpc SetPlotFreq(SetPlotFreqRequest) returns (SetResponse);
+  rpc SetKaiserBeta(SetKaiserBetaRequest) returns (SetResponse);
+}
+
+message SetResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+// Matches ViewMode in jackoviz.h / jackoviz.c.
+enum ViewMode {
+  VIEW_MODE_3D = 0;
+  VIEW_MODE_2D = 1;
+  VIEW_MODE_1D = 2;
+  VIEW_MODE_SCOPE = 3;
+}
+
+message SetDbFloorRequest {
+  double floor_db = 1; // typically -200 … -20
+}
+
+message SetDbCeilRequest {
+  double ceil_db = 1; // typically -20 … 0
+}
+
+message SetViewModeRequest {
+  ViewMode mode = 1;
+}
+
+message SetLineWidthRequest {
+  float width_px = 1; // typically 1 … 3
+}
+
+message SetPauseRequest {
+  bool paused = 1;
+}
+
+message SetPlotFreqRequest {
+  double freq_hz = 1; // max plotted frequency
+}
+
+message SetKaiserBetaRequest {
+  double beta = 1; // typically 1 … 10
+}

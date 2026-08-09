@@ -26,28 +26,32 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 | POSIX | macOS / Linux (`shm_open` + mirrored `mmap`) |
 
 ## Build
-First, clone and build [Datoviz](https://datoviz.org/) v0.4.0, then :
+
+First, clone and build [Datoviz](https://datoviz.org/) v0.4.0. Requires CMake ≥ 3.20, JACK, FFTW3, and (by default) protobuf + gRPC for the controller.
 
 ```bash
-# default: DATOVIZ_ROOT=$HOME/work/datoviz
-make
+cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz
+cmake --build build
 
-# or
-make DATOVIZ_ROOT=/path/to/datoviz
+# optional: disable the gRPC control plane
+# cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz -DJVZ_ENABLE_GRPC=OFF
 ```
+
+`jvzcontroller.proto` is compiled into C++ gRPC stubs under `build/generated/` during the build.
 
 ## Run
 
 ```bash
 # jackd must already be running
-./jackoviz                         # connect manually in QjackCtl / jack_connect
-./jackoviz -f 6000                 # set the maximum plotted frequency to 4kHz
-./jackoviz -s system:capture_1     # auto-connect capture
-./jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
-./jackoviz --frames 120            # smoke: exit after 120 frames
-./jackoviz --fast                  # scope + 1D spectrum only (lighter CPU)
+./build/jackoviz                         # connect manually in QjackCtl / jack_connect
+./build/jackoviz -f 6000                 # set the maximum plotted frequency
+./build/jackoviz -s system:capture_1     # auto-connect capture
+./build/jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
+./build/jackoviz --frames 120            # smoke: exit after 120 frames
+./build/jackoviz --fast                  # scope + 1D spectrum only (lighter CPU)
 ```
 
+With gRPC enabled, the app also listens on `0.0.0.0:50051` for `JvzController` RPCs (see `jvzcontroller.proto`).
 Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnitude analyzer, **2** for a spectrogram, **3** for a 3D spectrogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
 Keyboard controls:
