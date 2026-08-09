@@ -9,7 +9,8 @@
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface,
- *       f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px).
+ *       f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px),
+ *       p = pause/resume visual processing (JACK ringbuffer keeps writing).
  * --fast keeps only scope + 1D spectrum (keys 2/3 disabled).
  */
 
@@ -344,6 +345,7 @@ typedef struct Jackoviz
     bool running;
     bool fast; /* --fast: scope + 1D only; skip 2D/3D spectrogram */
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
+    bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -715,6 +717,14 @@ static void toggle_line_width(Jackoviz* app)
     fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
 }
 
+static void toggle_pause(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    app->paused = !app->paused;
+    fprintf(stderr, "processing: %s\n", app->paused ? "paused" : "running");
+}
+
 static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
 {
     (void)router;
@@ -742,6 +752,8 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
         cycle_db_ceil(app);
     else if (event->key == DVZ_KEY_W)
         toggle_line_width(app);
+    else if (event->key == DVZ_KEY_P)
+        toggle_pause(app);
 }
 
 static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
@@ -755,11 +767,15 @@ static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick
     if (!app->running)
         return;
 
-    process_available_audio(app);
-    if (!app->fast)
-        (void)upload_spectrogram(app);
-    (void)upload_spectrum(app);
-    (void)upload_scope(app);
+    /* JACK process callback keeps filling audio_rb; freeze FFT + visual uploads. */
+    if (!app->paused)
+    {
+        process_available_audio(app);
+        if (!app->fast)
+            (void)upload_spectrogram(app);
+        (void)upload_spectrum(app);
+        (void)upload_scope(app);
+    }
 
     app->frames_drawn++;
     if (app->frame_limit != 0u && app->frames_drawn >= app->frame_limit)
@@ -787,7 +803,8 @@ static void usage(const char* prog)
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
         "  --fast      scope + 1D spectrum only (skip 2D/3D spectrogram uploads)\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface, "
-        "f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px)\n"
+        "f = cycle dB floor, c = cycle dB ceiling, w = toggle line width (1↔2 px), "
+        "p = pause/resume processing\n"
         "      (keys 2/3 are disabled with --fast)\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_PLOT_FREQ_MAX_HZ, DEFAULT_KAISER_BETA);
 }
@@ -1539,7 +1556,7 @@ int main(int argc, char** argv)
         fprintf(
             stderr,
             "Fast mode: scope + 1D spectrum only (0–%.0f Hz, %u bins). "
-            "Keys: 0=scope, 1=spectrum, f=dB floor, c=dB ceiling, w=line width "
+            "Keys: 0=scope, 1=spectrum, f=dB floor, c=dB ceiling, w=line width, p=pause "
             "(2/3 disabled). Close window to quit.\n",
             app.plot_freq_max, app.n_plot_bins);
     }
@@ -1548,8 +1565,8 @@ int main(int argc, char** argv)
         fprintf(
             stderr,
             "Spectrogram %u × %u (time × bins, 0–%.0f Hz). "
-            "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling, w=line width. "
-            "Close window to quit.\n",
+            "Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling, "
+            "w=line width, p=pause. Close window to quit.\n",
             app.history, app.n_plot_bins, app.plot_freq_max);
     }
 

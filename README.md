@@ -54,6 +54,7 @@ Keyboard controls:
 
 - **f** / **c** — cycle the plot dB floor and ceiling
 - **w** — toggle the oscilloscope and 1D spectrum line width between 1 and 2 pixels
+- **p** — pause/resume visual processing (FFT and plot uploads); the JACK callback keeps writing the audio ringbuffer, and the current view stays frozen until resume
 
 **`--fast`** skips the 2D and 3D spectrogram panels and their per-frame uploads (`upload_spectrogram`), keeping only the oscilloscope and 1D spectrum views. Keys **2** and **3** do nothing in this mode; the app starts on the 1D spectrum.
 
