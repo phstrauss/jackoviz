@@ -607,7 +607,7 @@ static bool apply_db_range(Jackoviz* app)
     return true;
 }
 
-static void set_db_floor(Jackoviz* app, double floor) {
+void set_db_floor(Jackoviz* app, double floor) {
     if (app == NULL || floor < -200.0 || floor > -20.0)
         return;
     app->db_floor = floor;
@@ -623,7 +623,7 @@ static void cycle_db_floor(Jackoviz* app)
     (void)apply_db_range(app);
 }
 
-static void set_db_ceil(Jackoviz* app, double ceil)
+void set_db_ceil(Jackoviz* app, double ceil)
 {
     if (app == NULL || ceil > 0.0 || ceil < -20.0)
         return;
@@ -640,7 +640,7 @@ static void cycle_db_ceil(Jackoviz* app)
     (void)apply_db_range(app);
 }
 
-static void set_view_mode(Jackoviz* app, ViewMode mode)
+void set_view_mode(Jackoviz* app, ViewMode mode)
 {
     if (app == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
         return;
@@ -735,7 +735,7 @@ static void apply_line_width(Jackoviz* app)
     }
 }
 
-static void set_line_width(Jackoviz* app, float width)
+void set_line_width(Jackoviz* app, float width)
 {
     if (app == NULL || width < 1.0f || width > 3.0f)
         return;
@@ -753,7 +753,7 @@ static void toggle_line_width(Jackoviz* app)
     fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
 }
 
-static void set_pause(Jackoviz* app, bool paused)
+void set_pause(Jackoviz* app, bool paused)
 {
     if (app == NULL)
         return;
@@ -1205,7 +1205,7 @@ static bool apply_plot_freq_limit(Jackoviz* app)
     return true;
 }
 
-static void set_plot_freq(Jackoviz* app, double freq) {
+void set_plot_freq(Jackoviz* app, double freq) {
     app->plot_freq_limit = freq;
     if (!apply_plot_freq_limit(app))
     {
@@ -1234,7 +1234,7 @@ static void cycle_plot_freq(Jackoviz* app)
         app->plot_freq_max, app->n_plot_bins);
 }
 
-static void set_kaiser_beta(Jackoviz* app, double beta)
+void set_kaiser_beta(Jackoviz* app, double beta)
 {
     if (app == NULL || beta < 1.0 || beta > 10.0)
     app->kaiser_beta = beta;
