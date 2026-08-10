@@ -2,6 +2,7 @@
  * jackoviz-remote.qml — vertical mockup UI for the jackoviz remote controller.
  * No gRPC / process logic yet; controls are interactive placeholders.
  * Style: Qt Quick Controls Imagine (set in jackoviz-remote.cpp).
+ * Density: fonts/spacing ~80% of the original mockup.
  */
 
 import QtQuick
@@ -11,9 +12,10 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: root
     title: "jackoviz remote"
-    width: 360
-    height: 720
+    width: 288
+    height: 580
     visible: true
+    font.pixelSize: 11
 
     readonly property var fftSizes: ["1024", "2048", "4096", "8192"]
     readonly property var jackPorts: [
@@ -42,29 +44,33 @@ ApplicationWindow {
     property bool launched: false
 
     header: ToolBar {
-        contentHeight: 40
+        contentHeight: 32
+        leftPadding: 10
+        rightPadding: 10
         Label {
             anchors.centerIn: parent
             text: "jackoviz remote"
-            font.pixelSize: 15
+            font.pixelSize: 12
             font.bold: true
         }
     }
 
     ScrollView {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: 12
         clip: true
         contentWidth: availableWidth
 
         ColumnLayout {
             width: parent.width
-            spacing: 12
+            spacing: 9
 
-            Label { text: "FFT size"; font.bold: true }
+            Label { text: "FFT size"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: fftSizeBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.fftSizes
                 currentIndex: 2 // 4096
             }
@@ -72,6 +78,9 @@ ApplicationWindow {
             Button {
                 id: launchButton
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                padding: 6
+                font.pixelSize: 11
                 text: root.launched ? "Launched" : "Launch"
                 enabled: !root.launched
                 onClicked: {
@@ -80,42 +89,52 @@ ApplicationWindow {
                 }
             }
 
-            Label { text: "JACK capture port"; font.bold: true }
+            Label { text: "JACK capture port"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: jackPortBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.jackPorts
                 currentIndex: 1
             }
 
-            Label { text: "View"; font.bold: true }
+            Label { text: "View"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: viewModeBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.viewModes
                 currentIndex: 3 // 3D spectrogram
             }
 
-            Label { text: "Max frequency"; font.bold: true }
+            Label { text: "Max frequency"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: maxFreqBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.maxFreqs
                 currentIndex: 2 // 8000 Hz
             }
 
-            Label { text: "dB ceiling"; font.bold: true }
+            Label { text: "dB ceiling"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: dbCeilBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.dbCeils
                 currentIndex: 2 // -20 dB
             }
 
-            Label { text: "dB floor"; font.bold: true }
+            Label { text: "dB floor"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: dbFloorBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.dbFloors
                 currentIndex: 0 // -100 dB
             }
@@ -123,10 +142,12 @@ ApplicationWindow {
             Label {
                 text: "Kaiser β  (" + kaiserSlider.value.toFixed(1) + ")"
                 font.bold: true
+                font.pixelSize: 11
             }
             Slider {
                 id: kaiserSlider
                 Layout.fillWidth: true
+                Layout.preferredHeight: 24
                 from: 1.0
                 to: 10.0
                 stepSize: 0.1
@@ -134,15 +155,17 @@ ApplicationWindow {
             }
             RowLayout {
                 Layout.fillWidth: true
-                Label { text: "1.0"; opacity: 0.6; font.pixelSize: 11 }
+                Label { text: "1.0"; opacity: 0.6; font.pixelSize: 9 }
                 Item { Layout.fillWidth: true }
-                Label { text: "10.0"; opacity: 0.6; font.pixelSize: 11 }
+                Label { text: "10.0"; opacity: 0.6; font.pixelSize: 9 }
             }
 
-            Label { text: "Line width"; font.bold: true }
+            Label { text: "Line width"; font.bold: true; font.pixelSize: 11 }
             ComboBox {
                 id: lineWidthBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                font.pixelSize: 11
                 model: root.lineWidths
                 currentIndex: 1 // 2 px
             }
@@ -150,6 +173,9 @@ ApplicationWindow {
             Button {
                 id: pauseButton
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                padding: 6
+                font.pixelSize: 11
                 text: root.paused ? "Resume" : "Pause"
                 onClicked: {
                     root.paused = !root.paused
@@ -160,11 +186,14 @@ ApplicationWindow {
             Button {
                 id: quitButton
                 Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                padding: 6
+                font.pixelSize: 11
                 text: "Quit"
                 onClicked: Qt.quit()
             }
 
-            Item { Layout.preferredHeight: 8 }
+            Item { Layout.preferredHeight: 6 }
         }
     }
 }
