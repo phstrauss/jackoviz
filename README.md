@@ -55,14 +55,19 @@ cmake --build build
 With gRPC enabled, the app also listens on `0.0.0.0:50051` for `JvzController` RPCs (see `jvzcontroller.proto`).
 
 **`--rpc-only`** ignores all keyboard setting shortcuts so control comes only from gRPC (intended when launched from `jackoviz-remote`).
-## Remote mockup
+## Remote controller
 
-A Qt Quick controller UI (no gRPC wiring yet):
+Qt Quick UI that launches a sibling `jackoviz` via `fork`/`execve` with `-n`,
+optional `--fast`, and `--rpc-only`. The JACK port dropdown is filled from a
+live `jackoviz-remote` JACK client (`jack_get_ports` audio outputs). Runtime
+controls (view, max freq, dB range, Kaiser β, line width, pause) and Quit use
+gRPC `JvzController` on `127.0.0.1:50051`.
 
 ```bash
 cmake --build build --target jackoviz-remote
-./build/jackoviz-remote
+./build/jackoviz-remote   # expects ./build/jackoviz next to it; jackd must be up
 ```
+
 Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnitude analyzer, **2** for a spectrogram, **3** for a 3D spectrogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
 Keyboard controls:

@@ -136,9 +136,9 @@ message(STATUS "jackoviz: DATOVIZ_INCLUDE_DIR=${DATOVIZ_INCLUDE_DIR}")
 message(STATUS "jackoviz: JVZ_ENABLE_GRPC=${JVZ_ENABLE_GRPC}")
 
 # ---------------------------------------------------------------------------
-# jackoviz-remote — Qt Quick mockup controller (gRPC wiring comes later)
+# jackoviz-remote — Qt Quick controller (fork/exec launch + JACK list + gRPC)
 # ---------------------------------------------------------------------------
-option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-remote mockup" ON)
+option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-remote controller" ON)
 
 if(JVZ_BUILD_REMOTE)
   find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
@@ -148,6 +148,7 @@ if(JVZ_BUILD_REMOTE)
   qt_add_executable(jackoviz-remote
     jackoviz-remote.cpp
   )
+  add_dependencies(jackoviz-remote jackoviz)
 
   qt_add_qml_module(jackoviz-remote
     URI JackovizRemote
@@ -165,7 +166,23 @@ if(JVZ_BUILD_REMOTE)
   target_link_libraries(jackoviz-remote PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
+    PkgConfig::JACK
   )
+
+  if(JVZ_ENABLE_GRPC)
+    target_sources(jackoviz-remote PRIVATE
+      ${JVZ_PROTO_SRCS}
+      ${JVZ_GRPC_SRCS}
+    )
+    target_include_directories(jackoviz-remote PRIVATE ${JVZ_GEN_DIR})
+    target_compile_definitions(jackoviz-remote PRIVATE JVZ_HAS_GRPC=1)
+    target_link_libraries(jackoviz-remote PRIVATE
+      protobuf::libprotobuf
+      gRPC::grpc++
+    )
+  else()
+    message(WARNING "JVZ_BUILD_REMOTE is ON but JVZ_ENABLE_GRPC is OFF — JACK port connect RPC disabled")
+  endif()
 
   add_custom_target(run-remote
     COMMAND $<TARGET_FILE:jackoviz-remote>
