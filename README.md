@@ -62,6 +62,21 @@ Linux currently ships with Pipewire which is largely compatible with Jack audio 
 the major change is that applications developped for Jack should be run using the pw-jack helper, i.e.:
 `$ pw-jack ./build/jackoviz`
 
+### macOS / Homebrew
+
+```bash
+brew install \
+  cmake \
+  pkgconf \
+  jack \
+  fftw \
+  protobuf \
+  grpc \
+  qt
+```
+
+Start JACK before running (`jackd` / QjackCtl). Datoviz is still built from source; point CMake at it with `-DDATOVIZ_ROOT=…`. Protobuf is resolved via CMake’s **FindProtobuf** module; gRPC via `pkg-config grpc++` (see Build).
+
 ## Build
 
 First, clone and build [Datoviz](https://datoviz.org/) v0.4.0. Requires CMake ≥ 3.20, JACK, FFTW3, and (by default) protobuf + gRPC for the controller.
