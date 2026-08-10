@@ -15,9 +15,12 @@ service JvzController {
   rpc SetKaiserBeta(SetKaiserBetaRequest) returns (SetResponse);
 }
 
+// Mirrors C setter returns: ok is false on sentinel/error; value/code echo the C return.
 message SetResponse {
   bool ok = 1;
   string message = 2;
+  double value = 3; // double/float setters: applied value (or error sentinel)
+  int32 code = 4;   // int setters: applied mode/pause flag (or -1)
 }
 
 // Matches ViewMode in jackoviz.h / jackoviz.c.

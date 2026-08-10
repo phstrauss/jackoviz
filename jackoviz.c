@@ -600,11 +600,12 @@ static bool apply_db_range(Jackoviz* app)
     return true;
 }
 
-void set_db_floor(Jackoviz* app, double floor) {
+double set_db_floor(Jackoviz* app, double floor) {
     if (app == NULL || floor < -200.0 || floor > -20.0)
-        return;
+        return 1.0;
     app->db_floor = floor;
-    (void)apply_db_range(app);  
+    (void)apply_db_range(app);
+    return app->db_floor;
 }
 
 static void cycle_db_floor(Jackoviz* app)
@@ -616,12 +617,13 @@ static void cycle_db_floor(Jackoviz* app)
     (void)apply_db_range(app);
 }
 
-void set_db_ceil(Jackoviz* app, double ceil)
+double set_db_ceil(Jackoviz* app, double ceil)
 {
     if (app == NULL || ceil > 0.0 || ceil < -20.0)
-        return;
+        return 1.0;
     app->db_ceil = ceil;
     (void)apply_db_range(app);
+    return app->db_ceil;
 }
 
 static void cycle_db_ceil(Jackoviz* app)
@@ -633,18 +635,18 @@ static void cycle_db_ceil(Jackoviz* app)
     (void)apply_db_range(app);
 }
 
-void set_view_mode(Jackoviz* app, ViewMode mode)
+int set_view_mode(Jackoviz* app, ViewMode mode)
 {
     if (app == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
-        return;
+        return -1;
     /* --fast disables spectrogram views; keys 2/3 are intentional no-ops. */
     if (app->fast && (mode == VIEW_MODE_2D || mode == VIEW_MODE_3D))
-        return;
+        return -1;
     if ((mode == VIEW_MODE_2D && app->panel_2d == NULL) ||
         (mode == VIEW_MODE_3D && app->panel_3d == NULL))
-        return;
+        return -1;
     if (app->view_mode == mode)
-        return;
+        return app->view_mode;
 
     app->view_mode = mode;
 
@@ -709,6 +711,7 @@ void set_view_mode(Jackoviz* app, ViewMode mode)
             (void)dvz_view_connect_panel(app->view, app->panel_3d);
         fprintf(stderr, "view: 3D surface\n");
     }
+    return app->view_mode;
 }
 
 static void apply_line_width(Jackoviz* app)
@@ -728,13 +731,14 @@ static void apply_line_width(Jackoviz* app)
     }
 }
 
-void set_line_width(Jackoviz* app, float width)
+float set_line_width(Jackoviz* app, float width)
 {
     if (app == NULL || width < 1.0f || width > 3.0f)
-        return;
+        return -1.0f;
     app->line_width_px = width;
     apply_line_width(app);
     fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
+    return app->line_width_px;
 }
 
 static void toggle_line_width(Jackoviz* app)
@@ -746,12 +750,13 @@ static void toggle_line_width(Jackoviz* app)
     fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
 }
 
-void set_pause(Jackoviz* app, bool paused)
+int set_pause(Jackoviz* app, bool paused)
 {
     if (app == NULL)
-        return;
+        return -1;
     app->paused = paused;
     fprintf(stderr, "processing: %s\n", app->paused ? "paused" : "running");
+    return app->paused;
 }
 
 static void toggle_pause(Jackoviz* app)
@@ -1198,16 +1203,20 @@ static bool apply_plot_freq_limit(Jackoviz* app)
     return true;
 }
 
-void set_plot_freq(Jackoviz* app, double freq) {
+double set_plot_freq(Jackoviz* app, double freq)
+{
+    if (app == NULL || freq < 1000.0 || freq > 48000.0)
+        return -1.0;
     app->plot_freq_limit = freq;
     if (!apply_plot_freq_limit(app))
     {
         fprintf(stderr, "setting max plot frequency failed\n");
-        return;
+        return -1.0;
     }
     fprintf(
         stderr, "max plot frequency: %.0f Hz (0 … %.1f Hz, %u bins)\n", app->plot_freq_limit,
         app->plot_freq_max, app->n_plot_bins);
+    return app->plot_freq_max;
 }
 
 static void cycle_plot_freq(Jackoviz* app)
@@ -1227,12 +1236,13 @@ static void cycle_plot_freq(Jackoviz* app)
         app->plot_freq_max, app->n_plot_bins);
 }
 
-void set_kaiser_beta(Jackoviz* app, double beta)
+double set_kaiser_beta(Jackoviz* app, double beta)
 {
     if (app == NULL || app->window == NULL || beta < 1.0 || beta > 10.0)
-        return;
+        return -1.0;
     app->kaiser_beta = beta;
     kaiser_window(app->window, app->fft_size, app->kaiser_beta);
+    return app->kaiser_beta;
 }
 
 static bool setup_datoviz(Jackoviz* app)

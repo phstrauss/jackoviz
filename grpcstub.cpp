@@ -1,13 +1,7 @@
 /*
  * grpcstub.cpp — gRPC server that forwards RPCs to jackoviz set_*() helpers.
  *
- * Generate stubs from jvzcontroller.proto, e.g.:
- *   protoc -I. --cpp_out=. --grpc_out=. \
- *     --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` \
- *     jvzcontroller.proto
- *
- * Then link this translation unit with jackoviz.o and the generated
- * jvzcontroller.pb.cc / jvzcontroller.grpc.pb.cc plus libgrpc++.
+ * Generated stubs come from jvzcontroller.proto via CMake (build/generated/).
  */
 
 #include "jackoviz.h"
@@ -43,6 +37,24 @@ ViewMode to_c_view_mode(jvz::ViewMode mode)
     }
 }
 
+void fill_double_response(jvz::SetResponse* response, double value, bool ok, const char* err_msg)
+{
+    response->set_ok(ok);
+    response->set_value(value);
+    response->set_code(0);
+    if (!ok && err_msg != nullptr)
+        response->set_message(err_msg);
+}
+
+void fill_int_response(jvz::SetResponse* response, int code, bool ok, const char* err_msg)
+{
+    response->set_ok(ok);
+    response->set_code(code);
+    response->set_value(0.0);
+    if (!ok && err_msg != nullptr)
+        response->set_message(err_msg);
+}
+
 class JvzControllerServiceImpl final : public jvz::JvzController::Service
 {
 public:
@@ -53,12 +65,12 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_double_response(response, 1.0, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_db_floor(app_, request->floor_db());
-        response->set_ok(true);
+        const double value = set_db_floor(app_, request->floor_db());
+        /* C API uses 1.0 as the error sentinel (valid floors are negative). */
+        fill_double_response(response, value, value != 1.0, "set_db_floor rejected");
         return Status::OK;
     }
 
@@ -67,12 +79,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_double_response(response, 1.0, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_db_ceil(app_, request->ceil_db());
-        response->set_ok(true);
+        const double value = set_db_ceil(app_, request->ceil_db());
+        fill_double_response(response, value, value != 1.0, "set_db_ceil rejected");
         return Status::OK;
     }
 
@@ -81,12 +92,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_int_response(response, -1, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_view_mode(app_, to_c_view_mode(request->mode()));
-        response->set_ok(true);
+        const int code = set_view_mode(app_, to_c_view_mode(request->mode()));
+        fill_int_response(response, code, code >= 0, "set_view_mode rejected");
         return Status::OK;
     }
 
@@ -95,12 +105,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_double_response(response, -1.0, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_line_width(app_, request->width_px());
-        response->set_ok(true);
+        const float value = set_line_width(app_, request->width_px());
+        fill_double_response(response, (double)value, value >= 0.0f, "set_line_width rejected");
         return Status::OK;
     }
 
@@ -109,12 +118,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_int_response(response, -1, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_pause(app_, request->paused());
-        response->set_ok(true);
+        const int code = set_pause(app_, request->paused());
+        fill_int_response(response, code, code >= 0, "set_pause rejected");
         return Status::OK;
     }
 
@@ -123,12 +131,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_double_response(response, -1.0, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_plot_freq(app_, request->freq_hz());
-        response->set_ok(true);
+        const double value = set_plot_freq(app_, request->freq_hz());
+        fill_double_response(response, value, value >= 0.0, "set_plot_freq rejected");
         return Status::OK;
     }
 
@@ -137,12 +144,11 @@ public:
     {
         if (app_ == nullptr)
         {
-            response->set_ok(false);
-            response->set_message("no jackoviz instance");
+            fill_double_response(response, -1.0, false, "no jackoviz instance");
             return Status::OK;
         }
-        set_kaiser_beta(app_, request->beta());
-        response->set_ok(true);
+        const double value = set_kaiser_beta(app_, request->beta());
+        fill_double_response(response, value, value >= 0.0, "set_kaiser_beta rejected");
         return Status::OK;
     }
 
