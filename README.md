@@ -20,10 +20,47 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 
 | Dependency | Notes |
 |---|---|
+| CMake ≥ 3.20 | |
 | JACK | `pkg-config jack` — jackd must be running |
 | FFTW3 | `pkg-config fftw3` |
-| Datoviz ≥ 0.4 | Set `DATOVIZ_ROOT` to a built checkout, or use `datoviz-config` |
+| Datoviz ≥ 0.4 | Set `DATOVIZ_ROOT` to a built checkout |
 | POSIX | macOS / Linux (`shm_open` + mirrored `mmap`) |
+| Protobuf | Optional (`JVZ_ENABLE_GRPC`, default ON). CMake **FindProtobuf** module (`libprotobuf-dev` / `protobuf-compiler`); not `CONFIG` mode |
+| gRPC C++ | Optional with gRPC. `pkg-config grpc++` + `grpc_cpp_plugin` (`libgrpc++-dev` / `protobuf-compiler-grpc`) |
+| Qt 6 | Optional (`JVZ_BUILD_REMOTE`, default ON). **Quick** + **QuickControls2** (≥ 6.5) for `jackoviz-remote` |
+
+`jackoviz-remote` also links JACK (port listing) and, when gRPC is enabled, the same Protobuf/gRPC stubs as `jackoviz`.
+
+### Debian / Ubuntu
+
+Install build tools and libraries (Datoviz is still built from source separately):
+
+```bash
+sudo apt update
+sudo apt install \
+  build-essential \
+  cmake \
+  pkg-config \
+  libjack-jackd2-dev \
+  libfftw3-dev \
+  libprotobuf-dev \
+  protobuf-compiler \
+  libgrpc-dev \
+  libgrpc++-dev \
+  protobuf-compiler-grpc \
+  qt6-base-dev \
+  qt6-declarative-dev \
+  qml6-module-qtquick \
+  qml6-module-qtquick-window \
+  qml6-module-qtquick-layouts \
+  qml6-module-qtquick-controls
+```
+
+`jackoviz-remote` needs Qt ≥ 6.5 (`JVZ_BUILD_REMOTE`). Ubuntu 22.04 ships Qt 6.2 — use 24.04+, or configure with `-DJVZ_BUILD_REMOTE=OFF`.
+
+Linux currently ships with Pipewire which is largely compatible with Jack audio connection kit,
+the major change is that applications developped for Jack should be run using the pw-jack helper, i.e.:
+`$ pw-jack ./build/jackoviz`
 
 ## Build
 
