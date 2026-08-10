@@ -1,0 +1,712 @@
+connected system:capture_1 → jackoviz:input
+JACK client 'jackoviz' @ 44100 Hz, FFT 4096, Kaiser β=4.50
+plot band: 0 … 7999.6 Hz (744 of 2049 bins @ 44100 Hz)
+17:52:31.314 T679 [33mW[0m [90m      validation.h:0172:[0m [33mvalidation layer: Path to given binary /usr/local/lib/libvulkan_kosmickrisp.dylib was found to differ from OS loaded path /Users/catseye/VulkanSDK/1.4.357.0/macOS/lib/libvulkan_kosmickrisp.dylib[0m
+17:52:31.314 T679 [33mW[0m [90m      validation.h:0172:[0m [33mvalidation layer: Path to given binary /usr/local/lib/libMoltenVK.dylib was found to differ from OS loaded path /Users/catseye/VulkanSDK/1.4.357.0/macOS/lib/libMoltenVK.dylib[0m
+17:52:31.317 T679 [33mW[0m [90m      validation.h:0172:[0m [33mvalidation layer: Path to given binary /usr/local/lib/libVkLayer_khronos_validation.dylib was found to differ from OS loaded path /Users/catseye/VulkanSDK/1.4.357.0/macOS/lib/libVkLayer_khronos_validation.dylib[0m
+Spectrogram 256 × 744 (time × bins, 0–8000 Hz). Keys: 0=scope, 1=spectrum, 2=2D, 3=3D, f=dB floor, c=dB ceiling, m=plot Hz, w=line width, p=pause. Close window to quit.
+jvz gRPC: listening on 0.0.0.0:50051
+17:52:31.370 T679 [33mW[0m [90m  swapchain_sink.c:0340:[0m [33mFIFO latest-ready present mode unavailable; falling back to present mode 2[0m
+17:52:31.388 T679 [31mE[0m [90m        colorbar.c:0232:[0m [31mpanel is too small for deterministic colorbar layout[0m
+[2KFPS   27.3 (28 frames in 1.025 s)[2KFPS   27.4 (28 frames in 1.023 s)plot band: 0 … 11994.0 Hz (1115 of 2049 bins @ 44100 Hz)
+max plot frequency: 12000 Hz (0 … 11994.0 Hz, 1115 bins)
+[2KFPS   25.5 (26 frames in 1.020 s)plot band: 0 … 15999.2 Hz (1487 of 2049 bins @ 44100 Hz)
+max plot frequency: 16000 Hz (0 … 15999.2 Hz, 1487 bins)
+plot band: 0 … 19993.6 Hz (1858 of 2049 bins @ 44100 Hz)
+max plot frequency: 20000 Hz (0 … 19993.6 Hz, 1858 bins)
+[2KFPS   17.0 (18 frames in 1.060 s)plot band: 0 … 3994.4 Hz (372 of 2049 bins @ 44100 Hz)
+max plot frequency: 4000 Hz (0 … 3994.4 Hz, 372 bins)
+17:52:35.021 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.021 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.021 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.030 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.030 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.030 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.040 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.040 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.040 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.049 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.049 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.049 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.058 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.059 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.059 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.077 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.077 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.077 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.087 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.087 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.087 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.097 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.097 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.097 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.107 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.107 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.107 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.117 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.117 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.117 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.127 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.127 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.127 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.137 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.137 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.137 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.147 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.147 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.147 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.157 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.157 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.157 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.167 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.167 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.167 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.177 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.177 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.177 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.187 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.187 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.187 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.197 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.197 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.197 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.207 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.207 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.207 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.247 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.247 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.247 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.257 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.257 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.257 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.268 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.268 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.268 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.278 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.278 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.278 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.288 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.288 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.288 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.298 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.298 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.298 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.308 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.308 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.308 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.318 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.318 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.318 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.328 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.328 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.328 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.338 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.338 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.338 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.348 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.348 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.348 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.358 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.358 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.358 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.368 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.368 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.368 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.378 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.378 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.378 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.388 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:35.388 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.388 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:35.398 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:35.398 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:35.398 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.408 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.408 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.408 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.418 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.418 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.418 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.428 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.428 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.428 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.439 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.439 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.439 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.449 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.449 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.449 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.459 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.459 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.459 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.469 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.469 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.469 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.479 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.479 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.479 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.509 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.509 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.509 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.519 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.519 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.519 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.529 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.529 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.529 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.539 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.539 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.539 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.549 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.549 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.549 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+[2KFPS    2.0 (2 frames in 1.009 s)17:52:36.560 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.560 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.560 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.570 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.570 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.570 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.580 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.580 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.580 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.590 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.590 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.590 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.601 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.601 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.601 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.611 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.611 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.611 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.621 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.621 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.621 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.631 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.631 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.631 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.641 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.641 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.641 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.651 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.651 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.651 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.661 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.661 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.661 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.672 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.672 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.672 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.682 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.682 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.682 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.692 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.692 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.692 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.702 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.702 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.702 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.712 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.712 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.712 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.722 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.722 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.722 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.733 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.733 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.733 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.743 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.743 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.743 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.753 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.753 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.753 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.763 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.763 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.763 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.773 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.773 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.773 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.783 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.783 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.783 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.794 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.794 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.794 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.804 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.804 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.804 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.814 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.814 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.814 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.824 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.824 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.824 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.834 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.834 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.834 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.844 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.844 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.844 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.854 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.854 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.854 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.864 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.864 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.864 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.875 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.875 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.875 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.885 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.885 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.885 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.895 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.895 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.895 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.905 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.905 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.905 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.935 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.935 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.935 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.945 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.945 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.945 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.966 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.966 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.966 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.976 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.976 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.976 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.986 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.986 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.986 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.996 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:36.996 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.996 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:36.006 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:36.007 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:36.007 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.017 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.017 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.017 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.027 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.027 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.027 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.037 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.037 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.037 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.047 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.047 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.047 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.057 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.057 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.057 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.068 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.078 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.078 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.078 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.088 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.088 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.088 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.098 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.098 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.098 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.108 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.108 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.108 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.119 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.119 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.119 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.129 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.129 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.129 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.139 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.139 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.139 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.149 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.149 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.149 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.159 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.159 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.159 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.170 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.170 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.170 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+[2KFPS    0.0 (0 frames in 1.017 s)17:52:37.180 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.180 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.180 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.190 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.190 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.190 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.200 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.200 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.200 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.210 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.210 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.210 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.221 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.221 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.221 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.231 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.231 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.231 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.241 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.241 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.241 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.251 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.251 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.251 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.261 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.261 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.261 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.271 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.272 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.272 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.282 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.282 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.282 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.292 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.292 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.292 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.302 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.302 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.302 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.312 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.312 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.312 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.323 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.323 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.323 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.333 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.333 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.333 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.343 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.343 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.343 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.354 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.354 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.354 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.364 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.364 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.364 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.374 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.374 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.374 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.384 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.384 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.384 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.395 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.395 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.395 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.405 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.405 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.405 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.415 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.415 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.415 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.426 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.426 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.426 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.436 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.436 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.436 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.447 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.447 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.447 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.457 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.457 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.457 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.468 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.468 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.468 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.478 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.478 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.478 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.489 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.499 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.510 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.510 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.510 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.520 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.520 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.520 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.531 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.531 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.531 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.541 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.541 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.541 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.551 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.551 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.551 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.562 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.562 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.562 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.572 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.572 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.572 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.582 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.582 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.582 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.593 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.593 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.593 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.603 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.603 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.603 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.614 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:37.614 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.614 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:37.624 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:37.624 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:37.624 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.634 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.634 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.634 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.644 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.644 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.644 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.655 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.655 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.655 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.665 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.665 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.665 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.676 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.676 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.676 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.686 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.686 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.686 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.697 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.697 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.697 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.707 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.707 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.707 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.718 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.718 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.718 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.728 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.728 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.728 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.738 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.738 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.738 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.749 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.749 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.749 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.759 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.759 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.759 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.769 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.769 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.769 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.780 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.780 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.780 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.790 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.790 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.790 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+[2KFPS    0.0 (0 frames in 1.000 s)17:52:38.800 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.800 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.800 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.811 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.811 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.811 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.821 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.821 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.821 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.831 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.831 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.831 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.842 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.842 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.842 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.852 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.852 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.852 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.863 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.863 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.863 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.873 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.873 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.873 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.884 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.884 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.884 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.894 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.894 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.894 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.904 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.904 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.904 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.915 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.925 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.936 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.936 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.936 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.946 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.946 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.946 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.956 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.967 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.967 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.967 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.977 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.977 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.977 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.987 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.987 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.987 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.998 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.998 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.998 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.008 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.008 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.008 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.018 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.018 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.018 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.029 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.029 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.029 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.039 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.039 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.039 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.050 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.050 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.050 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.060 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.060 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.060 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.070 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.070 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.070 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.081 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.081 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.081 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.091 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.091 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.091 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.102 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.102 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.102 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.112 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.112 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.112 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.123 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.123 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.123 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.133 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.133 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.133 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.145 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.145 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.145 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.154 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.155 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.155 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.165 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.165 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.165 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.175 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.175 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.175 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.185 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.185 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.185 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.196 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.196 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.196 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.206 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.206 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.206 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.217 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.227 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:38.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.237 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:38.248 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:38.248 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:38.248 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.258 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.258 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.258 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.269 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.269 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.269 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.279 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.279 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.279 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.289 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.289 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.289 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.300 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.300 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.300 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.310 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.310 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.310 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.320 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.320 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.320 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.331 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.331 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.331 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.341 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.341 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.341 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.351 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.351 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.351 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.362 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=148 draw_count=2841210 logical_count=567630[0m
+17:52:39.362 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.362 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+17:52:39.372 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: scene draw resource validation failed: visual=primitive role=index resource_id=149 draw_count=2841210 logical_count=567630[0m
+17:52:39.372 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to prepare scene render batch for provider 7[0m
+17:52:39.372 T679 [31mE[0m [90m             app.c:4249:[0m [31m_app_draw emit failed: failed to emit runtime DRP2 stream[0m
+
