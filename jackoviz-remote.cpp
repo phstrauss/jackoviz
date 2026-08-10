@@ -39,6 +39,7 @@ class RemoteController : public QObject
     Q_OBJECT
     Q_PROPERTY(bool launched READ launched NOTIFY launchedChanged)
     Q_PROPERTY(bool paused READ paused NOTIFY pausedChanged)
+    Q_PROPERTY(int viewModeIndex READ viewModeIndex NOTIFY viewModeIndexChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
 
@@ -62,6 +63,7 @@ public:
 
     bool launched() const { return m_pid > 0; }
     bool paused() const { return m_paused; }
+    int viewModeIndex() const { return m_view_index; }
     QString statusText() const { return m_status; }
     QStringList jackPorts() const { return m_jack_ports; }
 
@@ -120,6 +122,9 @@ public:
         m_fast = fast;
         m_paused = false;
         emit pausedChanged();
+        /* --fast has no 2D/3D panels; default the remote view to 1D spectrum. */
+        if (fast)
+            setViewModeIndex(1);
 #if defined(JVZ_HAS_GRPC)
         m_stub.reset();
         m_channel.reset();
@@ -130,9 +135,6 @@ public:
         cmd += QStringLiteral(" --rpc-only");
         setStatus(QStringLiteral("launched pid %1: %2").arg(pid).arg(cmd));
         emit launchedChanged();
-
-        /* gRPC server comes up shortly after Datoviz/JACK init. */
-        QTimer::singleShot(400, this, &RemoteController::applyPendingSettings);
     }
 
     Q_INVOKABLE void quitJackoviz()
@@ -227,7 +229,10 @@ public:
     /* qmlIndex: 0=scope, 1=1D, 2=2D, 3=3D */
     Q_INVOKABLE void setViewMode(int qmlIndex)
     {
-        m_view_index = qmlIndex;
+        if (m_fast && qmlIndex >= 2)
+            qmlIndex = 1; /* 1D spectrum default / only spectrogram-less choice */
+
+        setViewModeIndex(qmlIndex);
         if (!requireLaunched(QStringLiteral("view mode queued")))
             return;
 #if defined(JVZ_HAS_GRPC)
@@ -256,12 +261,6 @@ public:
             return;
         }
 
-        if (m_fast && (mode == jvz::VIEW_MODE_2D || mode == jvz::VIEW_MODE_3D))
-        {
-            setStatus(QStringLiteral("2D/3D unavailable in --fast mode"));
-            return;
-        }
-
         jvz::SetViewModeRequest request;
         request.set_mode(mode);
         jvz::SetResponse response;
@@ -276,7 +275,7 @@ public:
     Q_INVOKABLE void setPlotFreq(double freqHz)
     {
         m_plot_freq = freqHz;
-        if (!requireLaunched(QStringLiteral("max freq %.0f Hz queued").arg(freqHz)))
+        if (!requireLaunched(QStringLiteral("max freq %1 Hz queued").arg(freqHz, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
         jvz::SetPlotFreqRequest request;
@@ -286,14 +285,14 @@ public:
                 return m_stub->SetPlotFreq(ctx, request, &response);
             }, response))
             return;
-        setStatus(QStringLiteral("max freq: %.0f Hz").arg(response.value()));
+        setStatus(QStringLiteral("max freq: %1 Hz").arg(response.value(), 0, 'f', 0));
 #endif
     }
 
     Q_INVOKABLE void setDbCeil(double ceilDb)
     {
         m_db_ceil = ceilDb;
-        if (!requireLaunched(QStringLiteral("dB ceil %.0f queued").arg(ceilDb)))
+        if (!requireLaunched(QStringLiteral("dB ceil %1 queued").arg(ceilDb, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
         jvz::SetDbCeilRequest request;
@@ -303,14 +302,14 @@ public:
                 return m_stub->SetDbCeil(ctx, request, &response);
             }, response))
             return;
-        setStatus(QStringLiteral("dB ceil: %.0f").arg(response.value()));
+        setStatus(QStringLiteral("dB ceil: %1").arg(response.value(), 0, 'f', 0));
 #endif
     }
 
     Q_INVOKABLE void setDbFloor(double floorDb)
     {
         m_db_floor = floorDb;
-        if (!requireLaunched(QStringLiteral("dB floor %.0f queued").arg(floorDb)))
+        if (!requireLaunched(QStringLiteral("dB floor %1 queued").arg(floorDb, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
         jvz::SetDbFloorRequest request;
@@ -320,14 +319,14 @@ public:
                 return m_stub->SetDbFloor(ctx, request, &response);
             }, response))
             return;
-        setStatus(QStringLiteral("dB floor: %.0f").arg(response.value()));
+        setStatus(QStringLiteral("dB floor: %1").arg(response.value(), 0, 'f', 0));
 #endif
     }
 
     Q_INVOKABLE void setKaiserBeta(double beta)
     {
         m_kaiser_beta = beta;
-        if (!requireLaunched(QStringLiteral("Kaiser β %.1f queued").arg(beta)))
+        if (!requireLaunched(QStringLiteral("Kaiser β %1 queued").arg(beta, 0, 'f', 1)))
             return;
 #if defined(JVZ_HAS_GRPC)
         jvz::SetKaiserBetaRequest request;
@@ -337,14 +336,14 @@ public:
                 return m_stub->SetKaiserBeta(ctx, request, &response);
             }, response))
             return;
-        setStatus(QStringLiteral("Kaiser β: %.1f").arg(response.value()));
+        setStatus(QStringLiteral("Kaiser β: %1").arg(response.value(), 0, 'f', 1));
 #endif
     }
 
     Q_INVOKABLE void setLineWidth(float widthPx)
     {
         m_line_width = widthPx;
-        if (!requireLaunched(QStringLiteral("line width %.0f px queued").arg(widthPx)))
+        if (!requireLaunched(QStringLiteral("line width %1 px queued").arg(widthPx, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
         jvz::SetLineWidthRequest request;
@@ -354,7 +353,7 @@ public:
                 return m_stub->SetLineWidth(ctx, request, &response);
             }, response))
             return;
-        setStatus(QStringLiteral("line width: %.0f px").arg(response.value()));
+        setStatus(QStringLiteral("line width: %1 px").arg(response.value(), 0, 'f', 0));
 #endif
     }
 
@@ -380,10 +379,19 @@ public:
 signals:
     void launchedChanged();
     void pausedChanged();
+    void viewModeIndexChanged();
     void statusTextChanged();
     void jackPortsChanged();
 
 private:
+    void setViewModeIndex(int index)
+    {
+        if (m_view_index == index)
+            return;
+        m_view_index = index;
+        emit viewModeIndexChanged();
+    }
+
     void setStatus(const QString& text)
     {
         if (m_status == text)
@@ -398,29 +406,6 @@ private:
             return true;
         setStatus(queued_msg);
         return false;
-    }
-
-    void applyPendingSettings()
-    {
-        if (m_pid <= 0)
-            return;
-
-        /* View first so fast-mode rejection is visible before other tweaks. */
-        if (m_fast && m_view_index >= 2)
-            m_view_index = 1;
-
-        setViewMode(m_view_index);
-        setPlotFreq(m_plot_freq);
-        setDbCeil(m_db_ceil);
-        setDbFloor(m_db_floor);
-        setKaiserBeta(m_kaiser_beta);
-        setLineWidth(m_line_width);
-        setPaused(m_paused);
-
-        if (!m_jack_port.isEmpty() && m_jack_port != QLatin1String("(none)"))
-            connectJackPort(m_jack_port);
-
-        setStatus(QStringLiteral("settings applied"));
     }
 
     void openJackClient()

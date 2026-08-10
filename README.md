@@ -31,6 +31,8 @@ First, clone and build [Datoviz](https://datoviz.org/) v0.4.0. Requires CMake â‰
 
 ```bash
 cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz
+cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz -DCMAKE_BUILD_TYPE=Debug    # -g
+cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz -DCMAKE_BUILD_TYPE=Release  # -O3 (default)
 cmake --build build
 
 # optional: disable the gRPC control plane

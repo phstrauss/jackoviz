@@ -44,6 +44,42 @@ ApplicationWindow {
     readonly property bool paused: controller.paused
     readonly property string statusText: controller.statusText
 
+    function pushAllSettings() {
+        if (!root.launched)
+            return
+        controller.setViewMode(
+            fastModeBox.checked ? Math.min(1, viewModeBox.currentIndex)
+                                : viewModeBox.currentIndex)
+        controller.setPlotFreq(root.maxFreqValues[maxFreqBox.currentIndex])
+        controller.setDbCeil(root.dbCeilValues[dbCeilBox.currentIndex])
+        controller.setDbFloor(root.dbFloorValues[dbFloorBox.currentIndex])
+        controller.setKaiserBeta(kaiserSlider.value)
+        controller.setLineWidth(root.lineWidthValues[lineWidthBox.currentIndex])
+        controller.setPaused(root.paused)
+        controller.connectJackPort(jackPortBox.currentText)
+    }
+
+    Timer {
+        id: postLaunchSync
+        interval: 2000
+        repeat: false
+        onTriggered: root.pushAllSettings()
+    }
+
+    Connections {
+        target: controller
+        function onLaunchedChanged() {
+            if (controller.launched)
+                postLaunchSync.restart()
+            else
+                postLaunchSync.stop()
+        }
+        function onViewModeIndexChanged() {
+            if (viewModeBox.currentIndex !== controller.viewModeIndex)
+                viewModeBox.currentIndex = controller.viewModeIndex
+        }
+    }
+
     header: ToolBar {
         contentHeight: 32
         leftPadding: 10

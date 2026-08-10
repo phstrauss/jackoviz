@@ -4,6 +4,8 @@ project(jackoviz LANGUAGES C CXX)
 # jackoviz — JACK + FFTW3 + Datoviz spectrogram with optional gRPC control plane
 #
 #   cmake -S . -B build -DDATOVIZ_ROOT=$HOME/work/datoviz
+#   cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug    # -g
+#   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  # -O3
 #   cmake --build build
 #   ./build/jackoviz -s system:capture_1
 
@@ -12,6 +14,21 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Debug: -g | Release: -O3  (single-config generators: Makefile, Ninja)
+set(JVZ_BUILD_TYPES Debug Release RelWithDebInfo MinSizeRel)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug (-g) or Release (-O3)" FORCE)
+endif()
+if(CMAKE_BUILD_TYPE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${JVZ_BUILD_TYPES})
+endif()
+
+# Explicit debug/release flags for GCC/Clang-compatible compilers.
+add_compile_options(
+  $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-g>
+  $<$<CONFIG:Release>:-O3>
+)
 
 option(JVZ_ENABLE_GRPC "Build and link the gRPC controller (jvzcontroller.proto)" ON)
 
@@ -132,6 +149,7 @@ add_custom_target(run
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+message(STATUS "jackoviz: CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "jackoviz: DATOVIZ_INCLUDE_DIR=${DATOVIZ_INCLUDE_DIR}")
 message(STATUS "jackoviz: JVZ_ENABLE_GRPC=${JVZ_ENABLE_GRPC}")
 

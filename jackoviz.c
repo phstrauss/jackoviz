@@ -75,7 +75,7 @@ static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
 static const double DB_CEIL_OPTIONS[DB_CEIL_OPTION_COUNT] = {0.0, -10.0, -20.0};
 /* Key m cycles these when -f was not given on the CLI (8000 → … → 4000 → 6000 → 8000). */
 static const double PLOT_FREQ_OPTIONS[PLOT_FREQ_OPTION_COUNT] = {
-    8000.0, 12000.0, 16000.0, 20000.0, 4000.0, 6000.0};
+    4000.0, 6000.0, 8000.0, 12000.0, 16000.0, 20000.0};
 
 /* CPU viridis LUT for 3D mesh vertex colors (mesh has no scalar colormap path yet). */
 static DvzColor g_viridis_lut[VIRIDIS_LUT_SIZE];
