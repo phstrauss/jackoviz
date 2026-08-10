@@ -12,7 +12,7 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: root
     title: "jackoviz remote"
-    width: 288
+    width: 260
     height: 670
     visible: true
     font.pixelSize: 11

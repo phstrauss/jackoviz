@@ -66,7 +66,7 @@ Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnit
 Keyboard controls:
 
 - **f** / **c** — cycle the plot dB floor and ceiling
-- **m** — cycle max plot frequency through 8 / 12 / 16 / 20 / 4 kHz (disabled if you passed **`-f`** on the command line)
+- **m** — cycle max plot frequency through 8 / 12 / 16 / 20 / 4 / 6 kHz (disabled if you passed **`-f`** on the command line)
 - **w** — toggle the oscilloscope and 1D spectrum line width between 1 and 2 pixels
 - **p** — pause/resume visual processing (FFT and plot uploads); the JACK callback keeps writing the audio ringbuffer, and the current view stays frozen until resume
 

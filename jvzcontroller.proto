@@ -13,6 +13,8 @@ service JvzController {
   rpc SetPause(SetPauseRequest) returns (SetResponse);
   rpc SetPlotFreq(SetPlotFreqRequest) returns (SetResponse);
   rpc SetKaiserBeta(SetKaiserBetaRequest) returns (SetResponse);
+  rpc Quit(QuitRequest) returns (SetResponse);
+  rpc ConnectJackPort(ConnectJackPortRequest) returns (SetResponse);
 }
 
 // Mirrors C setter returns: ok is false on sentinel/error; value/code echo the C return.
@@ -57,4 +59,11 @@ message SetPlotFreqRequest {
 
 message SetKaiserBetaRequest {
   double beta = 1; // typically 1 … 10
+}
+
+message QuitRequest {
+}
+
+message ConnectJackPortRequest {
+  string port_name = 1; // e.g. "system:capture_1"
 }

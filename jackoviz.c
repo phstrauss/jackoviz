@@ -10,7 +10,7 @@
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface,
  *       f = cycle dB floor, c = cycle dB ceiling,
- *       m = cycle max plot Hz (8/12/16/20/4 kHz; disabled if CLI -f was given),
+ *       m = cycle max plot Hz (8/12/16/20/4/6 kHz; disabled if CLI -f was given),
  *       w = toggle line width (1↔2 px),
  *       p = pause/resume visual processing (JACK ringbuffer keeps writing).
  * --fast keeps only scope + 1D spectrum (keys 2/3 disabled).
@@ -67,14 +67,14 @@
 #define DB_CEIL_OPTION_COUNT      3u
 #define DB_TICK_MAX               16u
 #define VIRIDIS_LUT_SIZE          256u
-#define PLOT_FREQ_OPTION_COUNT    5u
+#define PLOT_FREQ_OPTION_COUNT    6u
 
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
 static const double DB_CEIL_OPTIONS[DB_CEIL_OPTION_COUNT] = {0.0, -10.0, -20.0};
-/* Key m cycles these when -f was not given on the CLI (8000 → … → 4000 → 8000). */
+/* Key m cycles these when -f was not given on the CLI (8000 → … → 4000 → 6000 → 8000). */
 static const double PLOT_FREQ_OPTIONS[PLOT_FREQ_OPTION_COUNT] = {
-    8000.0, 12000.0, 16000.0, 20000.0, 4000.0};
+    8000.0, 12000.0, 16000.0, 20000.0, 4000.0, 6000.0};
 
 /* CPU viridis LUT for 3D mesh vertex colors (mesh has no scalar colormap path yet). */
 static DvzColor g_viridis_lut[VIRIDIS_LUT_SIZE];
@@ -759,6 +759,47 @@ int set_pause(Jackoviz* app, bool paused)
     return app->paused;
 }
 
+int quit(Jackoviz* app)
+{
+    if (app == NULL)
+        return -1;
+    if (!app->running)
+        return 0;
+    app->running = false;
+    if (app->app != NULL)
+        dvz_app_stop(app->app);
+    fprintf(stderr, "quit requested\n");
+    return 0;
+}
+
+int connect_jack_port(Jackoviz* app, const char* port_name)
+{
+    if (app == NULL || app->client == NULL || app->in_port == NULL || port_name == NULL ||
+        port_name[0] == '\0')
+        return -1;
+
+    const char* dst = jack_port_name(app->in_port);
+    if (dst == NULL)
+        return -1;
+
+    /* Drop existing feeds into our input so switching ports is clean. */
+    const char** conns = jack_port_get_all_connections(app->client, app->in_port);
+    if (conns != NULL)
+    {
+        for (int i = 0; conns[i] != NULL; i++)
+            (void)jack_disconnect(app->client, conns[i], dst);
+        jack_free((void*)conns);
+    }
+
+    if (jack_connect(app->client, port_name, dst) != 0)
+    {
+        fprintf(stderr, "connect_jack_port: could not connect %s → %s\n", port_name, dst);
+        return -1;
+    }
+    fprintf(stderr, "connected %s → %s\n", port_name, dst);
+    return 0;
+}
+
 static void toggle_pause(Jackoviz* app)
 {
     if (app == NULL)
@@ -841,7 +882,7 @@ static void usage(const char* prog)
         "[--frames N] [--fast]\n"
         "  -n     FFT size (default %u)\n"
         "  -f     max plot frequency in Hz (locks key m; default %.0f, else key m cycles "
-        "8/12/16/20/4 kHz)\n"
+        "8/12/16/20/4/6 kHz)\n"
         "  -b     Kaiser beta (default %.1f)\n"
         "  -c     JACK client name (default jackoviz)\n"
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
@@ -968,11 +1009,9 @@ static bool setup_jack(Jackoviz* app, const char* client_name, const char* sourc
 
     if (source != NULL)
     {
-        const char* dst = jack_port_name(app->in_port);
-        if (jack_connect(app->client, source, dst) != 0)
-            fprintf(stderr, "warning: could not connect %s → %s\n", source, dst);
-        else
-            fprintf(stderr, "connected %s → %s\n", source, dst);
+        if (connect_jack_port(app, source) != 0)
+            fprintf(stderr, "warning: could not connect %s → %s\n", source,
+                jack_port_name(app->in_port));
     }
 
     fprintf(

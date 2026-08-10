@@ -152,6 +152,35 @@ public:
         return Status::OK;
     }
 
+    Status Quit(ServerContext*, const jvz::QuitRequest*, jvz::SetResponse* response) override
+    {
+        if (app_ == nullptr)
+        {
+            fill_int_response(response, -1, false, "no jackoviz instance");
+            return Status::OK;
+        }
+        const int code = quit(app_);
+        fill_int_response(response, code, code >= 0, "quit rejected");
+        return Status::OK;
+    }
+
+    Status ConnectJackPort(ServerContext*, const jvz::ConnectJackPortRequest* request,
+        jvz::SetResponse* response) override
+    {
+        if (app_ == nullptr)
+        {
+            fill_int_response(response, -1, false, "no jackoviz instance");
+            return Status::OK;
+        }
+        const int code = connect_jack_port(app_, request->port_name().c_str());
+        fill_int_response(
+            response, code, code >= 0,
+            code >= 0 ? nullptr : "connect_jack_port failed");
+        if (code >= 0)
+            response->set_message(request->port_name());
+        return Status::OK;
+    }
+
 private:
     Jackoviz* app_;
 };

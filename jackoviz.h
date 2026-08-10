@@ -36,6 +36,15 @@ int set_pause(Jackoviz* app, bool paused);
 double set_plot_freq(Jackoviz* app, double freq);
 double set_kaiser_beta(Jackoviz* app, double beta);
 
+/* Request a clean exit (stops Datoviz main loop; teardown runs in main). Returns 0, or -1. */
+int quit(Jackoviz* app);
+
+/*
+ * Connect a JACK capture/output port (e.g. "system:capture_1") to our input.
+ * Replaces any existing connections into jackoviz:input. Returns 0, or -1.
+ */
+int connect_jack_port(Jackoviz* app, const char* port_name);
+
 /* Blocking gRPC server (implemented in grpcstub.cpp). Default addr: 0.0.0.0:50051 */
 void jvz_grpc_serve(Jackoviz* app, const char* listen_addr);
 
