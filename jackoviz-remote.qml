@@ -44,35 +44,84 @@ ApplicationWindow {
     readonly property bool paused: controller.paused
     readonly property string statusText: controller.statusText
 
+    property int syncStep: 0
+    readonly property int syncStepCount: 8
+
     function pushAllSettings() {
         if (!root.launched)
             return
-        controller.setViewMode(
-            fastModeBox.checked ? Math.min(1, viewModeBox.currentIndex)
-                                : viewModeBox.currentIndex)
-        controller.setPlotFreq(root.maxFreqValues[maxFreqBox.currentIndex])
-        controller.setDbCeil(root.dbCeilValues[dbCeilBox.currentIndex])
-        controller.setDbFloor(root.dbFloorValues[dbFloorBox.currentIndex])
-        controller.setKaiserBeta(kaiserSlider.value)
-        controller.setLineWidth(root.lineWidthValues[lineWidthBox.currentIndex])
-        controller.setPaused(root.paused)
-        controller.connectJackPort(jackPortBox.currentText)
+        syncStep = 0
+        staggeredSync.stop()
+        sendSyncStep()
+        if (root.launched && syncStep < syncStepCount)
+            staggeredSync.start()
+    }
+
+    function sendSyncStep() {
+        if (!root.launched || syncStep >= syncStepCount) {
+            staggeredSync.stop()
+            return
+        }
+
+        switch (syncStep) {
+        case 0:
+            controller.setViewMode(
+                fastModeBox.checked ? Math.min(1, viewModeBox.currentIndex)
+                                    : viewModeBox.currentIndex)
+            break
+        case 1:
+            controller.setPlotFreq(root.maxFreqValues[maxFreqBox.currentIndex])
+            break
+        case 2:
+            controller.setDbCeil(root.dbCeilValues[dbCeilBox.currentIndex])
+            break
+        case 3:
+            controller.setDbFloor(root.dbFloorValues[dbFloorBox.currentIndex])
+            break
+        case 4:
+            controller.setKaiserBeta(kaiserSlider.value)
+            break
+        case 5:
+            controller.setLineWidth(root.lineWidthValues[lineWidthBox.currentIndex])
+            break
+        case 6:
+            controller.setPaused(root.paused)
+            break
+        case 7:
+            controller.connectJackPort(jackPortBox.currentText)
+            break
+        }
+        syncStep++
     }
 
     Timer {
         id: postLaunchSync
-        interval: 2000
+        interval: 5000
         repeat: false
         onTriggered: root.pushAllSettings()
+    }
+
+    Timer {
+        id: staggeredSync
+        interval: 200
+        repeat: true
+        onTriggered: {
+            root.sendSyncStep()
+            if (root.syncStep >= root.syncStepCount || !root.launched)
+                stop()
+        }
     }
 
     Connections {
         target: controller
         function onLaunchedChanged() {
-            if (controller.launched)
+            if (controller.launched) {
+                staggeredSync.stop()
                 postLaunchSync.restart()
-            else
+            } else {
                 postLaunchSync.stop()
+                staggeredSync.stop()
+            }
         }
         function onViewModeIndexChanged() {
             if (viewModeBox.currentIndex !== controller.viewModeIndex)
