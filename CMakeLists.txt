@@ -60,8 +60,24 @@ set(JVZ_SOURCES
 )
 
 if(JVZ_ENABLE_GRPC)
-  find_package(Protobuf CONFIG REQUIRED)
-  find_package(gRPC CONFIG REQUIRED)
+  # Module mode (CMake's FindProtobuf.cmake) — required for Debian/Ubuntu
+  # system packages that do not ship protobuf-config.cmake.
+  find_package(Protobuf REQUIRED MODULE)
+
+  if(TARGET protobuf::protoc)
+    set(JVZ_PROTOC protobuf::protoc)
+  elseif(Protobuf_PROTOC_EXECUTABLE)
+    set(JVZ_PROTOC "${Protobuf_PROTOC_EXECUTABLE}")
+  else()
+    message(FATAL_ERROR "protoc not found (install protobuf-compiler)")
+  endif()
+
+  # Do not use find_package(gRPC CONFIG): Homebrew/Debian gRPC configs often
+  # call find_dependency(Protobuf CONFIG), which conflicts with module-mode
+  # FindProtobuf. Use pkg-config instead (libgrpc++-dev / brew grpc).
+  pkg_check_modules(GRPCXX REQUIRED IMPORTED_TARGET grpc++)
+  find_program(JVZ_GRPC_CPP_PLUGIN NAMES grpc_cpp_plugin REQUIRED)
+  set(JVZ_GRPC_LINK_LIBS PkgConfig::GRPCXX)
 
   set(JVZ_PROTO_FILE "${CMAKE_CURRENT_SOURCE_DIR}/jvzcontroller.proto")
   set(JVZ_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -76,12 +92,12 @@ if(JVZ_ENABLE_GRPC)
     OUTPUT
       ${JVZ_PROTO_SRCS} ${JVZ_PROTO_HDRS}
       ${JVZ_GRPC_SRCS} ${JVZ_GRPC_HDRS}
-    COMMAND protobuf::protoc
+    COMMAND ${JVZ_PROTOC}
       ARGS
         --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
         --cpp_out=${JVZ_GEN_DIR}
         --grpc_out=${JVZ_GEN_DIR}
-        --plugin=protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
+        --plugin=protoc-gen-grpc=${JVZ_GRPC_CPP_PLUGIN}
         ${JVZ_PROTO_FILE}
     DEPENDS ${JVZ_PROTO_FILE}
     COMMENT "Generating gRPC C++ sources from jvzcontroller.proto"
@@ -94,7 +110,6 @@ if(JVZ_ENABLE_GRPC)
     ${JVZ_GRPC_SRCS}
   )
 endif()
-
 add_executable(jackoviz ${JVZ_SOURCES})
 
 target_include_directories(jackoviz PRIVATE
@@ -131,12 +146,14 @@ else()
 endif()
 
 if(JVZ_ENABLE_GRPC)
-  target_link_libraries(jackoviz PRIVATE
-    protobuf::libprotobuf
-    gRPC::grpc++
-  )
+  if(TARGET protobuf::libprotobuf)
+    target_link_libraries(jackoviz PRIVATE protobuf::libprotobuf)
+  else()
+    target_include_directories(jackoviz PRIVATE ${Protobuf_INCLUDE_DIRS})
+    target_link_libraries(jackoviz PRIVATE ${Protobuf_LIBRARIES})
+  endif()
+  target_link_libraries(jackoviz PRIVATE ${JVZ_GRPC_LINK_LIBS})
 endif()
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   target_link_libraries(jackoviz PRIVATE rt)
 endif()
@@ -194,10 +211,13 @@ if(JVZ_BUILD_REMOTE)
     )
     target_include_directories(jackoviz-remote PRIVATE ${JVZ_GEN_DIR})
     target_compile_definitions(jackoviz-remote PRIVATE JVZ_HAS_GRPC=1)
-    target_link_libraries(jackoviz-remote PRIVATE
-      protobuf::libprotobuf
-      gRPC::grpc++
-    )
+    if(TARGET protobuf::libprotobuf)
+      target_link_libraries(jackoviz-remote PRIVATE protobuf::libprotobuf)
+    else()
+      target_include_directories(jackoviz-remote PRIVATE ${Protobuf_INCLUDE_DIRS})
+      target_link_libraries(jackoviz-remote PRIVATE ${Protobuf_LIBRARIES})
+    endif()
+    target_link_libraries(jackoviz-remote PRIVATE ${JVZ_GRPC_LINK_LIBS})
   else()
     message(WARNING "JVZ_BUILD_REMOTE is ON but JVZ_ENABLE_GRPC is OFF — JACK port connect RPC disabled")
   endif()
