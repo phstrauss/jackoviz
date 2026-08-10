@@ -134,3 +134,43 @@ add_custom_target(run
 
 message(STATUS "jackoviz: DATOVIZ_INCLUDE_DIR=${DATOVIZ_INCLUDE_DIR}")
 message(STATUS "jackoviz: JVZ_ENABLE_GRPC=${JVZ_ENABLE_GRPC}")
+
+# ---------------------------------------------------------------------------
+# jackoviz-remote — Qt Quick mockup controller (gRPC wiring comes later)
+# ---------------------------------------------------------------------------
+option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-remote mockup" ON)
+
+if(JVZ_BUILD_REMOTE)
+  find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+
+  qt_standard_project_setup(REQUIRES 6.5)
+
+  qt_add_executable(jackoviz-remote
+    jackoviz-remote.cpp
+  )
+
+  qt_add_qml_module(jackoviz-remote
+    URI JackovizRemote
+    VERSION 1.0
+    QML_FILES
+      jackoviz-remote.qml
+    RESOURCE_PREFIX /
+  )
+
+  set_target_properties(jackoviz-remote PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE FALSE
+  )
+
+  target_link_libraries(jackoviz-remote PRIVATE
+    Qt6::Quick
+    Qt6::QuickControls2
+  )
+
+  add_custom_target(run-remote
+    COMMAND $<TARGET_FILE:jackoviz-remote>
+    DEPENDS jackoviz-remote
+    USES_TERMINAL
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+endif()

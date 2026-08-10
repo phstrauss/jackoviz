@@ -52,6 +52,15 @@ cmake --build build
 ```
 
 With gRPC enabled, the app also listens on `0.0.0.0:50051` for `JvzController` RPCs (see `jvzcontroller.proto`).
+
+## Remote mockup
+
+A Qt Quick controller UI (no gRPC wiring yet):
+
+```bash
+cmake --build build --target jackoviz-remote
+./build/jackoviz-remote
+```
 Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnitude analyzer, **2** for a spectrogram, **3** for a 3D spectrogram. Look at the top of the C file to adjust some constants to your taste, rebuild afterwards.
 
 Keyboard controls:
