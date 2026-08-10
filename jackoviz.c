@@ -1188,6 +1188,8 @@ static bool rebuild_surface_geometry(Jackoviz* app)
     return dvz_mesh_set_geometry(app->mesh, app->geometry) == DVZ_OK;
 }
 
+/* Philippe Strauss 20260810 17:47 CEST: I suspect a bug around here, see CRASHREPORT.txt, obtained when changing
+   the maximum plotted frequency in the gRPC GUI (jackoviz-remote) when in 3D surface mode */
 static bool apply_plot_freq_limit(Jackoviz* app)
 {
     if (app == NULL)

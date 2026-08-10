@@ -1,0 +1,494 @@
+-------------------------------------
+Translated Report (Full Report Below)
+-------------------------------------
+Process:             jackoviz [10081]
+Path:                /Users/USER/*/jackoviz
+Identifier:          jackoviz
+Version:             ???
+Code Type:           ARM-64 (Native)
+Role:                Background
+Parent Process:      jackoviz-remote [10079]
+Coalition:           com.apple.Terminal [47472]
+Responsible Process: Terminal [77591]
+User ID:             501
+
+Date/Time:           2026-08-10 17:37:30.9223 +0200
+Launch Time:         2026-08-10 17:36:26.7548 +0200
+Hardware Model:      Mac17,3
+OS Version:          macOS 26.5.2 (25F84)
+Release Type:        User
+
+Crash Reporter Key:  7521D5B7-47D3-EC45-84AF-E3874291F2EC
+Incident Identifier: 8E17A072-07EE-4BE7-BDE0-68295C9A3BCD
+
+Sleep/Wake UUID:       60E34A95-93AF-4DEB-AB9D-4BE6A59A6FED
+
+Time Awake Since Boot: 1000000 seconds
+Time Since Wake:       35246 seconds
+
+System Integrity Protection: enabled
+
+Triggered by Thread: 0, Dispatch Queue: com.apple.main-thread
+
+Exception Type:    EXC_BAD_ACCESS (SIGSEGV)
+Exception Subtype: KERN_INVALID_ADDRESS at 0x000000000001db38
+Exception Codes:   0x0000000000000001, 0x000000000001db38
+
+Termination Reason:  Namespace SIGNAL, Code 11, Segmentation fault: 11
+Terminating Process: exc handler [10081]
+
+
+VM Region Info: 0x1db38 is not in any region.  Bytes before following region: 4371195080
+      REGION TYPE                    START - END         [ VSIZE] PRT/MAX SHRMOD  REGION DETAIL
+      UNUSED SPACE AT START
+--->  
+      __TEXT                      1048d0000-104934000    [  400K] r-x/r-x SM=COW  /Users/USER/*/jackoviz
+
+Thread 0 Crashed::  Dispatch queue: com.apple.main-thread
+0   libdatoviz.dylib              	       0x10597c928 dvz_geometry_compute_normals + 568 (geometry.c:1258)
+1   libdatoviz.dylib              	       0x105982070 dvz_geometry_surface_grid_update_heights + 424 (geometry.c:1958)
+2   jackoviz                      	       0x1048f3440 upload_spectrogram + 72 (jackoviz.c:484)
+3   jackoviz                      	       0x1048f2fc0 on_timer + 108 (jackoviz.c:864)
+4   libdatoviz.dylib              	       0x105bd1f78 _animation_timer_fire + 200 (animation.c:409)
+5   libdatoviz.dylib              	       0x105bd1300 _animation_timer_step + 296 (animation.c:430)
+6   libdatoviz.dylib              	       0x105bd0e88 _scene_animations_run + 224 (animation.c:1553)
+7   libdatoviz.dylib              	       0x105bd0bc4 _dvz_scene_animations_step + 128 (animation.c:1602)
+8   libdatoviz.dylib              	       0x105c7f110 _app_draw + 1152 (app.c:4174)
+9   libdatoviz.dylib              	       0x105a2eb68 dvz_canvas_frame + 2464 (canvas.c:1843)
+10  libdatoviz.dylib              	       0x105c75ba4 dvz_view_render_once + 608 (app.c:6542)
+11  libdatoviz.dylib              	       0x105c7ba08 dvz_app_run + 616 (app.c:6690)
+12  jackoviz                      	       0x1048ef8b4 main + 928 (jackoviz.c:1841)
+13  dyld                          	       0x1843bbe00 start + 6992
+
+Thread 1:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a128 _pthread_cond_wait + 980
+2   libjack.0.dylib               	       0x104bcb3d8 Jack::JackPosixProcessSync::Wait() + 148
+3   libjack.0.dylib               	       0x104bc42a8 Jack::JackMessageBuffer::Execute() + 88
+4   libjack.0.dylib               	       0x104bcba20 Jack::JackPosixThread::ThreadHandler(void*) + 264
+5   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+6   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 2:
+0   libsystem_kernel.dylib        	       0x18473691c read + 8
+1   libjack.0.dylib               	       0x104bcf17c Jack::JackClientSocket::Read(void*, int) + 48
+2   libjack.0.dylib               	       0x104bd3230 Jack::JackClientNotification::Read(Jack::detail::JackChannelTransactionInterface*) + 48
+3   libjack.0.dylib               	       0x104bd3034 Jack::JackSocketClientChannel::Execute() + 84
+4   libjack.0.dylib               	       0x104bcba20 Jack::JackPosixThread::ThreadHandler(void*) + 264
+5   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+6   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 3:
+0   libsystem_kernel.dylib        	       0x184735bc8 semaphore_timedwait_trap + 8
+1   libjack.0.dylib               	       0x104bcd814 Jack::JackMachSemaphore::TimedWait(long) + 156
+2   libjack.0.dylib               	       0x104baa1e8 Jack::JackConnectionManager::SuspendRefNum(Jack::JackClientControl*, Jack::JackMachSemaphore*, Jack::JackClientTiming*, long) + 64
+3   libjack.0.dylib               	       0x104bb0ad0 Jack::JackGraphManager::SuspendRefNum(Jack::JackClientControl*, Jack::JackMachSemaphore*, long) + 84
+4   libjack.0.dylib               	       0x104ba79ec Jack::JackClient::WaitSync() + 84
+5   libjack.0.dylib               	       0x104ba4dac Jack::JackClient::CycleWaitAux() + 28
+6   libjack.0.dylib               	       0x104ba4d3c Jack::JackClient::ExecuteThread() + 36
+7   libjack.0.dylib               	       0x104ba4cd0 Jack::JackClient::Execute() + 72
+8   libjack.0.dylib               	       0x104bcba20 Jack::JackPosixThread::ThreadHandler(void*) + 264
+9   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+10  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 4:
+
+Thread 5:: com.apple.NSEventThread
+0   libsystem_kernel.dylib        	       0x184735c34 mach_msg2_trap + 8
+1   libsystem_kernel.dylib        	       0x184748574 mach_msg2_internal + 76
+2   libsystem_kernel.dylib        	       0x18473e9c0 mach_msg_overwrite + 480
+3   libsystem_kernel.dylib        	       0x184735fc0 mach_msg + 24
+4   CoreFoundation                	       0x1848370d8 __CFRunLoopServiceMachPort + 160
+5   CoreFoundation                	       0x1848359c4 __CFRunLoopRun + 1188
+6   CoreFoundation                	       0x1849081c4 _CFRunLoopRunSpecificWithOptions + 532
+7   AppKit                        	       0x188d85c7c _NSEventThread + 184
+8   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+9   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 6:
+
+Thread 7:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a128 _pthread_cond_wait + 980
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624c04 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 100
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+4   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+5   libgrpc++.1.83.0.dylib        	       0x104b025a8 grpc::Server::Wait() + 60
+6   jackoviz                      	       0x1048f50d8 jvz_grpc_serve + 456 (grpcstub.cpp:206)
+7   jackoviz                      	       0x1048f7524 jvz_grpc_serve_async::$_0::operator()() const + 48 (grpcstub.cpp:213)
+8   jackoviz                      	       0x1048f74c0 std::__1::__invoke_result_impl<void, jvz_grpc_serve_async::$_0>::type std::__1::__invoke[abi:nqe210106]<jvz_grpc_serve_async::$_0>(jvz_grpc_serve_async::$_0&&) + 24 (invoke.h:87)
+9   jackoviz                      	       0x1048f745c void std::__1::__thread_execute[abi:nqe210106]<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, jvz_grpc_serve_async::$_0>(std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, jvz_grpc_serve_async::$_0>&, std::__1::__tuple_indices<>) + 28 (thread.h:159)
+10  jackoviz                      	       0x1048f7034 void* std::__1::__thread_proxy[abi:nqe210106]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, jvz_grpc_serve_async::$_0>>(void*) + 84 (thread.h:168)
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 8:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgpr.56.0.0.dylib           	       0x104f09844 gpr_cv_wait + 228
+7   libgrpc.56.0.0.dylib          	       0x10751d008 timer_thread(void*) + 516
+8   libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+9   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+10  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 9:
+
+Thread 10:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 11:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 12:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 13:
+
+Thread 14:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 15:
+0   libsystem_kernel.dylib        	       0x18473e6f8 poll + 8
+1   libgrpc.56.0.0.dylib          	       0x1074df6bc grpc_event_engine::experimental::PollPoller::Work(std::__1::chrono::duration<long long, std::__1::ratio<1l, 1000000000l>>, absl::lts_20260107::FunctionRef<void ()>) + 544
+2   libgrpc.56.0.0.dylib          	       0x1074e73fc grpc_event_engine::experimental::PosixEventEngine::PollingCycle::PollerWorkInternal() + 92
+3   libgrpc.56.0.0.dylib          	       0x1074fd7dc grpc_event_engine::experimental::SelfDeletingClosure::Run() + 28
+4   libgrpc.56.0.0.dylib          	       0x1074fd50c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 120
+5   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+6   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+7   libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+8   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+9   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 16:
+
+Thread 17:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 18:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 19:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 20:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074f832c grpc_event_engine::experimental::TimerManager::WaitUntil(grpc_core::Timestamp) + 276
+7   libgrpc.56.0.0.dylib          	       0x1074f8dbc void absl::lts_20260107::internal_any_invocable::RemoteInvoker<false, void, grpc_event_engine::experimental::TimerManager::MainLoop()::$_0&>(absl::lts_20260107::internal_any_invocable::TypeErasedState*) + 40
+8   libgrpc.56.0.0.dylib          	       0x1074fd7dc grpc_event_engine::experimental::SelfDeletingClosure::Run() + 28
+9   libgrpc.56.0.0.dylib          	       0x1074fd50c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 120
+10  libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+11  libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+12  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+13  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+14  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 21:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1074fcfe4 grpc_event_engine::experimental::WorkStealingThreadPool::WorkSignal::WaitWithTimeout(grpc_core::Duration) + 128
+7   libgrpc.56.0.0.dylib          	       0x1074fd5b4 grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::Step() + 288
+8   libgrpc.56.0.0.dylib          	       0x1074fd36c grpc_event_engine::experimental::WorkStealingThreadPool::ThreadState::ThreadBody() + 152
+9   libgrpc.56.0.0.dylib          	       0x1074fd98c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::StartThread()::$_0::__invoke(void*) + 20
+10  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+11  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+12  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 22:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a154 _pthread_cond_wait + 1024
+2   libabsl_synchronization.2601.0.0.dylib	       0x105624b90 absl::lts_20260107::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 84
+3   libabsl_synchronization.2601.0.0.dylib	       0x105624bf0 absl::lts_20260107::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260107::synchronization_internal::KernelTimeout) + 80
+4   libabsl_synchronization.2601.0.0.dylib	       0x105624ac0 AbslInternalPerThreadSemWait_lts_20260107 + 76
+5   libabsl_synchronization.2601.0.0.dylib	       0x105627aa8 absl::lts_20260107::CondVar::WaitCommon(absl::lts_20260107::Mutex*, absl::lts_20260107::synchronization_internal::KernelTimeout) + 184
+6   libgrpc.56.0.0.dylib          	       0x1072c613c grpc_core::Notification::WaitForNotificationWithTimeout(absl::lts_20260107::Duration) + 212
+7   libgrpc.56.0.0.dylib          	       0x1074fcd5c grpc_event_engine::experimental::WorkStealingThreadPool::WorkStealingThreadPoolImpl::Lifeguard::LifeguardMain() + 212
+8   libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+9   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+10  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 23:
+0   libsystem_platform.dylib      	       0x184783074 __bzero + 68
+1   libsystem_malloc.dylib        	       0x18457f924 xzm_segment_group_alloc_chunk + 1368
+2   libsystem_malloc.dylib        	       0x1845963c8 _xzm_malloc_large_huge + 456
+3   libdatoviz.dylib              	       0x1059545bc dvz_system_calloc + 32 (_alloc.c:50)
+4   libdatoviz.dylib              	       0x10597c28c dvz_calloc + 500 (_alloc.h:195)
+5   libdatoviz.dylib              	       0x10597bf18 dvz_geometry + 360 (geometry.c:1122)
+6   libdatoviz.dylib              	       0x1059810e0 dvz_geometry_surface_grid + 168 (geometry.c:1868)
+7   jackoviz                      	       0x1048f26d8 rebuild_surface_geometry + 476 (jackoviz.c:1185)
+8   jackoviz                      	       0x1048ef31c apply_plot_freq_limit + 884 (jackoviz.c:1248)
+9   jackoviz                      	       0x1048eef1c set_plot_freq + 120 (jackoviz.c:1260)
+10  jackoviz                      	       0x1048f5940 (anonymous namespace)::JvzControllerServiceImpl::SetPlotFreq(grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*) + 136 (grpcstub.cpp:137)
+11  jackoviz                      	       0x1049234cc jvz::JvzController::Service::Service()::$_5::operator()(jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*) const + 68 (jvzcontroller.grpc.pb.cc:321)
+12  jackoviz                      	       0x10492347c std::__1::__invoke_result_impl<void, jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*>::type std::__1::__invoke[abi:nqe210106]<jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*>(jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*&&, grpc::ServerContext*&&, jvz::SetPlotFreqRequest const*&&, jvz::SetResponse*&&) + 80 (invoke.h:87)
+13  jackoviz                      	       0x104923420 grpc::Status std::__1::__invoke_void_return_wrapper<grpc::Status, false>::__call[abi:nqe210106]<jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*>(jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*&&, grpc::ServerContext*&&, jvz::SetPlotFreqRequest const*&&, jvz::SetResponse*&&) + 64 (invoke.h:334)
+14  jackoviz                      	       0x1049233d4 grpc::Status std::__1::__invoke_r[abi:nqe210106]<grpc::Status, jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*>(jvz::JvzController::Service::Service()::$_5&, jvz::JvzController::Service*&&, grpc::ServerContext*&&, jvz::SetPlotFreqRequest const*&&, jvz::SetResponse*&&) + 64 (invoke.h:348)
+15  jackoviz                      	       0x104923240 std::__1::__function::__func<jvz::JvzController::Service::Service()::$_5, grpc::Status (jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*)>::operator()(jvz::JvzController::Service*&&, grpc::ServerContext*&&, jvz::SetPlotFreqRequest const*&&, jvz::SetResponse*&&) + 68 (function.h:174)
+16  jackoviz                      	       0x104923b80 std::__1::__function::__value_func<grpc::Status (jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*)>::operator()[abi:nqe210106](jvz::JvzController::Service*&&, grpc::ServerContext*&&, jvz::SetPlotFreqRequest const*&&, jvz::SetResponse*&&) const + 104 (function.h:274)
+17  jackoviz                      	       0x104923b0c std::__1::function<grpc::Status (jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*)>::operator()(jvz::JvzController::Service*, grpc::ServerContext*, jvz::SetPlotFreqRequest const*, jvz::SetResponse*) const + 80 (function.h:772)
+18  jackoviz                      	       0x104923ab0 grpc::internal::RpcMethodHandler<jvz::JvzController::Service, jvz::SetPlotFreqRequest, jvz::SetResponse, google::protobuf::MessageLite, google::protobuf::MessageLite>::RunHandler(grpc::internal::MethodHandler::HandlerParameter const&)::'lambda'()::operator()() const + 64 (method_handler.h:113)
+19  jackoviz                      	       0x1049239cc grpc::Status grpc::internal::CatchingFunctionHandler<grpc::internal::RpcMethodHandler<jvz::JvzController::Service, jvz::SetPlotFreqRequest, jvz::SetResponse, google::protobuf::MessageLite, google::protobuf::MessageLite>::RunHandler(grpc::internal::MethodHandler::HandlerParameter const&)::'lambda'()>(grpc::internal::RpcMethodHandler<jvz::JvzController::Service, jvz::SetPlotFreqRequest, jvz::SetResponse, google::protobuf::MessageLite, google::protobuf::MessageLite>::RunHandler(grpc::internal::MethodHandler::HandlerParameter const&)::'lambda'()&&) + 36 (method_handler.h:44)
+20  jackoviz                      	       0x10492373c grpc::internal::RpcMethodHandler<jvz::JvzController::Service, jvz::SetPlotFreqRequest, jvz::SetResponse, google::protobuf::MessageLite, google::protobuf::MessageLite>::RunHandler(grpc::internal::MethodHandler::HandlerParameter const&) + 112 (method_handler.h:112)
+21  libgrpc++.1.83.0.dylib        	       0x104b03540 grpc::Server::SyncRequest::ContinueRunAfterInterception() + 332
+22  libgrpc++.1.83.0.dylib        	       0x104b03318 grpc::Server::SyncRequest::Run(bool) + 500
+23  libgrpc++.1.83.0.dylib        	       0x104b0b2fc grpc::ThreadManager::MainWorkLoop() + 196
+24  libgrpc++.1.83.0.dylib        	       0x104b0b9d4 grpc::ThreadManager::WorkerThread::WorkerThread(grpc::ThreadManager*)::$_0::__invoke(void*) + 24
+25  libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+26  libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+27  libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 24:
+0   libsystem_kernel.dylib        	       0x18473950c __psynch_cvwait + 8
+1   libsystem_pthread.dylib       	       0x18477a128 _pthread_cond_wait + 980
+2   libc++.1.dylib                	       0x18468f858 std::__1::condition_variable::wait(std::__1::unique_lock<std::__1::mutex>&) + 32
+3   libVkLayer_khronos_validation.dylib	       0x1277ce914 vvl::Queue::ThreadFunc() + 364
+4   libVkLayer_khronos_validation.dylib	       0x1277d20b4 void* std::__1::__thread_proxy[abi:nqe210106]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, void (vvl::Queue::*)(), vvl::Queue*>>(void*) + 72
+5   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+6   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+Thread 25:
+0   libsystem_kernel.dylib        	       0x18473e6f8 poll + 8
+1   libgrpc.56.0.0.dylib          	       0x107505624 pollset_work(grpc_pollset*, grpc_pollset_worker**, grpc_core::Timestamp) + 1260
+2   libgrpc.56.0.0.dylib          	       0x107545f0c cq_next(grpc_completion_queue*, gpr_timespec, void*) + 348
+3   libgrpc++.1.83.0.dylib        	       0x104ae7e94 grpc::CompletionQueue::AsyncNextInternal(void**, bool*, gpr_timespec) + 60
+4   libgrpc++.1.83.0.dylib        	       0x104b03054 grpc::Server::SyncRequestThreadManager::PollForWork(void**, bool*) + 108
+5   libgrpc++.1.83.0.dylib        	       0x104b0b270 grpc::ThreadManager::MainWorkLoop() + 56
+6   libgrpc++.1.83.0.dylib        	       0x104b0b9d4 grpc::ThreadManager::WorkerThread::WorkerThread(grpc::ThreadManager*)::$_0::__invoke(void*) + 24
+7   libgpr.56.0.0.dylib           	       0x104f0839c grpc_core::(anonymous namespace)::ThreadInternalsPosix::ThreadInternalsPosix(char const*, void (*)(void*), void*, bool*, grpc_core::Thread::Options const&)::'lambda'(void*)::__invoke(void*) + 132
+8   libsystem_pthread.dylib       	       0x184779c58 _pthread_start + 136
+9   libsystem_pthread.dylib       	       0x184774c1c thread_start + 8
+
+
+Thread 0 crashed with ARM Thread State (64-bit):
+    x0: 0x0000000000000001   x1: 0x000000016b52d2a8   x2: 0x000000016b52d320   x3: 0x00000000000013cc
+    x4: 0x000000016b52d320   x5: 0x0000000000000020   x6: 0x0000000000000800   x7: 0x0000000000000001
+    x8: 0x000000016b52d320   x9: 0x0000000000000018  x10: 0x000000000001db38  x11: 0x0000000000000000
+   x12: 0x0000000000000000  x13: 0x0000000000000001  x14: 0x0000000104c90000  x15: 0x0000000000000038
+   x16: 0x0000000184783090  x17: 0x00000001f2004280  x18: 0x0000000000000000  x19: 0x00000001f06cc058
+   x20: 0x00000001f06cc100  x21: 0x000000016b52edc8  x22: 0xfffffffffffffff0  x23: 0x00000001f0983660
+   x24: 0x0000000000000001  x25: 0x000000016b52ef30  x26: 0x00000001f0983670  x27: 0x0000000000000000
+   x28: 0x0000000000000000   fp: 0x000000016b52d340   lr: 0x000000010597c8a8
+    sp: 0x000000016b52d2f0   pc: 0x000000010597c928 cpsr: 0x80000000
+   far: 0x000000000001db38  esr: 0x92000006 (Data Abort) byte read Translation fault
+
+Binary Images:
+       0x1048d0000 -        0x104933fff jackoviz (*) <ab0d5955-1b57-3167-bd4b-c79d3f6416a1> /Users/USER/*/jackoviz
+       0x105950000 -        0x10624bfff libdatoviz.dylib (*) <487401d4-c108-3bb1-9453-1885c0082e7d> /Users/USER/*/libdatoviz.dylib
+       0x104ac0000 -        0x104b1ffff libgrpc++.1.83.0.dylib (*) <e1355afc-8b95-359d-b814-918197a0d506> /opt/homebrew/*/libgrpc++.1.83.0.dylib
+       0x104b9c000 -        0x104bdffff libjack.0.dylib (*) <7bb84639-edd4-39ae-aa5e-56f184ed1b53> /opt/homebrew/*/libjack.0.dylib
+       0x104c14000 -        0x104c9bfff libfftw3.3.dylib (*) <eb87584e-6337-3b69-8f4e-e5bcc6a12530> /opt/homebrew/*/libfftw3.3.dylib
+       0x10503c000 -        0x1051bbfff libprotobuf.35.1.0.dylib (*) <b5d2fe19-c052-35da-a468-a5c4b2ffc73e> /opt/homebrew/*/libprotobuf.35.1.0.dylib
+       0x1049fc000 -        0x104a0bfff libabsl_die_if_null.2601.0.0.dylib (*) <29d618dd-0f0d-34ce-911f-7a341ad19bc6> /opt/homebrew/*/libabsl_die_if_null.2601.0.0.dylib
+       0x104a18000 -        0x104a23fff libabsl_log_initialize.2601.0.0.dylib (*) <96b4820c-aa58-3b12-92e9-f6fb808157d1> /opt/homebrew/*/libabsl_log_initialize.2601.0.0.dylib
+       0x104a30000 -        0x104a33fff libutf8_validity.35.1.0.dylib (*) <8aff0535-746e-3f9e-8cc8-85e7c93224d7> /opt/homebrew/*/libutf8_validity.35.1.0.dylib
+       0x10726c000 -        0x107843fff libgrpc.56.0.0.dylib (*) <cf39f816-b165-39c8-870d-510e336b80a2> /opt/homebrew/*/libgrpc.56.0.0.dylib
+       0x104a40000 -        0x104a4ffff libabsl_statusor.2601.0.0.dylib (*) <8a677729-bebb-3b1b-a6db-b06d5cd60720> /opt/homebrew/*/libabsl_statusor.2601.0.0.dylib
+       0x104a5c000 -        0x104a67fff libupb_json_lib.56.0.0.dylib (*) <1e95c026-cfbf-39fe-9513-0bc1471a24b1> /opt/homebrew/*/libupb_json_lib.56.0.0.dylib
+       0x104a70000 -        0x104a77fff libupb_textformat_lib.56.0.0.dylib (*) <0ae1c10f-9d31-3e5b-97c8-204a97e90e19> /opt/homebrew/*/libupb_textformat_lib.56.0.0.dylib
+       0x1049f0000 -        0x1049f3fff libupb_lex_lib.56.0.0.dylib (*) <cc0e0142-4a7d-33f9-a459-7737a61317b4> /opt/homebrew/*/libupb_lex_lib.56.0.0.dylib
+       0x104cc0000 -        0x104cd3fff libupb_reflection_lib.56.0.0.dylib (*) <edcd2432-9c61-3b7e-9a01-32e670c6dd39> /opt/homebrew/*/libupb_reflection_lib.56.0.0.dylib
+       0x104a90000 -        0x104a97fff libupb_mini_descriptor_lib.56.0.0.dylib (*) <73e44ccd-dd48-30fd-bc3c-bc1e375242cf> /opt/homebrew/*/libupb_mini_descriptor_lib.56.0.0.dylib
+       0x104aa0000 -        0x104aa3fff libupb_descriptor_lib.56.0.0.dylib (*) <54f882cc-8fad-3184-a029-7ed11f7b96ff> /opt/homebrew/*/libupb_descriptor_lib.56.0.0.dylib
+       0x104d58000 -        0x104d5ffff libupb_wire_lib.56.0.0.dylib (*) <4f8785bb-c269-3cca-b0a8-7ba760e30593> /opt/homebrew/*/libupb_wire_lib.56.0.0.dylib
+       0x104a80000 -        0x104a83fff libutf8_range_lib.56.0.0.dylib (*) <295f1e22-d368-3e4c-9513-a999fcfeda86> /opt/homebrew/*/libutf8_range_lib.56.0.0.dylib
+       0x104d6c000 -        0x104d73fff libupb_message_lib.56.0.0.dylib (*) <839b99e0-2ec9-378c-9dc2-3ed995d7f473> /opt/homebrew/*/libupb_message_lib.56.0.0.dylib
+       0x104ab0000 -        0x104ab3fff libupb_mini_table_lib.56.0.0.dylib (*) <72e63449-a08f-3d6b-a9b0-b34d8978352d> /opt/homebrew/*/libupb_mini_table_lib.56.0.0.dylib
+       0x104ce4000 -        0x104ce7fff libupb_hash_lib.56.0.0.dylib (*) <7236290b-e04a-3598-9905-c642f47886ad> /opt/homebrew/*/libupb_hash_lib.56.0.0.dylib
+       0x104d80000 -        0x104d83fff libupb_base_lib.56.0.0.dylib (*) <298d739b-c5de-367f-aeea-b82bbea9fbcc> /opt/homebrew/*/libupb_base_lib.56.0.0.dylib
+       0x104d9c000 -        0x104d9ffff libupb_mem_lib.56.0.0.dylib (*) <7612c746-ade7-3cba-bed8-10e3aa2a2fec> /opt/homebrew/*/libupb_mem_lib.56.0.0.dylib
+       0x104e2c000 -        0x104e7bfff libre2.11.0.0.dylib (*) <eedbf48a-9702-336d-a313-fe09ae5c5d8e> /opt/homebrew/*/libre2.11.0.0.dylib
+       0x104de4000 -        0x104e07fff libcares.2.19.7.dylib (*) <6750ab02-107f-3e4e-a9fd-13ba1c29724c> /opt/homebrew/*/libcares.2.19.7.dylib
+       0x104eec000 -        0x104f0ffff libgpr.56.0.0.dylib (*) <79569f2a-e2cc-31fa-b141-dff5fec70fbb> /opt/homebrew/*/libgpr.56.0.0.dylib
+       0x104eb0000 -        0x104ebffff libabsl_flags_internal.2601.0.0.dylib (*) <92a2c176-4fe3-302a-ab36-b8e0d5f68b6b> /opt/homebrew/*/libabsl_flags_internal.2601.0.0.dylib
+       0x104f28000 -        0x104f3bfff libabsl_flags_reflection.2601.0.0.dylib (*) <6b62897f-cdef-34c0-919a-a2e08563f4d1> /opt/homebrew/*/libabsl_flags_reflection.2601.0.0.dylib
+       0x104f50000 -        0x104f5ffff libabsl_raw_hash_set.2601.0.0.dylib (*) <c79c447a-4bec-3e9f-bb14-81d1ff446c11> /opt/homebrew/*/libabsl_raw_hash_set.2601.0.0.dylib
+       0x104dc4000 -        0x104dcffff libabsl_hashtablez_sampler.2601.0.0.dylib (*) <1c0c703d-bcab-32f5-a1ad-f0fad30bbd2d> /opt/homebrew/*/libabsl_hashtablez_sampler.2601.0.0.dylib
+       0x104f70000 -        0x104f7bfff libabsl_flags_config.2601.0.0.dylib (*) <29e3b36f-1b63-3ed5-bffb-49c68676c28a> /opt/homebrew/*/libabsl_flags_config.2601.0.0.dylib
+       0x104f90000 -        0x104f9bfff libabsl_flags_program_name.2601.0.0.dylib (*) <87b0d4e5-5773-3a5d-968c-fbb8ded0138f> /opt/homebrew/*/libabsl_flags_program_name.2601.0.0.dylib
+       0x104d8c000 -        0x104d8ffff libabsl_flags_private_handle_accessor.2601.0.0.dylib (*) <c5fa0c30-4e30-3d1e-a4b4-55cc6e0a629a> /opt/homebrew/*/libabsl_flags_private_handle_accessor.2601.0.0.dylib
+       0x104dac000 -        0x104daffff libabsl_flags_commandlineflag.2601.0.0.dylib (*) <87bcceed-2952-3df7-bedc-5c98fe26a5c9> /opt/homebrew/*/libabsl_flags_commandlineflag.2601.0.0.dylib
+       0x104ed4000 -        0x104ed7fff libabsl_flags_commandlineflag_internal.2601.0.0.dylib (*) <983c7f06-b15a-38ef-8134-2cccb8b8c3b5> /opt/homebrew/*/libabsl_flags_commandlineflag_internal.2601.0.0.dylib
+       0x104fbc000 -        0x104fc3fff libabsl_random_distributions.2601.0.0.dylib (*) <f828db3c-49bc-3fff-9688-a48d13bee9c8> /opt/homebrew/*/libabsl_random_distributions.2601.0.0.dylib
+       0x104fe4000 -        0x104feffff libabsl_random_seed_sequences.2601.0.0.dylib (*) <e7379e5b-ee7f-336e-a08a-061e24d67c35> /opt/homebrew/*/libabsl_random_seed_sequences.2601.0.0.dylib
+       0x105014000 -        0x10501ffff libabsl_random_internal_entropy_pool.2601.0.0.dylib (*) <0c9f07ff-037c-3d64-8c17-78afcef60a6a> /opt/homebrew/*/libabsl_random_internal_entropy_pool.2601.0.0.dylib
+       0x104fd0000 -        0x104fd3fff libabsl_random_internal_randen.2601.0.0.dylib (*) <f00234c5-f1a3-3417-b09e-075861c8289f> /opt/homebrew/*/libabsl_random_internal_randen.2601.0.0.dylib
+       0x104ffc000 -        0x104ffffff libabsl_random_internal_randen_hwaes.2601.0.0.dylib (*) <99e2e695-1d7c-398a-ba53-d405aa450046> /opt/homebrew/*/libabsl_random_internal_randen_hwaes.2601.0.0.dylib
+       0x104fac000 -        0x104faffff libabsl_random_internal_randen_hwaes_impl.2601.0.0.dylib (*) <d197863b-4a25-3713-b67f-d475c9b2d504> /opt/homebrew/*/libabsl_random_internal_randen_hwaes_impl.2601.0.0.dylib
+       0x105320000 -        0x105323fff libabsl_random_internal_randen_slow.2601.0.0.dylib (*) <0d811cd5-079e-35af-8130-cdc5ff2fb74a> /opt/homebrew/*/libabsl_random_internal_randen_slow.2601.0.0.dylib
+       0x104e20000 -        0x104e23fff libabsl_random_internal_platform.2601.0.0.dylib (*) <0423f9ad-e5b9-336c-9e5c-59382efc62e2> /opt/homebrew/*/libabsl_random_internal_platform.2601.0.0.dylib
+       0x105330000 -        0x105333fff libabsl_random_internal_seed_material.2601.0.0.dylib (*) <1f14e28b-d5e3-32df-b37e-2dad95d44c00> /opt/homebrew/*/libabsl_random_internal_seed_material.2601.0.0.dylib
+       0x105344000 -        0x105347fff libabsl_random_seed_gen_exception.2601.0.0.dylib (*) <465dd9d1-15ea-3b30-9f47-70d20badbd71> /opt/homebrew/*/libabsl_random_seed_gen_exception.2601.0.0.dylib
+       0x105374000 -        0x105383fff libabsl_status.2601.0.0.dylib (*) <47ae2195-165e-3810-9246-9b22445b6177> /opt/homebrew/*/libabsl_status.2601.0.0.dylib
+       0x1053bc000 -        0x1053d3fff libabsl_cord.2601.0.0.dylib (*) <a5952f36-db7e-381d-8833-5402533d9705> /opt/homebrew/*/libabsl_cord.2601.0.0.dylib
+       0x105398000 -        0x1053a3fff libabsl_cordz_info.2601.0.0.dylib (*) <4bf82ba0-7606-3382-bfb0-3a1767e6a045> /opt/homebrew/*/libabsl_cordz_info.2601.0.0.dylib
+       0x1053e4000 -        0x1053f3fff libabsl_cord_internal.2601.0.0.dylib (*) <4fafff99-b02d-360a-becd-ee34e7265df7> /opt/homebrew/*/libabsl_cord_internal.2601.0.0.dylib
+       0x105354000 -        0x105357fff libabsl_cordz_functions.2601.0.0.dylib (*) <78764034-00b5-30ac-8549-40d873a98440> /opt/homebrew/*/libabsl_cordz_functions.2601.0.0.dylib
+       0x105408000 -        0x10540bfff libabsl_exponential_biased.2601.0.0.dylib (*) <62f71513-bdec-34ef-aed7-bb6fbd400d4d> /opt/homebrew/*/libabsl_exponential_biased.2601.0.0.dylib
+       0x105430000 -        0x10543bfff libabsl_cordz_handle.2601.0.0.dylib (*) <5b7fef30-f2b9-3c45-8a83-10c6b4c55e04> /opt/homebrew/*/libabsl_cordz_handle.2601.0.0.dylib
+       0x10544c000 -        0x105453fff libabsl_crc_cord_state.2601.0.0.dylib (*) <e1861abb-6d8f-379d-8a8e-cfbf3d05615e> /opt/homebrew/*/libabsl_crc_cord_state.2601.0.0.dylib
+       0x105464000 -        0x10546bfff libabsl_crc32c.2601.0.0.dylib (*) <81fea8d3-0cf1-3bce-a1eb-39f0825db4bb> /opt/homebrew/*/libabsl_crc32c.2601.0.0.dylib
+       0x105494000 -        0x10549ffff libabsl_crc_internal.2601.0.0.dylib (*) <6e05b2f9-7cf6-370e-921e-c0369b63e42f> /opt/homebrew/*/libabsl_crc_internal.2601.0.0.dylib
+       0x10541c000 -        0x10541ffff libabsl_crc_cpu_detect.2601.0.0.dylib (*) <139cf41c-28b5-3705-8d09-57414c1421fd> /opt/homebrew/*/libabsl_crc_cpu_detect.2601.0.0.dylib
+       0x1054b4000 -        0x1054bbfff libabsl_flags_marshalling.2601.0.0.dylib (*) <d67bf214-d282-321b-982f-e3c682a0ecdd> /opt/homebrew/*/libabsl_flags_marshalling.2601.0.0.dylib
+       0x1054cc000 -        0x1054dbfff libabsl_log_internal_check_op.2601.0.0.dylib (*) <e04a034f-9bfa-39ef-a3e9-fbe0e62e2dbc> /opt/homebrew/*/libabsl_log_internal_check_op.2601.0.0.dylib
+       0x105030000 -        0x105033fff libabsl_leak_check.2601.0.0.dylib (*) <ce292ba1-4cef-3aed-8466-b0b97fc42d9a> /opt/homebrew/*/libabsl_leak_check.2601.0.0.dylib
+       0x105364000 -        0x105367fff libabsl_log_internal_conditions.2601.0.0.dylib (*) <6e43165d-8491-3ac8-b744-04d1939a5dba> /opt/homebrew/*/libabsl_log_internal_conditions.2601.0.0.dylib
+       0x10550c000 -        0x10551ffff libabsl_log_internal_message.2601.0.0.dylib (*) <e1a2f326-e93c-36e3-9811-a6aec01aa6bc> /opt/homebrew/*/libabsl_log_internal_message.2601.0.0.dylib
+       0x10547c000 -        0x10547ffff libabsl_strerror.2601.0.0.dylib (*) <144af8a5-53c2-3cdf-b434-e594b12a79f2> /opt/homebrew/*/libabsl_strerror.2601.0.0.dylib
+       0x1054e8000 -        0x1054ebfff libabsl_log_internal_nullguard.2601.0.0.dylib (*) <7b1b97a7-2f35-340d-841c-1eacf0c3c5c7> /opt/homebrew/*/libabsl_log_internal_nullguard.2601.0.0.dylib
+       0x105538000 -        0x10553ffff libabsl_examine_stack.2601.0.0.dylib (*) <e2fa01f3-1138-3333-a6ab-076aee892142> /opt/homebrew/*/libabsl_examine_stack.2601.0.0.dylib
+       0x105550000 -        0x105557fff libabsl_log_internal_format.2601.0.0.dylib (*) <89dc5c7f-4fd5-351c-a252-776ca7af5268> /opt/homebrew/*/libabsl_log_internal_format.2601.0.0.dylib
+       0x105584000 -        0x105593fff libabsl_str_format_internal.2601.0.0.dylib (*) <75a5b636-3000-372c-ad44-aedb1a5fb91b> /opt/homebrew/*/libabsl_str_format_internal.2601.0.0.dylib
+       0x1054f4000 -        0x1054f7fff libabsl_log_internal_structured_proto.2601.0.0.dylib (*) <15947b7e-323a-37f2-bf67-ba62f1a94623> /opt/homebrew/*/libabsl_log_internal_structured_proto.2601.0.0.dylib
+       0x1055a8000 -        0x1055b3fff libabsl_log_internal_log_sink_set.2601.0.0.dylib (*) <5daf603b-fc8f-384c-b5e2-f312053005c9> /opt/homebrew/*/libabsl_log_internal_log_sink_set.2601.0.0.dylib
+       0x1055c4000 -        0x1055cffff libabsl_log_globals.2601.0.0.dylib (*) <579e9aaa-1f68-3a42-8972-2708ef1fbe1b> /opt/homebrew/*/libabsl_log_globals.2601.0.0.dylib
+       0x1055e0000 -        0x1055ebfff libabsl_vlog_config_internal.2601.0.0.dylib (*) <7b487591-fa1d-3bbe-a127-68a8c86774c7> /opt/homebrew/*/libabsl_vlog_config_internal.2601.0.0.dylib
+       0x105564000 -        0x105567fff libabsl_log_internal_fnmatch.2601.0.0.dylib (*) <5df34356-a201-3133-aa14-7046db989b7f> /opt/homebrew/*/libabsl_log_internal_fnmatch.2601.0.0.dylib
+       0x10561c000 -        0x10562bfff libabsl_synchronization.2601.0.0.dylib (*) <5d139bd5-bceb-357c-8748-1e6d73deae5b> /opt/homebrew/*/libabsl_synchronization.2601.0.0.dylib
+       0x105640000 -        0x105647fff libabsl_stacktrace.2601.0.0.dylib (*) <94a3c485-c3c4-34c0-a1d4-592fdf8f9ab1> /opt/homebrew/*/libabsl_stacktrace.2601.0.0.dylib
+       0x105658000 -        0x10565ffff libabsl_borrowed_fixup_buffer.2601.0.0.dylib (*) <d1096131-10bb-3f15-bc77-14a07e83f2ab> /opt/homebrew/*/libabsl_borrowed_fixup_buffer.2601.0.0.dylib
+       0x105574000 -        0x105577fff libabsl_hash.2601.0.0.dylib (*) <72d7a119-e3a6-3399-b5cd-fa711e874c1e> /opt/homebrew/*/libabsl_hash.2601.0.0.dylib
+       0x1055fc000 -        0x1055fffff libabsl_city.2601.0.0.dylib (*) <f58448e8-81f2-30a4-8982-3c2ec9f1bc59> /opt/homebrew/*/libabsl_city.2601.0.0.dylib
+       0x105688000 -        0x10568ffff libabsl_symbolize.2601.0.0.dylib (*) <a51166c5-f636-3847-8aec-b96773306891> /opt/homebrew/*/libabsl_symbolize.2601.0.0.dylib
+       0x105608000 -        0x10560bfff libabsl_debugging_internal.2601.0.0.dylib (*) <2de51c44-df52-31f6-9855-e7cdac50ad75> /opt/homebrew/*/libabsl_debugging_internal.2601.0.0.dylib
+       0x1056ac000 -        0x1056b3fff libabsl_demangle_internal.2601.0.0.dylib (*) <792ba5b4-07fd-3c95-b922-e2ee72fbb17a> /opt/homebrew/*/libabsl_demangle_internal.2601.0.0.dylib
+       0x1056c0000 -        0x1056c7fff libabsl_demangle_rust.2601.0.0.dylib (*) <cffd5936-9522-3abe-bf6c-16963e24fcff> /opt/homebrew/*/libabsl_demangle_rust.2601.0.0.dylib
+       0x10569c000 -        0x10569ffff libabsl_decode_rust_punycode.2601.0.0.dylib (*) <6e75c998-9f6a-38b0-9b95-a89ee4fec993> /opt/homebrew/*/libabsl_decode_rust_punycode.2601.0.0.dylib
+       0x1056d4000 -        0x1056d7fff libabsl_utf8_for_code_point.2601.0.0.dylib (*) <0b5e7b3a-10e8-3b04-b089-dc841cb5ad08> /opt/homebrew/*/libabsl_utf8_for_code_point.2601.0.0.dylib
+       0x1056f0000 -        0x1056f7fff libabsl_graphcycles_internal.2601.0.0.dylib (*) <b1f3b53b-6ebc-3c83-b569-bbb35c1015c0> /opt/homebrew/*/libabsl_graphcycles_internal.2601.0.0.dylib
+       0x105708000 -        0x10570ffff libabsl_kernel_timeout_internal.2601.0.0.dylib (*) <afa24818-d93a-3cce-9527-b32120eab555> /opt/homebrew/*/libabsl_kernel_timeout_internal.2601.0.0.dylib
+       0x10571c000 -        0x10571ffff libabsl_malloc_internal.2601.0.0.dylib (*) <a0aeb4da-14ff-3e65-8c83-21bb32b30cb9> /opt/homebrew/*/libabsl_malloc_internal.2601.0.0.dylib
+       0x1056e0000 -        0x1056e3fff libabsl_tracing_internal.2601.0.0.dylib (*) <2dfffc81-3a1b-38e7-af2d-4758dd61eb91> /opt/homebrew/*/libabsl_tracing_internal.2601.0.0.dylib
+       0x105744000 -        0x10574bfff libabsl_log_internal_globals.2601.0.0.dylib (*) <2609dbf7-f089-3d1f-8323-bb1afd61a37d> /opt/homebrew/*/libabsl_log_internal_globals.2601.0.0.dylib
+       0x10575c000 -        0x105763fff libabsl_log_sink.2601.0.0.dylib (*) <11ec0075-2134-377a-8628-bc1cb83ffd57> /opt/homebrew/*/libabsl_log_sink.2601.0.0.dylib
+       0x105770000 -        0x105777fff libabsl_log_entry.2601.0.0.dylib (*) <73cc6bd2-d1ae-39d1-bd8f-875df76fb58c> /opt/homebrew/*/libabsl_log_entry.2601.0.0.dylib
+       0x10579c000 -        0x1057a7fff libabsl_time.2601.0.0.dylib (*) <cff94e7d-c28d-32a2-8ee7-d8b0d4a5685d> /opt/homebrew/*/libabsl_time.2601.0.0.dylib
+       0x105730000 -        0x105733fff libabsl_civil_time.2601.0.0.dylib (*) <f4274c82-f7ba-33d4-948b-7d5f6afd14e1> /opt/homebrew/*/libabsl_civil_time.2601.0.0.dylib
+       0x1057dc000 -        0x1057ebfff libabsl_time_zone.2601.0.0.dylib (*) <3ab08e82-82ee-366d-bb5c-3d9f7df166c9> /opt/homebrew/*/libabsl_time_zone.2601.0.0.dylib
+       0x105784000 -        0x105787fff libabsl_log_internal_proto.2601.0.0.dylib (*) <a4dcb80e-9224-3fc4-9603-5f761857c214> /opt/homebrew/*/libabsl_log_internal_proto.2601.0.0.dylib
+       0x105830000 -        0x105847fff libabsl_strings.2601.0.0.dylib (*) <a3ebbf69-ec7e-30e5-9887-6c729966adb6> /opt/homebrew/*/libabsl_strings.2601.0.0.dylib
+       0x1057b8000 -        0x1057bbfff libabsl_strings_internal.2601.0.0.dylib (*) <7e93b0fb-fc49-3c55-8a20-028b7d6c9d4f> /opt/homebrew/*/libabsl_strings_internal.2601.0.0.dylib
+       0x1057c8000 -        0x1057cbfff libabsl_throw_delegate.2601.0.0.dylib (*) <61fcef23-e8b5-3a84-85fa-d282d76a9cba> /opt/homebrew/*/libabsl_throw_delegate.2601.0.0.dylib
+       0x105808000 -        0x10580bfff libabsl_int128.2601.0.0.dylib (*) <b7a8c022-5280-36c6-9dc0-710f7f60949d> /opt/homebrew/*/libabsl_int128.2601.0.0.dylib
+       0x10585c000 -        0x10585ffff libabsl_base.2601.0.0.dylib (*) <c823c4f4-6073-32d8-a5d7-8180b2d4c1c9> /opt/homebrew/*/libabsl_base.2601.0.0.dylib
+       0x105870000 -        0x105873fff libabsl_raw_logging_internal.2601.0.0.dylib (*) <31dd65ea-1224-3b40-b66f-a4c45adb8e92> /opt/homebrew/*/libabsl_raw_logging_internal.2601.0.0.dylib
+       0x105818000 -        0x10581bfff libabsl_log_severity.2601.0.0.dylib (*) <45617a5a-e50d-314a-9691-bee81eb52bf0> /opt/homebrew/*/libabsl_log_severity.2601.0.0.dylib
+       0x105884000 -        0x105887fff libabsl_spinlock_wait.2601.0.0.dylib (*) <b6abad86-f2f6-3fd2-b0bc-f547dee3923a> /opt/homebrew/*/libabsl_spinlock_wait.2601.0.0.dylib
+       0x106654000 -        0x1066e3fff libssl.3.dylib (*) <7860c2a2-633c-31bf-baca-bcc36ca7b5d4> /opt/homebrew/*/libssl.3.dylib
+       0x106bd0000 -        0x106f0ffff libcrypto.3.dylib (*) <536fff50-1802-319a-af00-2b227b1855de> /opt/homebrew/*/libcrypto.3.dylib
+       0x105898000 -        0x10589bfff libaddress_sorting.56.0.0.dylib (*) <9dcb34b4-5c60-3f28-8454-c66def718370> /opt/homebrew/*/libaddress_sorting.56.0.0.dylib
+       0x106578000 -        0x1065f3fff libfreetype.6.dylib (*) <0a7e6c59-803b-3a5a-8f9b-240d7b3025ca> /opt/homebrew/*/libfreetype.6.dylib
+       0x1058dc000 -        0x1058fffff libpng16.16.dylib (*) <68cbdb4a-d121-3925-a2ab-fa1a7598b757> /opt/homebrew/*/libpng16.16.dylib
+       0x1068ac000 -        0x106a17fff libsamplerate.0.2.2.dylib (*) <0da641e6-fcba-3c1a-8c8c-ff25aadedac6> /opt/homebrew/*/libsamplerate.0.2.2.dylib
+       0x106730000 -        0x10679bfff libvulkan.1.4.357.dylib (*) <d2045846-042d-3a25-9109-df3777c4701e> /Users/USER/*/libvulkan.1.4.357.dylib
+       0x1071f0000 -        0x1071fbfff libobjc-trampolines.dylib (*) <ca58aa96-b997-3a6d-9132-19d49be4b3e9> /usr/lib/libobjc-trampolines.dylib
+       0x121acc000 -        0x1227cffff libvulkan_kosmickrisp.dylib (*) <ffe76eb8-a88e-38a5-970d-a6c9bb324ed4> /Users/USER/*/libvulkan_kosmickrisp.dylib
+       0x122950000 -        0x122c9bfff libMoltenVK.dylib (*) <36a17241-f64d-313f-935e-3842c3b98eb9> /Users/USER/*/libMoltenVK.dylib
+       0x12714c000 -        0x128403fff libVkLayer_khronos_validation.dylib (*) <0df58fb2-a212-3dc9-aaac-b046068984ed> /Users/USER/*/libVkLayer_khronos_validation.dylib
+       0x120c50000 -        0x121607fff com.apple.AGXMetalG17G (351.2) <441ba161-fbf2-3cde-8b43-73dc52ca1fb5> /System/Library/Extensions/AGXMetalG17G.bundle/Contents/MacOS/AGXMetalG17G
+       0x18439c000 -        0x184442217 dyld (*) <f924bdd3-4365-3466-9580-8b1b3fa8f857> /usr/lib/dyld
+               0x0 - 0xffffffffffffffff ??? (*) <00000000-0000-0000-0000-000000000000> ???
+       0x184780000 -        0x184788963 libsystem_platform.dylib (*) <160fd864-8d15-36fc-9e97-9725388cfafe> /usr/lib/system/libsystem_platform.dylib
+       0x184735000 -        0x1847722af libsystem_kernel.dylib (*) <fca53b98-3d6a-38b2-a0ec-df0f7e05f171> /usr/lib/system/libsystem_kernel.dylib
+       0x184773000 -        0x18477fb3b libsystem_pthread.dylib (*) <4f33683c-18c8-39a1-800b-2e3bd43bcc13> /usr/lib/system/libsystem_pthread.dylib
+       0x1847b9000 -        0x184d1731f com.apple.CoreFoundation (6.9) <4bbd0da8-c600-3f3a-a38b-6664652fa04a> /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+       0x188c2b000 -        0x18a34df9f com.apple.AppKit (6.9) <c92cc156-d767-322b-b79b-433f56e72561> /System/Library/Frameworks/AppKit.framework/Versions/C/AppKit
+       0x18456c000 -        0x1845bc1d7 libsystem_malloc.dylib (*) <5fae4807-4d2b-3a95-a63a-dd96d3da11b4> /usr/lib/system/libsystem_malloc.dylib
+       0x184689000 -        0x184719ae7 libc++.1.dylib (*) <5013c0f8-84a9-3b56-9feb-c353816a750f> /usr/lib/libc++.1.dylib
+       0x184367000 -        0x18439bd07 libdyld.dylib (*) <b147d877-d0c2-388f-b38d-d3132e39905f> /usr/lib/system/libdyld.dylib
