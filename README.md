@@ -49,10 +49,12 @@ cmake --build build
 ./build/jackoviz -n 8192 -b 6.0          # longer FFT, sharper Kaiser window
 ./build/jackoviz --frames 120            # smoke: exit after 120 frames
 ./build/jackoviz --fast                  # scope + 1D spectrum only (lighter CPU)
+./build/jackoviz --rpc-only              # disable keyboard settings (gRPC / remote only)
 ```
 
 With gRPC enabled, the app also listens on `0.0.0.0:50051` for `JvzController` RPCs (see `jvzcontroller.proto`).
 
+**`--rpc-only`** ignores all keyboard setting shortcuts so control comes only from gRPC (intended when launched from `jackoviz-remote`).
 ## Remote mockup
 
 A Qt Quick controller UI (no gRPC wiring yet):

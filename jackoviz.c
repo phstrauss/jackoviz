@@ -5,7 +5,7 @@
  *
  * Usage:
  *   ./jackoviz [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s source]
- *              [--frames N] [--fast]
+ *              [--frames N] [--fast] [--rpc-only]
  *
  * Connect a mono source to "jackoviz:input", or pass -s system:capture_1.
  * Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface,
@@ -14,6 +14,7 @@
  *       w = toggle line width (1↔2 px),
  *       p = pause/resume visual processing (JACK ringbuffer keeps writing).
  * --fast keeps only scope + 1D spectrum (keys 2/3 disabled).
+ * --rpc-only disables all keyboard settings (control via gRPC only).
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -345,6 +346,7 @@ typedef struct Jackoviz
     uint32_t frames_drawn;
     bool running;
     bool fast; /* --fast: scope + 1D only; skip 2D/3D spectrogram */
+    bool rpc_only; /* --rpc-only: ignore keyboard settings; gRPC control only */
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
     bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
 } Jackoviz;
@@ -814,6 +816,8 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
     Jackoviz* app = (Jackoviz*)user_data;
     if (app == NULL || event == NULL || event->type != DVZ_KEYBOARD_EVENT_PRESS)
         return;
+    if (app->rpc_only)
+        return;
 
     if (event->key == DVZ_KEY_0)
         set_view_mode(app, VIEW_MODE_SCOPE);
@@ -879,7 +883,7 @@ static void usage(const char* prog)
     fprintf(
         stderr,
         "Usage: %s [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s jack_source] "
-        "[--frames N] [--fast]\n"
+        "[--frames N] [--fast] [--rpc-only]\n"
         "  -n     FFT size (default %u)\n"
         "  -f     max plot frequency in Hz (locks key m; default %.0f, else key m cycles "
         "8/12/16/20/4/6 kHz)\n"
@@ -888,18 +892,19 @@ static void usage(const char* prog)
         "  -s     auto-connect from this JACK port (e.g. system:capture_1)\n"
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
         "  --fast      scope + 1D spectrum only (skip 2D/3D spectrogram uploads)\n"
+        "  --rpc-only  disable keyboard settings (control via gRPC / jackoviz-remote)\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface, "
         "f = cycle dB floor, c = cycle dB ceiling, "
         "m = cycle max plot frequency (unless -f given), "
         "w = toggle line width (1↔2 px), p = pause/resume processing\n"
-        "      (keys 2/3 are disabled with --fast)\n",
+        "      (keys 2/3 are disabled with --fast; all keys disabled with --rpc-only)\n",
         prog, DEFAULT_FFT_SIZE, DEFAULT_PLOT_FREQ_MAX_HZ, DEFAULT_KAISER_BETA);
 }
 
 static int parse_args(
     int argc, char** argv, uint32_t* fft_size, double* beta, double* plot_freq_limit,
     const char** client_name, const char** source, uint32_t* frame_limit, bool* fast,
-    bool* plot_freq_locked)
+    bool* plot_freq_locked, bool* rpc_only)
 {
     *fft_size = DEFAULT_FFT_SIZE;
     *beta = DEFAULT_KAISER_BETA;
@@ -909,6 +914,7 @@ static int parse_args(
     *frame_limit = 0u;
     *fast = false;
     *plot_freq_locked = false;
+    *rpc_only = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -956,6 +962,10 @@ static int parse_args(
         else if (strcmp(argv[i], "--fast") == 0)
         {
             *fast = true;
+        }
+        else if (strcmp(argv[i], "--rpc-only") == 0)
+        {
+            *rpc_only = true;
         }
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -1739,10 +1749,11 @@ int main(int argc, char** argv)
     uint32_t frame_limit = 0u;
     bool fast = false;
     bool plot_freq_locked = false;
+    bool rpc_only = false;
 
     const int parg = parse_args(
         argc, argv, &fft_size, &beta, &plot_freq_limit, &client_name, &source, &frame_limit,
-        &fast, &plot_freq_locked);
+        &fast, &plot_freq_locked, &rpc_only);
     if (parg != 0)
         return parg < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 
@@ -1770,6 +1781,7 @@ int main(int argc, char** argv)
     app.db_ceil_index = 2u; /* -20 dB in DB_CEIL_OPTIONS */
     app.frame_limit = frame_limit;
     app.fast = fast;
+    app.rpc_only = rpc_only;
     app.line_width_px = 2.0f;
     app.running = true;
 
@@ -1795,7 +1807,15 @@ int main(int argc, char** argv)
         goto done;
     }
 
-    if (app.fast)
+    if (app.rpc_only)
+    {
+        fprintf(
+            stderr,
+            "RPC-only mode: keyboard settings disabled (gRPC control). "
+            "0–%.0f Hz, %u bins%s. Close window to quit.\n",
+            app.plot_freq_max, app.n_plot_bins, app.fast ? ", --fast" : "");
+    }
+    else if (app.fast)
     {
         fprintf(
             stderr,
