@@ -13,7 +13,7 @@ ApplicationWindow {
     id: root
     title: "jackoviz remote"
     width: 288
-    height: 580
+    height: 670
     visible: true
     font.pixelSize: 11
 
@@ -42,6 +42,7 @@ ApplicationWindow {
 
     property bool paused: false
     property bool launched: false
+    property string statusText: "OK"
 
     header: ToolBar {
         contentHeight: 32
@@ -75,17 +76,27 @@ ApplicationWindow {
                 currentIndex: 2 // 4096
             }
 
+            CheckBox {
+                id: fastModeBox
+                Layout.fillWidth: true
+                font.pixelSize: 11
+                text: "Fast mode (spectrum and scope only)"
+            }
+
             Button {
                 id: launchButton
                 Layout.fillWidth: true
                 Layout.preferredHeight: 28
                 padding: 6
                 font.pixelSize: 11
-                text: root.launched ? "Launched" : "Launch"
-                enabled: !root.launched
+                text: root.launched ? "Quit jackoviz" : "Launch jackoviz"
                 onClicked: {
-                    root.launched = true
-                    console.log("Launch mock: jackoviz -n", fftSizeBox.currentText)
+                    root.launched = !root.launched
+                    console.log(
+                        root.launched
+                            ? ("Launch mock: jackoviz -n " + fftSizeBox.currentText
+                               + (fastModeBox.checked ? " --fast" : ""))
+                            : "Quit mock: jackoviz")
                 }
             }
 
@@ -183,14 +194,14 @@ ApplicationWindow {
                 }
             }
 
-            Button {
-                id: quitButton
+            Label {
+                id: statusLabel
                 Layout.fillWidth: true
-                Layout.preferredHeight: 28
-                padding: 6
+                Layout.topMargin: 4
                 font.pixelSize: 11
-                text: "Quit"
-                onClicked: Qt.quit()
+                wrapMode: Text.WordWrap
+                text: "Status: " + root.statusText
+                opacity: root.statusText === "OK" ? 0.7 : 1.0
             }
 
             Item { Layout.preferredHeight: 6 }
