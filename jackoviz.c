@@ -64,14 +64,13 @@
 #define DB_STORAGE_FLOOR          (-140.0) /* deepest clamp for stored spectra */
 #define DB_STORAGE_CEIL           (0.0)   /* highest clamp for stored spectra */
 #define DEFAULT_PLOT_FREQ_MAX_HZ  6000.0
+/* 3D surface is fixed at this band; fmax (key m / later gRPC) only affects 1D/2D. */
+#define MESH_PLOT_FREQ_HZ         6000.0
 #define DB_FLOOR_OPTION_COUNT     5u
 #define DB_CEIL_OPTION_COUNT      3u
 #define DB_TICK_MAX               16u
 #define VIRIDIS_LUT_SIZE          256u
 #define PLOT_FREQ_OPTION_COUNT    6u
-/* DIAG: after 3D panel recreate, skip spectrogram uploads this many frames
- * to separate create/bind failures from per-frame upload_spectrogram. */
-#define DIAG_SKIP_SPECTRO_UPLOAD_FRAMES 120u
 
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
@@ -302,12 +301,13 @@ typedef struct Jackoviz
     /* Spectrogram history */
     SpecRing spec;
     uint32_t history;
-    uint32_t n_plot_bins; /* bins kept: 0 … plot_freq_limit */
+    uint32_t n_plot_bins; /* bins kept for 1D/2D: 0 … plot_freq_limit */
+    uint32_t n_mesh_bins; /* fixed 3D surface cols at MESH_PLOT_FREQ_HZ; ignores fmax */
     double plot_freq_limit; /* requested max display frequency (Hz) */
     double plot_freq_max; /* Hz covered by n_plot_bins */
     uint32_t plot_freq_index; /* index into PLOT_FREQ_OPTIONS when cycling */
     bool plot_freq_locked; /* true if CLI -f fixed the limit */
-    double* heights;      /* 3D: row-major time × freq, normalized [0,1] */
+    double* heights;      /* 3D: row-major time × n_mesh_bins, normalized [0,1] */
     DvzColor* colors;     /* 3D: viridis colors matching heights */
     float* field_values;  /* 2D: row-major freq × time, dB */
     vec3* spectrum_pos;   /* 1D: freq × dB line vertices */
@@ -352,8 +352,6 @@ typedef struct Jackoviz
     bool rpc_only; /* --rpc-only: ignore keyboard settings; gRPC control only */
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
     bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
-    bool uploads_held; /* skip spectrogram uploads during mesh/geometry rebuild */
-    uint32_t diag_skip_spectro_uploads; /* DIAG: frames to skip upload_spectrogram */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -436,18 +434,19 @@ static void fill_spectrogram_buffers(Jackoviz* app)
 {
     const uint32_t n_time = app->history;
     const uint32_t n_freq = app->n_plot_bins;
+    const uint32_t n_mesh = app->n_mesh_bins;
     const uint32_t available =
         app->spec.write_col < n_time ? app->spec.write_col : n_time;
-    const uint32_t surface_count = n_time * n_freq;
+    const uint32_t surface_count = n_time * n_mesh;
+    const uint32_t field_count = n_time * n_freq;
 
     viridis_lut_init();
     memset(app->heights, 0, (size_t)surface_count * sizeof(double));
     const DvzColor floor_color = g_viridis_lut[0];
     for (uint32_t i = 0; i < surface_count; i++)
-    {
-        app->field_values[i] = (float)app->db_floor;
         app->colors[i] = floor_color;
-    }
+    for (uint32_t i = 0; i < field_count; i++)
+        app->field_values[i] = (float)app->db_floor;
 
     if (available == 0u)
         return;
@@ -457,16 +456,17 @@ static void fill_spectrogram_buffers(Jackoviz* app)
         return;
 
     /* Newest spectrum at high time index for the 3D surface (far edge).
-     * 2D columns are mirrored so on-screen time increases to the right. */
+     * 2D columns are mirrored so on-screen time increases to the right.
+     * 3D always fills n_mesh_bins (fixed MESH_PLOT_FREQ_HZ); 2D uses n_plot_bins. */
     const uint32_t t0 = n_time - available;
     const double db_span = app->db_ceil - app->db_floor;
     for (uint32_t t = 0; t < available; t++)
     {
         const double* src = hist + (size_t)t * (size_t)app->spec.stride;
         const uint32_t col_2d = n_time - 1u - (t0 + t);
-        double* hdst = app->heights + (size_t)(t0 + t) * (size_t)n_freq;
-        DvzColor* coldst = app->colors + (size_t)(t0 + t) * (size_t)n_freq;
-        for (uint32_t f = 0; f < n_freq; f++)
+        double* hdst = app->heights + (size_t)(t0 + t) * (size_t)n_mesh;
+        DvzColor* coldst = app->colors + (size_t)(t0 + t) * (size_t)n_mesh;
+        for (uint32_t f = 0; f < n_mesh; f++)
         {
             const double db = src[f];
             double v = db_span > 0.0 ? (db - app->db_floor) / db_span : 0.0;
@@ -476,33 +476,20 @@ static void fill_spectrogram_buffers(Jackoviz* app)
                 v = 1.0;
             hdst[f] = v;
             coldst[f] = viridis_lut_sample(v);
-            app->field_values[(size_t)f * (size_t)n_time + (size_t)col_2d] = (float)db;
         }
+        for (uint32_t f = 0; f < n_freq; f++)
+            app->field_values[(size_t)f * (size_t)n_time + (size_t)col_2d] = (float)src[f];
     }
 }
 
 static bool upload_spectrogram(Jackoviz* app)
 {
-    if (app->uploads_held || app->geometry == NULL || app->mesh == NULL || app->heights == NULL ||
-        app->colors == NULL)
+    if (app->geometry == NULL || app->mesh == NULL || app->heights == NULL || app->colors == NULL ||
+        app->n_mesh_bins == 0u)
         return false;
-
-    if (app->diag_skip_spectro_uploads > 0u)
-    {
-        app->diag_skip_spectro_uploads--;
-        if (app->diag_skip_spectro_uploads == 0u)
-        {
-            fprintf(
-                stderr,
-                "DIAG: spectrogram upload resume (skip window ended) — "
-                "if Datoviz spam starts NOW, blame upload_spectrogram; "
-                "if spam was already present during the skip, blame create/bind.\n");
-        }
-        return false;
-    }
 
     fill_spectrogram_buffers(app);
-    const uint32_t vertex_count = app->history * app->n_plot_bins;
+    const uint32_t vertex_count = app->history * app->n_mesh_bins;
 
     if (dvz_geometry_surface_grid_update_heights(
             app->geometry, app->heights, vertex_count) != DVZ_OK)
@@ -1122,14 +1109,17 @@ static bool configure_plot_band(Jackoviz* app)
     app->n_plot_bins =
         bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, app->plot_freq_limit);
 
-    free(app->heights);
-    free(app->colors);
+    /* 3D mesh is always MESH_PLOT_FREQ_HZ; fmax only resizes 1D/2D buffers. */
+    if (app->n_mesh_bins == 0u)
+    {
+        app->n_mesh_bins =
+            bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, MESH_PLOT_FREQ_HZ);
+    }
+
     free(app->field_values);
     free(app->spectrum_pos);
     free(app->spectrum_color);
     free(app->spectrum_width);
-    app->heights = NULL;
-    app->colors = NULL;
     app->field_values = NULL;
     app->spectrum_pos = (vec3*)calloc(app->n_plot_bins, sizeof(vec3));
     app->spectrum_color = (DvzColor*)calloc(app->n_plot_bins, sizeof(DvzColor));
@@ -1139,22 +1129,27 @@ static bool configure_plot_band(Jackoviz* app)
 
     if (!app->fast)
     {
-        app->heights =
-            (double*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(double));
-        app->colors =
-            (DvzColor*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(DvzColor));
+        if (app->heights == NULL)
+        {
+            app->heights =
+                (double*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(double));
+            app->colors =
+                (DvzColor*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(DvzColor));
+            if (app->heights == NULL || app->colors == NULL)
+                return false;
+
+            viridis_lut_init();
+            const DvzColor floor_color = g_viridis_lut[0];
+            for (uint32_t i = 0; i < app->history * app->n_mesh_bins; i++)
+                app->colors[i] = floor_color;
+        }
+
         app->field_values =
             (float*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(float));
-        if (app->heights == NULL || app->colors == NULL || app->field_values == NULL)
+        if (app->field_values == NULL)
             return false;
-
-        viridis_lut_init();
-        const DvzColor floor_color = g_viridis_lut[0];
         for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
-        {
             app->field_values[i] = (float)app->db_floor;
-            app->colors[i] = floor_color;
-        }
     }
 
     const DvzColor line_color = dvz_color_rgba(94, 213, 220, 255);
@@ -1170,30 +1165,32 @@ static bool configure_plot_band(Jackoviz* app)
     app->plot_freq_max =
         (double)(app->n_plot_bins - 1u) * (double)app->sample_rate / (double)app->fft_size;
     fprintf(
-        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz)\n", app->plot_freq_max,
-        app->n_plot_bins, app->n_bins, (unsigned)app->sample_rate);
+        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz; 3D fixed %.0f Hz / %u cols)\n",
+        app->plot_freq_max, app->n_plot_bins, app->n_bins, (unsigned)app->sample_rate,
+        MESH_PLOT_FREQ_HZ, app->n_mesh_bins);
     return true;
 }
 
 /*
  * Build a new surface geometry + mesh and attach it to panel_3d.
  * Caller must have already destroyed any previous mesh and geometry.
+ * Grid cols are fixed at n_mesh_bins (MESH_PLOT_FREQ_HZ).
  */
 static bool create_surface_mesh(Jackoviz* app)
 {
     if (app == NULL || app->scene == NULL || app->panel_3d == NULL || app->heights == NULL ||
-        app->colors == NULL)
+        app->colors == NULL || app->n_mesh_bins == 0u)
         return false;
 
     DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
     desc.rows = app->history;
-    desc.cols = app->n_plot_bins;
+    desc.cols = app->n_mesh_bins;
     desc.heights = app->heights;
     desc.colors = app->colors;
     desc.origin[0] = -2.6;
     desc.origin[1] = 0.0;
     desc.origin[2] = +1.8;
-    desc.col_basis[0] = 5.2 / (double)(app->n_plot_bins > 1u ? app->n_plot_bins - 1u : 1u);
+    desc.col_basis[0] = 5.2 / (double)(app->n_mesh_bins > 1u ? app->n_mesh_bins - 1u : 1u);
     desc.col_basis[1] = 0.0;
     desc.col_basis[2] = 0.0;
     desc.row_basis[0] = 0.0;
@@ -1227,43 +1224,6 @@ static bool create_surface_mesh(Jackoviz* app)
     if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
         return false;
     return true;
-}
-
-/*
- * Tear down panel_3d entirely (mesh → geometry → panel). Datoviz has no
- * panel_remove_visual; destroying the panel clears attach slots cleanly.
- * Holds spectrogram uploads until the caller recreates the panel.
- */
-static void destroy_panel_3d(Jackoviz* app)
-{
-    if (app == NULL)
-        return;
-
-    app->uploads_held = true;
-
-    /* Don't leave the view hanging on a panel about to be destroyed. */
-    if (app->view != NULL && app->panel_1d != NULL && app->view_mode == VIEW_MODE_3D)
-        (void)dvz_view_connect_panel(app->view, app->panel_1d);
-
-    if (app->panel_3d != NULL)
-        (void)dvz_panel_connect_input(app->panel_3d, NULL);
-
-    if (app->mesh != NULL)
-    {
-        (void)dvz_visual_set_visible(app->mesh, false);
-        dvz_visual_destroy(app->mesh);
-        app->mesh = NULL;
-    }
-    if (app->geometry != NULL)
-    {
-        dvz_geometry_destroy(app->geometry);
-        app->geometry = NULL;
-    }
-    if (app->panel_3d != NULL)
-    {
-        dvz_panel_destroy(app->panel_3d);
-        app->panel_3d = NULL;
-    }
 }
 
 /*
@@ -1335,24 +1295,14 @@ static bool apply_plot_freq_limit(Jackoviz* app)
     if (app == NULL)
         return false;
 
-    /* Destroy the whole 3D panel (and its mesh/geometry) before reallocating
-     * heights/colors that the old surface grid still referenced. */
-    if (!app->fast)
-        destroy_panel_3d(app);
-
+    /* 3D mesh stays at MESH_PLOT_FREQ_HZ for the whole run; only 1D/2D follow fmax. */
     if (!configure_plot_band(app))
-    {
-        app->uploads_held = false;
         return false;
-    }
 
     if (app->panel_1d != NULL)
     {
         if (dvz_panel_set_domain(app->panel_1d, DVZ_DIM_X, 0.0, app->plot_freq_max) != DVZ_OK)
-        {
-            app->uploads_held = false;
             return false;
-        }
     }
     if (app->spectrum != NULL)
     {
@@ -1365,10 +1315,7 @@ static bool apply_plot_freq_limit(Jackoviz* app)
         };
         if (dvz_visual_set_data_many(app->spectrum, updates, 3) != DVZ_OK ||
             dvz_path_set_subpaths(app->spectrum, 1, &subpath_len) != DVZ_OK)
-        {
-            app->uploads_held = false;
             return false;
-        }
     }
 
     if (!app->fast)
@@ -1378,10 +1325,7 @@ static bool apply_plot_freq_limit(Jackoviz* app)
         if (app->panel_2d != NULL)
         {
             if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_Y, 0.0, y_max) != DVZ_OK)
-            {
-                app->uploads_held = false;
                 return false;
-            }
         }
         if (app->image != NULL)
         {
@@ -1392,10 +1336,7 @@ static bool apply_plot_freq_limit(Jackoviz* app)
                 {(float)x_max, (float)y_max, 0.0f},
             };
             if (dvz_visual_set_data(app->image, "position", positions, 4) != DVZ_OK)
-            {
-                app->uploads_held = false;
                 return false;
-            }
         }
         if (app->field != NULL && app->field_values != NULL)
         {
@@ -1405,26 +1346,8 @@ static bool apply_plot_freq_limit(Jackoviz* app)
             view.rows_per_image = app->n_plot_bins;
             if (dvz_sampled_field_resize(
                     app->field, app->history, app->n_plot_bins, 1u, &view) != DVZ_OK)
-            {
-                app->uploads_held = false;
                 return false;
-            }
         }
-
-        if (!create_panel_3d(app, app->view_mode == VIEW_MODE_3D))
-        {
-            app->uploads_held = false;
-            return false;
-        }
-        app->uploads_held = false;
-        /* DIAG: hold spectrogram uploads so we can see if emit errors happen
-         * from create/bind alone (spam during skip) or only after uploads resume. */
-        app->diag_skip_spectro_uploads = DIAG_SKIP_SPECTRO_UPLOAD_FRAMES;
-        fprintf(
-            stderr,
-            "DIAG: skipping upload_spectrogram for %u frames after 3D rebuild "
-            "(n_plot_bins=%u). Watch for Datoviz emit errors during this window.\n",
-            DIAG_SKIP_SPECTRO_UPLOAD_FRAMES, app->n_plot_bins);
     }
 
     return true;
@@ -1450,6 +1373,14 @@ static void cycle_plot_freq(Jackoviz* app)
 {
     if (app == NULL || app->plot_freq_locked)
         return;
+    /* 3D band is fixed; ignore fmax while that view is active (gRPC later). */
+    if (app->view_mode == VIEW_MODE_3D)
+    {
+        fprintf(
+            stderr, "max plot frequency: ignored in 3D view (mesh fixed at %.0f Hz)\n",
+            MESH_PLOT_FREQ_HZ);
+        return;
+    }
 
     app->plot_freq_index = (app->plot_freq_index + 1u) % PLOT_FREQ_OPTION_COUNT;
     app->plot_freq_limit = PLOT_FREQ_OPTIONS[app->plot_freq_index];
@@ -1500,7 +1431,7 @@ static bool setup_datoviz(Jackoviz* app)
     else
     {
         /* Default view is 1D spectrum; 2D / scope start parked. 3D panel is
-         * created below via create_panel_3d() (same path as fmax rebuild). */
+         * created once here; fmax changes keep the mesh and only refill cols. */
         app->panel_1d = dvz_panel_full(app->figure);
         if (app->panel_1d == NULL)
             return false;
