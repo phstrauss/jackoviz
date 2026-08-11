@@ -1,0 +1,15 @@
+Me:
+In commit a9e1197c12668efe2b7f72acab6b5939b878d417 you introduced a bug, I guess datoviz needs more teardown before destroying and recreating the geometry, like pausing the software, destroying the panel, recreating it. what do you think?
+
+Cursor:
+Yes — that commit’s rebuild_surface_geometry() is too thin, but the crash report points at a bigger problem first.
+
+What the crash shows (CRASHREPORT.txt): main thread dies in upload_spectrogram → dvz_geometry_surface_grid_update_heights → dvz_geometry_compute_normals, while gRPC is on another thread. So SetPlotFreq can run configure_plot_band() (free/realloc heights / colors) and dvz_geometry_destroy() concurrently with the Datoviz timer. That’s a hard race; a fuller teardown on the gRPC thread wouldn’t fix it by itself.
+
+On the Datoviz lifecycle itself, your instinct is right: destroy-geometry + dvz_mesh_set_geometry while the mesh is still live in panel_3d is brittle. Safer pattern on the render/main thread:
+
+Pause uploads (paused or a dedicated “rebuild lock”).
+Remove/destroy the mesh visual (and only then the geometry).
+Recreate geometry + mesh, re-add to the panel (full panel recreate only if Datoviz doesn’t give a clean remove/re-add).
+Resume.
+So: marshal plot-freq changes onto the Datoviz thread, then do a proper mesh/geometry (or panel) rebuild under pause — not just dvz_geometry_destroy from gRPC.
