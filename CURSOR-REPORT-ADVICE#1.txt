@@ -1,0 +1,15 @@
+Yes — worth reporting, framed as a lifecycle / shrink recreate issue, not as “jackoviz is broken.”
+
+What we actually showed:
+
+* Recreating a smaller dvz_geometry_surface_grid (or tearing down panel+mesh+geometry and building a smaller one) leaves draw validation failing: index draw_count stays at the old larger size while the new mesh is smaller.
+* Grow path was fine; shrink (e.g. 20k → 4k bins) was the failure.
+* Spam happened during create/bind, not from later update_heights / mesh_set_geometry.
+
+That’s either a Datoviz bug or a missing documented teardown rule (especially with no panel_remove_visual).
+
+Do report: minimal C repro that creates a surface mesh, destroys it, recreates with fewer cols, draws a few frames → emit/validation error.
+
+Don’t lead with: the original gRPC race / off-thread mutation — that’s an app issue. Mention only as “we also hit races when mutating off the Datoviz thread,” separate from the shrink bug.
+
+A good title: something like “Surface grid recreate with fewer cols leaves stale index buffer (draw validation fails on shrink)”.
