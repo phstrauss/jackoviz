@@ -40,6 +40,8 @@ class RemoteController : public QObject
     Q_PROPERTY(bool launched READ launched NOTIFY launchedChanged)
     Q_PROPERTY(bool paused READ paused NOTIFY pausedChanged)
     Q_PROPERTY(int viewModeIndex READ viewModeIndex NOTIFY viewModeIndexChanged)
+    /* False in 3D: jackoviz mesh is fixed at 6 kHz (same as key m). */
+    Q_PROPERTY(bool plotFreqEnabled READ plotFreqEnabled NOTIFY viewModeIndexChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
 
@@ -64,6 +66,8 @@ public:
     bool launched() const { return m_pid > 0; }
     bool paused() const { return m_paused; }
     int viewModeIndex() const { return m_view_index; }
+    /* 3D spectrogram ignores fmax (mesh fixed at MESH_PLOT_FREQ_HZ / 6 kHz). */
+    bool plotFreqEnabled() const { return m_view_index != 3; }
     QString statusText() const { return m_status; }
     QStringList jackPorts() const { return m_jack_ports; }
 
@@ -275,6 +279,12 @@ public:
     Q_INVOKABLE void setPlotFreq(double freqHz)
     {
         m_plot_freq = freqHz;
+        /* Match jackoviz key m: 3D surface band is fixed; do not send SetPlotFreq. */
+        if (!plotFreqEnabled())
+        {
+            setStatus(QStringLiteral("max freq: ignored in 3D view (mesh fixed at 6000 Hz)"));
+            return;
+        }
         if (!requireLaunched(QStringLiteral("max freq %1 Hz queued").arg(freqHz, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)

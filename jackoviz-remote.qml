@@ -237,7 +237,13 @@ ApplicationWindow {
                 Component.onCompleted: controller.setViewMode(currentIndex)
             }
 
-            Label { text: "Max frequency"; font.bold: true; font.pixelSize: 11 }
+            Label {
+                text: controller.plotFreqEnabled
+                      ? "Max frequency"
+                      : "Max frequency (fixed 6 kHz in 3D)"
+                font.bold: true
+                font.pixelSize: 11
+            }
             ComboBox {
                 id: maxFreqBox
                 Layout.fillWidth: true
@@ -245,6 +251,7 @@ ApplicationWindow {
                 font.pixelSize: 11
                 model: root.maxFreqs
                 currentIndex: 1 // 6000 Hz
+                enabled: controller.plotFreqEnabled
                 onActivated: controller.setPlotFreq(root.maxFreqValues[currentIndex])
                 Component.onCompleted:
                     controller.setPlotFreq(root.maxFreqValues[currentIndex])
