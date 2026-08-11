@@ -349,6 +349,7 @@ typedef struct Jackoviz
     bool rpc_only; /* --rpc-only: ignore keyboard settings; gRPC control only */
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
     bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
+    bool uploads_held; /* skip spectrogram uploads during mesh/geometry rebuild */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -478,6 +479,10 @@ static void fill_spectrogram_buffers(Jackoviz* app)
 
 static bool upload_spectrogram(Jackoviz* app)
 {
+    if (app->uploads_held || app->geometry == NULL || app->mesh == NULL || app->heights == NULL ||
+        app->colors == NULL)
+        return false;
+
     fill_spectrogram_buffers(app);
     const uint32_t vertex_count = app->history * app->n_plot_bins;
 
@@ -1152,16 +1157,15 @@ static bool configure_plot_band(Jackoviz* app)
     return true;
 }
 
-static bool rebuild_surface_geometry(Jackoviz* app)
+/*
+ * Build a new surface geometry + mesh and attach it to panel_3d.
+ * Caller must have already destroyed any previous mesh and geometry.
+ */
+static bool create_surface_mesh(Jackoviz* app)
 {
-    if (app == NULL || app->mesh == NULL || app->heights == NULL || app->colors == NULL)
+    if (app == NULL || app->scene == NULL || app->panel_3d == NULL || app->heights == NULL ||
+        app->colors == NULL)
         return false;
-
-    if (app->geometry != NULL)
-    {
-        dvz_geometry_destroy(app->geometry);
-        app->geometry = NULL;
-    }
 
     DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
     desc.rows = app->history;
@@ -1185,11 +1189,65 @@ static bool rebuild_surface_geometry(Jackoviz* app)
     app->geometry = dvz_geometry_surface_grid(&desc);
     if (app->geometry == NULL)
         return false;
-    return dvz_mesh_set_geometry(app->mesh, app->geometry) == DVZ_OK;
+
+    app->mesh = dvz_mesh(app->scene, 0);
+    if (app->mesh == NULL)
+        return false;
+
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = -1.0f;
+    material.light_direction[1] = 1.0f;
+    material.light_direction[2] = 1.0f;
+    material.phong.ambient = 0.28f;
+    material.phong.diffuse = 0.72f;
+    material.phong.specular = 0.42f;
+    material.phong.shininess = 48.0f;
+    if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
+        return false;
+    if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
+        return false;
+    if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
+        return false;
+    return true;
 }
 
-/* Philippe Strauss 20260810 17:47 CEST: I suspect a bug around here, see CRASHREPORT.txt, obtained when changing
-   the maximum plotted frequency in the gRPC GUI (jackoviz-remote) when in 3D surface mode */
+/*
+ * Tear down the live 3D mesh (visual first, then geometry) and recreate both.
+ * Spectrogram uploads are held for the duration (no mutex — just a flag).
+ * Datoviz has no panel_remove_visual; the destroyed visual slot is skipped when
+ * invisible/zeroed, and the new mesh is re-added to the same panel.
+ */
+static bool recreate_surface_mesh(Jackoviz* app)
+{
+    if (app == NULL || app->panel_3d == NULL)
+        return false;
+
+    const bool show_after = (app->view_mode == VIEW_MODE_3D);
+    app->uploads_held = true;
+
+    if (app->mesh != NULL)
+    {
+        (void)dvz_visual_set_visible(app->mesh, false);
+        dvz_visual_destroy(app->mesh);
+        app->mesh = NULL;
+    }
+    if (app->geometry != NULL)
+    {
+        dvz_geometry_destroy(app->geometry);
+        app->geometry = NULL;
+    }
+
+    if (!create_surface_mesh(app))
+    {
+        app->uploads_held = false;
+        return false;
+    }
+
+    (void)dvz_visual_set_visible(app->mesh, show_after);
+    app->uploads_held = false;
+    return true;
+}
+
 static bool apply_plot_freq_limit(Jackoviz* app)
 {
     if (app == NULL)
@@ -1247,7 +1305,7 @@ static bool apply_plot_freq_limit(Jackoviz* app)
                     app->field, app->history, app->n_plot_bins, 1u, &view) != DVZ_OK)
                 return false;
         }
-        if (app->mesh != NULL && !rebuild_surface_geometry(app))
+        if (!recreate_surface_mesh(app))
             return false;
     }
 
@@ -1368,46 +1426,10 @@ static bool setup_datoviz(Jackoviz* app)
             return false;
 
         /* ---- 3D surface ---- */
-        DvzGeometrySurfaceGridDesc desc = dvz_geometry_surface_grid_desc();
-        desc.rows = app->history;
-        desc.cols = app->n_plot_bins;
-        desc.heights = app->heights;
-        desc.colors = app->colors;
-        desc.origin[0] = -2.6;
-        desc.origin[1] = 0.0;
-        desc.origin[2] = +1.8;
-        desc.col_basis[0] = 5.2 / (double)(app->n_plot_bins > 1u ? app->n_plot_bins - 1u : 1u);
-        desc.col_basis[1] = 0.0;
-        desc.col_basis[2] = 0.0;
-        desc.row_basis[0] = 0.0;
-        desc.row_basis[1] = 0.0;
-        desc.row_basis[2] = -3.6 / (double)(app->history > 1u ? app->history - 1u : 1u);
-        desc.height_axis[0] = 0.0;
-        desc.height_axis[1] = 1.0;
-        desc.height_axis[2] = 0.0;
-        desc.height_scale = 1.35;
-
-        app->geometry = dvz_geometry_surface_grid(&desc);
-        if (app->geometry == NULL)
+        if (!create_surface_mesh(app))
             return false;
-
-        app->mesh = dvz_mesh(app->scene, 0);
-        if (app->mesh == NULL)
-            return false;
-
-        DvzMaterialDesc material = dvz_phong_material_desc();
-        material.light_direction[0] = -1.0f;
-        material.light_direction[1] = 1.0f;
-        material.light_direction[2] = 1.0f;
-        material.phong.ambient = 0.28f;
-        material.phong.diffuse = 0.72f;
-        material.phong.specular = 0.42f;
-        material.phong.shininess = 48.0f;
-        if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
-            return false;
-        if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
-            return false;
-        if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
+        /* Default view is 1D; keep the surface hidden until key 3 / SetViewMode. */
+        if (dvz_visual_set_visible(app->mesh, false) != DVZ_OK)
             return false;
 
         DvzController* arcball = dvz_arcball(app->scene, NULL);
