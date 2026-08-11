@@ -60,10 +60,10 @@
 #define WINDOW_WIDTH         1280u
 #define WINDOW_HEIGHT        720u
 #define DB_CEIL_DEFAULT           (-20.0)
-#define DB_FLOOR_DEFAULT          (-100.0)
+#define DB_FLOOR_DEFAULT          (-120.0)
 #define DB_STORAGE_FLOOR          (-140.0) /* deepest clamp for stored spectra */
 #define DB_STORAGE_CEIL           (0.0)   /* highest clamp for stored spectra */
-#define DEFAULT_PLOT_FREQ_MAX_HZ  8000.0
+#define DEFAULT_PLOT_FREQ_MAX_HZ  6000.0
 #define DB_FLOOR_OPTION_COUNT     5u
 #define DB_CEIL_OPTION_COUNT      3u
 #define DB_TICK_MAX               16u
@@ -73,7 +73,7 @@
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
 static const double DB_CEIL_OPTIONS[DB_CEIL_OPTION_COUNT] = {0.0, -10.0, -20.0};
-/* Key m cycles these when -f was not given on the CLI (8000 → … → 4000 → 6000 → 8000). */
+/* Key m cycles these when -f was not given on the CLI (4→6→8→12→16→20→4 kHz). */
 static const double PLOT_FREQ_OPTIONS[PLOT_FREQ_OPTION_COUNT] = {
     4000.0, 6000.0, 8000.0, 12000.0, 16000.0, 20000.0};
 
@@ -1323,14 +1323,14 @@ static bool setup_datoviz(Jackoviz* app)
     }
     else
     {
-        app->panel_3d = dvz_panel_full(app->figure);
-        if (app->panel_3d == NULL)
+        /* Default view is 1D spectrum; 3D / 2D / scope start parked. */
+        app->panel_1d = dvz_panel_full(app->figure);
+        if (app->panel_1d == NULL)
             return false;
-        /* 2D / 1D / scope panels start parked; shown on keys 2 / 1 / 0. */
+        app->panel_3d = dvz_panel(app->figure, &parked_desc);
         app->panel_2d = dvz_panel(app->figure, &parked_desc);
-        app->panel_1d = dvz_panel(app->figure, &parked_desc);
         app->panel_scope = dvz_panel(app->figure, &parked_desc);
-        if (app->panel_2d == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
+        if (app->panel_3d == NULL || app->panel_2d == NULL || app->panel_scope == NULL)
             return false;
     }
 
@@ -1587,7 +1587,8 @@ static bool setup_datoviz(Jackoviz* app)
         return false;
     if (dvz_visual_set_depth_test(app->spectrum, false) != DVZ_OK)
         return false;
-    if (dvz_visual_set_visible(app->spectrum, app->fast) != DVZ_OK)
+    /* Default view is 1D spectrum (including non--fast); show the path immediately. */
+    if (dvz_visual_set_visible(app->spectrum, true) != DVZ_OK)
         return false;
     if (dvz_panel_add_visual(app->panel_1d, app->spectrum, NULL) != DVZ_OK)
         return false;
@@ -1672,12 +1673,14 @@ static bool setup_datoviz(Jackoviz* app)
     if (app->view == NULL)
         return false;
 
-    app->view_mode = app->fast ? VIEW_MODE_1D : VIEW_MODE_3D;
+    app->view_mode = VIEW_MODE_1D;
     (void)dvz_panel_connect_input(app->panel_scope, NULL);
     (void)dvz_panel_connect_input(app->panel_1d, NULL);
     if (app->panel_2d != NULL)
         (void)dvz_panel_connect_input(app->panel_2d, NULL);
-    if (app->fast && app->view != NULL)
+    if (app->panel_3d != NULL)
+        (void)dvz_panel_connect_input(app->panel_3d, NULL);
+    if (app->view != NULL)
         (void)dvz_view_connect_panel(app->view, app->panel_1d);
 
     DvzInputRouter* input = dvz_view_input(app->view);
@@ -1778,13 +1781,13 @@ int main(int argc, char** argv)
         }
     }
     app.db_floor = DB_FLOOR_DEFAULT;
-    app.db_floor_index = 0u;
+    app.db_floor_index = 2u; /* -120 dB in DB_FLOOR_OPTIONS */
     app.db_ceil = DB_CEIL_DEFAULT;
     app.db_ceil_index = 2u; /* -20 dB in DB_CEIL_OPTIONS */
     app.frame_limit = frame_limit;
     app.fast = fast;
     app.rpc_only = rpc_only;
-    app.line_width_px = 2.0f;
+    app.line_width_px = 1.0f;
     app.running = true;
 
     int rc = EXIT_FAILURE;

@@ -536,12 +536,12 @@ private:
     QString m_status = QStringLiteral("OK");
     QStringList m_jack_ports;
     QString m_jack_port = QStringLiteral("(none)");
-    int m_view_index = 3;
-    double m_plot_freq = 8000.0;
+    int m_view_index = 1; /* 1D spectrum */
+    double m_plot_freq = 6000.0;
     double m_db_ceil = -20.0;
-    double m_db_floor = -100.0;
+    double m_db_floor = -120.0;
     double m_kaiser_beta = 4.5;
-    float m_line_width = 2.0f;
+    float m_line_width = 1.0f;
     jack_client_t* m_jack = nullptr;
 };
 

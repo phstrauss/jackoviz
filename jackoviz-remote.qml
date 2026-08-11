@@ -232,7 +232,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: fastModeBox.checked ? root.viewModesFast : root.viewModesFull
-                currentIndex: 3 // 3D spectrogram (clamped if fast)
+                currentIndex: 1 // 1D spectrum
                 onActivated: controller.setViewMode(currentIndex)
                 Component.onCompleted: controller.setViewMode(currentIndex)
             }
@@ -244,7 +244,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.maxFreqs
-                currentIndex: 2 // 8000 Hz
+                currentIndex: 1 // 6000 Hz
                 onActivated: controller.setPlotFreq(root.maxFreqValues[currentIndex])
                 Component.onCompleted:
                     controller.setPlotFreq(root.maxFreqValues[currentIndex])
@@ -270,7 +270,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.dbFloors
-                currentIndex: 0 // -100 dB
+                currentIndex: 2 // -120 dB
                 onActivated: controller.setDbFloor(root.dbFloorValues[currentIndex])
                 Component.onCompleted:
                     controller.setDbFloor(root.dbFloorValues[currentIndex])
@@ -311,7 +311,7 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.lineWidths
-                currentIndex: 1 // 2 px
+                currentIndex: 0 // 1 px
                 onActivated: controller.setLineWidth(root.lineWidthValues[currentIndex])
                 Component.onCompleted:
                     controller.setLineWidth(root.lineWidthValues[currentIndex])
