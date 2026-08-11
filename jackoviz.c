@@ -69,6 +69,9 @@
 #define DB_TICK_MAX               16u
 #define VIRIDIS_LUT_SIZE          256u
 #define PLOT_FREQ_OPTION_COUNT    6u
+/* DIAG: after 3D panel recreate, skip spectrogram uploads this many frames
+ * to separate create/bind failures from per-frame upload_spectrogram. */
+#define DIAG_SKIP_SPECTRO_UPLOAD_FRAMES 120u
 
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
@@ -350,6 +353,7 @@ typedef struct Jackoviz
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
     bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
     bool uploads_held; /* skip spectrogram uploads during mesh/geometry rebuild */
+    uint32_t diag_skip_spectro_uploads; /* DIAG: frames to skip upload_spectrogram */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -482,6 +486,20 @@ static bool upload_spectrogram(Jackoviz* app)
     if (app->uploads_held || app->geometry == NULL || app->mesh == NULL || app->heights == NULL ||
         app->colors == NULL)
         return false;
+
+    if (app->diag_skip_spectro_uploads > 0u)
+    {
+        app->diag_skip_spectro_uploads--;
+        if (app->diag_skip_spectro_uploads == 0u)
+        {
+            fprintf(
+                stderr,
+                "DIAG: spectrogram upload resume (skip window ended) — "
+                "if Datoviz spam starts NOW, blame upload_spectrogram; "
+                "if spam was already present during the skip, blame create/bind.\n");
+        }
+        return false;
+    }
 
     fill_spectrogram_buffers(app);
     const uint32_t vertex_count = app->history * app->n_plot_bins;
@@ -1399,6 +1417,14 @@ static bool apply_plot_freq_limit(Jackoviz* app)
             return false;
         }
         app->uploads_held = false;
+        /* DIAG: hold spectrogram uploads so we can see if emit errors happen
+         * from create/bind alone (spam during skip) or only after uploads resume. */
+        app->diag_skip_spectro_uploads = DIAG_SKIP_SPECTRO_UPLOAD_FRAMES;
+        fprintf(
+            stderr,
+            "DIAG: skipping upload_spectrogram for %u frames after 3D rebuild "
+            "(n_plot_bins=%u). Watch for Datoviz emit errors during this window.\n",
+            DIAG_SKIP_SPECTRO_UPLOAD_FRAMES, app->n_plot_bins);
     }
 
     return true;
