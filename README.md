@@ -129,6 +129,10 @@ The time resolution is, using our customized jack ringbuffer, finer when using a
 
 ## Remote controller
 
+The whole jackoviz-remote and gRPC usage in this project is still very experimental,
+currently triggering big race (multi-threading) condition in jackoviz's Datoviz usage,
+the "Fast" option makes the whole thing relatively stable, but not the 3D and 2D spectrogram. You've been warned.
+
 Qt Quick UI that launches a sibling `jackoviz` via `fork`/`execve` with `-n`,
 optional `--fast`, and `--rpc-only`. The JACK port dropdown is filled from a
 live `jackoviz-remote` JACK client (`jack_get_ports` audio outputs). Runtime
