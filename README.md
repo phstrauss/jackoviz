@@ -60,7 +60,7 @@ sudo apt install \
 
 Linux currently ships with Pipewire which is largely compatible with Jack audio connection kit,
 the major change is that applications developped for Jack should be run using the pw-jack helper, i.e.:
-`$ pw-jack ./build/jackoviz`
+`$ pw-jack ./build/jackoviz-remote`
 
 ### macOS / Homebrew
 
@@ -115,7 +115,7 @@ Press key **0** for a basic scope, **1** for a real-time STFT frequency–magnit
 Keyboard controls:
 
 - **f** / **c** — cycle the plot dB floor and ceiling
-- **m** — cycle max plot frequency through 8 / 12 / 16 / 20 / 4 / 6 kHz (disabled if you passed **`-f`** on the command line)
+- **m** — cycle max plot frequency through 6 / 8 / 12 / 16 / 20 / 4 (disabled if you passed **`-f`** on the command line or when on the 3D surface view)
 - **w** — toggle the oscilloscope and 1D spectrum line width between 1 and 2 pixels
 - **p** — pause/resume visual processing (FFT and plot uploads); the JACK callback keeps writing the audio ringbuffer, and the current view stays frozen until resume
 
@@ -129,9 +129,7 @@ The time resolution is, using our customized jack ringbuffer, finer when using a
 
 ## Remote controller
 
-The whole jackoviz-remote and gRPC usage in this project is still very experimental,
-currently triggering big race (multi-threading) condition in jackoviz's Datoviz usage,
-the "Fast" option makes the whole thing relatively stable, but not the 3D and 2D spectrogram. You've been warned.
+![jackoviz-remote](./screenshots/jackoviz-remote.png "Jackoviz-remote control GUI")
 
 Qt Quick UI that launches a sibling `jackoviz` via `fork`/`execve` with `-n`,
 optional `--fast`, and `--rpc-only`. The JACK port dropdown is filled from a
