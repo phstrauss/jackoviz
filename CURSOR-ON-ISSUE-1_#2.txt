@@ -1,0 +1,24 @@
+The console error is the real clue, not the teardown choreography.
+
+draw_count ≈ 5× logical_count matches 20 kHz → 4 kHz (≈5× fewer bins). Datoviz is still trying to draw with the old, larger index buffer against the new, smaller mesh. Growing works; shrinking does not. That smells like a resize-down / stale-index problem, not (only) “forgot to destroy the panel.”
+
+What I suspect
+
+Something in the 3D path still keeps old index topology after a shrink (mesh upload, geometry update, or a Datoviz bug when replacing a smaller grid).
+Or a stale provider from the destroyed panel/mesh is still in the emit batch while the new mesh is also live.
+Less likely but easy to rule out: 2D dvz_sampled_field_resize — those index counts look like a surface grid, not a quad.
+Quick diagnostics (before more teardown)
+
+Change fmax while staying on 1D (never open 3D). If the spam vanishes → pure 3D mesh path.
+After a 20k→4k change, skip upload_spectrogram for a few frames. If still broken → create/bind; if only breaks after upload → per-frame update_heights / mesh_set_geometry.
+Log n_plot_bins and history * n_plot_bins next to the Datoviz error and confirm they match logical_count.
+Proposed fix direction (app-side, pragmatic)
+Stop destroying/recreating on every fmax change. Allocate the 3D grid once for the max bin count (e.g. 20 kHz), and on fmax only:
+
+update domains / which bins you fill
+keep GPU topology fixed (pad unused cols or only upload the active prefix if the API allows)
+That avoids the shrink path entirely and matches “up works, down dies.”
+
+If you want to stay on recreate: next step is prove whether the failure is post-upload vs stale emit, then either stop calling dvz_mesh_set_geometry every frame after a rebuild or take it upstream as a Datoviz mesh shrink bug.
+
+I’d do diagnostic (1)+(2) first, then implement the fixed max-grid approach unless those point elsewhere.
