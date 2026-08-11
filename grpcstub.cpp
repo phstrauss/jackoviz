@@ -2,6 +2,8 @@
  * grpcstub.cpp — gRPC server that forwards RPCs to jackoviz set_*() helpers.
  *
  * Generated stubs come from jvzcontroller.proto via CMake (build/generated/).
+ * Handlers may run on gRPC worker threads; set_* only enqueue work for the
+ * Datoviz timer thread (see CtrlMailbox in jackoviz.c).
  */
 
 #include "jackoviz.h"

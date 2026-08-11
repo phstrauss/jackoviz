@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -71,6 +72,7 @@
 #define DB_TICK_MAX               16u
 #define VIRIDIS_LUT_SIZE          256u
 #define PLOT_FREQ_OPTION_COUNT    6u
+#define JVZ_PORT_NAME_MAX         256
 
 static const double DB_FLOOR_OPTIONS[DB_FLOOR_OPTION_COUNT] = {
     -100.0, -110.0, -120.0, -130.0, -140.0};
@@ -280,6 +282,39 @@ static void kaiser_window(double* w, uint32_t n, double beta)
 /*  Application state                                                                            */
 /*************************************************************************************************/
 
+/*
+ * gRPC runs off the Datoviz thread. Public set_*() only write into this mailbox;
+ * on_timer() drains and applies on the render thread (sole owner of Datoviz state).
+ * Latest value wins per field (coalesce). Keyboard/setup call apply_* directly.
+ */
+typedef struct CtrlPending
+{
+    bool db_floor;
+    bool db_ceil;
+    bool view_mode;
+    bool line_width;
+    bool pause;
+    bool plot_freq;
+    bool kaiser_beta;
+    bool quit;
+    bool connect_jack;
+
+    double db_floor_v;
+    double db_ceil_v;
+    ViewMode view_mode_v;
+    float line_width_v;
+    bool pause_v;
+    double plot_freq_v;
+    double kaiser_beta_v;
+    char connect_jack_v[JVZ_PORT_NAME_MAX];
+} CtrlPending;
+
+typedef struct CtrlMailbox
+{
+    pthread_mutex_t mu;
+    CtrlPending pending;
+} CtrlMailbox;
+
 typedef struct Jackoviz
 {
     /* JACK */
@@ -352,6 +387,8 @@ typedef struct Jackoviz
     bool rpc_only; /* --rpc-only: ignore keyboard settings; gRPC control only */
     float line_width_px; /* 1D spectrum + scope stroke; toggled with key w */
     bool paused; /* key p: freeze FFT/visuals; JACK ringbuffer keeps writing */
+
+    CtrlMailbox ctrl; /* gRPC → Datoviz-thread marshal */
 } Jackoviz;
 
 static int jack_process(jack_nframes_t nframes, void* arg)
@@ -612,42 +649,22 @@ static bool apply_db_range(Jackoviz* app)
     return true;
 }
 
-double set_db_floor(Jackoviz* app, double floor) {
-    if (app == NULL || floor < -200.0 || floor > -20.0)
-        return 1.0;
-    app->db_floor = floor;
-    (void)apply_db_range(app);
-    return app->db_floor;
-}
+/*************************************************************************************************/
+/*  Control mailbox (gRPC → Datoviz thread)                                                       */
+/*************************************************************************************************/
 
-static void cycle_db_floor(Jackoviz* app)
+static void ctrl_mailbox_init(CtrlMailbox* box)
 {
-    if (app == NULL)
-        return;
-    app->db_floor_index = (app->db_floor_index + 1u) % DB_FLOOR_OPTION_COUNT;
-    app->db_floor = DB_FLOOR_OPTIONS[app->db_floor_index];
-    (void)apply_db_range(app);
+    memset(box, 0, sizeof(*box));
+    pthread_mutex_init(&box->mu, NULL);
 }
 
-double set_db_ceil(Jackoviz* app, double ceil)
+static void ctrl_mailbox_destroy(CtrlMailbox* box)
 {
-    if (app == NULL || ceil > 0.0 || ceil < -20.0)
-        return 1.0;
-    app->db_ceil = ceil;
-    (void)apply_db_range(app);
-    return app->db_ceil;
+    pthread_mutex_destroy(&box->mu);
 }
 
-static void cycle_db_ceil(Jackoviz* app)
-{
-    if (app == NULL)
-        return;
-    app->db_ceil_index = (app->db_ceil_index + 1u) % DB_CEIL_OPTION_COUNT;
-    app->db_ceil = DB_CEIL_OPTIONS[app->db_ceil_index];
-    (void)apply_db_range(app);
-}
-
-int set_view_mode(Jackoviz* app, ViewMode mode)
+static int apply_view_mode(Jackoviz* app, ViewMode mode)
 {
     if (app == NULL || app->panel_1d == NULL || app->panel_scope == NULL)
         return -1;
@@ -743,48 +760,7 @@ static void apply_line_width(Jackoviz* app)
     }
 }
 
-float set_line_width(Jackoviz* app, float width)
-{
-    if (app == NULL || width < 1.0f || width > 3.0f)
-        return -1.0f;
-    app->line_width_px = width;
-    apply_line_width(app);
-    fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
-    return app->line_width_px;
-}
-
-static void toggle_line_width(Jackoviz* app)
-{
-    if (app == NULL)
-        return;
-    app->line_width_px = (app->line_width_px < 1.5f) ? 2.0f : 1.0f;
-    apply_line_width(app);
-    fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
-}
-
-int set_pause(Jackoviz* app, bool paused)
-{
-    if (app == NULL)
-        return -1;
-    app->paused = paused;
-    fprintf(stderr, "processing: %s\n", app->paused ? "paused" : "running");
-    return app->paused;
-}
-
-int quit(Jackoviz* app)
-{
-    if (app == NULL)
-        return -1;
-    if (!app->running)
-        return 0;
-    app->running = false;
-    if (app->app != NULL)
-        dvz_app_stop(app->app);
-    fprintf(stderr, "quit requested\n");
-    return 0;
-}
-
-int connect_jack_port(Jackoviz* app, const char* port_name)
+static int apply_connect_jack_port(Jackoviz* app, const char* port_name)
 {
     if (app == NULL || app->client == NULL || app->in_port == NULL || port_name == NULL ||
         port_name[0] == '\0')
@@ -812,6 +788,202 @@ int connect_jack_port(Jackoviz* app, const char* port_name)
     return 0;
 }
 
+static void apply_quit(Jackoviz* app)
+{
+    if (app == NULL || !app->running)
+        return;
+    app->running = false;
+    if (app->app != NULL)
+        dvz_app_stop(app->app);
+    fprintf(stderr, "quit requested\n");
+}
+
+static bool apply_plot_freq_limit(Jackoviz* app);
+
+static void apply_plot_freq_request(Jackoviz* app, double freq)
+{
+    if (app == NULL)
+        return;
+    /* Match key m: 3D mesh band is fixed. */
+    if (app->view_mode == VIEW_MODE_3D)
+    {
+        fprintf(
+            stderr, "max plot frequency: ignored in 3D view (mesh fixed at %.0f Hz)\n",
+            MESH_PLOT_FREQ_HZ);
+        return;
+    }
+    app->plot_freq_limit = freq;
+    if (!apply_plot_freq_limit(app))
+    {
+        fprintf(stderr, "setting max plot frequency failed\n");
+        return;
+    }
+    fprintf(
+        stderr, "max plot frequency: %.0f Hz (0 … %.1f Hz, %u bins)\n", app->plot_freq_limit,
+        app->plot_freq_max, app->n_plot_bins);
+}
+
+static void apply_kaiser_beta(Jackoviz* app, double beta)
+{
+    if (app == NULL || app->window == NULL)
+        return;
+    app->kaiser_beta = beta;
+    kaiser_window(app->window, app->fft_size, app->kaiser_beta);
+    fprintf(stderr, "Kaiser β: %.1f\n", app->kaiser_beta);
+}
+
+/* Drain mailbox on the Datoviz timer thread. */
+static void ctrl_mailbox_drain(Jackoviz* app)
+{
+    CtrlPending p;
+    pthread_mutex_lock(&app->ctrl.mu);
+    p = app->ctrl.pending;
+    memset(&app->ctrl.pending, 0, sizeof(app->ctrl.pending));
+    pthread_mutex_unlock(&app->ctrl.mu);
+
+    if (p.quit)
+    {
+        apply_quit(app);
+        return;
+    }
+    if (p.db_floor)
+    {
+        app->db_floor = p.db_floor_v;
+        (void)apply_db_range(app);
+    }
+    if (p.db_ceil)
+    {
+        app->db_ceil = p.db_ceil_v;
+        (void)apply_db_range(app);
+    }
+    if (p.view_mode)
+        (void)apply_view_mode(app, p.view_mode_v);
+    if (p.line_width)
+    {
+        app->line_width_px = p.line_width_v;
+        apply_line_width(app);
+        fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
+    }
+    if (p.pause)
+    {
+        app->paused = p.pause_v;
+        fprintf(stderr, "processing: %s\n", app->paused ? "paused" : "running");
+    }
+    if (p.plot_freq)
+        apply_plot_freq_request(app, p.plot_freq_v);
+    if (p.kaiser_beta)
+        apply_kaiser_beta(app, p.kaiser_beta_v);
+    if (p.connect_jack)
+        (void)apply_connect_jack_port(app, p.connect_jack_v);
+}
+
+double set_db_floor(Jackoviz* app, double floor)
+{
+    if (app == NULL || floor < -200.0 || floor > -20.0)
+        return 1.0;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.db_floor = true;
+    app->ctrl.pending.db_floor_v = floor;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return floor;
+}
+
+static void cycle_db_floor(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    app->db_floor_index = (app->db_floor_index + 1u) % DB_FLOOR_OPTION_COUNT;
+    app->db_floor = DB_FLOOR_OPTIONS[app->db_floor_index];
+    (void)apply_db_range(app);
+}
+
+double set_db_ceil(Jackoviz* app, double ceil)
+{
+    if (app == NULL || ceil > 0.0 || ceil < -20.0)
+        return 1.0;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.db_ceil = true;
+    app->ctrl.pending.db_ceil_v = ceil;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return ceil;
+}
+
+static void cycle_db_ceil(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    app->db_ceil_index = (app->db_ceil_index + 1u) % DB_CEIL_OPTION_COUNT;
+    app->db_ceil = DB_CEIL_OPTIONS[app->db_ceil_index];
+    (void)apply_db_range(app);
+}
+
+int set_view_mode(Jackoviz* app, ViewMode mode)
+{
+    if (app == NULL)
+        return -1;
+    if (app->fast && (mode == VIEW_MODE_2D || mode == VIEW_MODE_3D))
+        return -1;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.view_mode = true;
+    app->ctrl.pending.view_mode_v = mode;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return (int)mode;
+}
+
+float set_line_width(Jackoviz* app, float width)
+{
+    if (app == NULL || width < 1.0f || width > 3.0f)
+        return -1.0f;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.line_width = true;
+    app->ctrl.pending.line_width_v = width;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return width;
+}
+
+static void toggle_line_width(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+    app->line_width_px = (app->line_width_px < 1.5f) ? 2.0f : 1.0f;
+    apply_line_width(app);
+    fprintf(stderr, "line width: %.0f px\n", (double)app->line_width_px);
+}
+
+int set_pause(Jackoviz* app, bool paused)
+{
+    if (app == NULL)
+        return -1;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.pause = true;
+    app->ctrl.pending.pause_v = paused;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return paused ? 1 : 0;
+}
+
+int quit(Jackoviz* app)
+{
+    if (app == NULL)
+        return -1;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.quit = true;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return 0;
+}
+
+int connect_jack_port(Jackoviz* app, const char* port_name)
+{
+    if (app == NULL || port_name == NULL || port_name[0] == '\0')
+        return -1;
+    if (strlen(port_name) >= JVZ_PORT_NAME_MAX)
+        return -1;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.connect_jack = true;
+    snprintf(app->ctrl.pending.connect_jack_v, JVZ_PORT_NAME_MAX, "%s", port_name);
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return 0;
+}
+
 static void toggle_pause(Jackoviz* app)
 {
     if (app == NULL)
@@ -830,18 +1002,18 @@ static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, v
         return;
 
     if (event->key == DVZ_KEY_0)
-        set_view_mode(app, VIEW_MODE_SCOPE);
+        (void)apply_view_mode(app, VIEW_MODE_SCOPE);
     else if (event->key == DVZ_KEY_1)
-        set_view_mode(app, VIEW_MODE_1D);
+        (void)apply_view_mode(app, VIEW_MODE_1D);
     else if (event->key == DVZ_KEY_2)
     {
         if (!app->fast)
-            set_view_mode(app, VIEW_MODE_2D);
+            (void)apply_view_mode(app, VIEW_MODE_2D);
     }
     else if (event->key == DVZ_KEY_3)
     {
         if (!app->fast)
-            set_view_mode(app, VIEW_MODE_3D);
+            (void)apply_view_mode(app, VIEW_MODE_3D);
     }
     else if (event->key == DVZ_KEY_F)
         cycle_db_floor(app);
@@ -863,6 +1035,11 @@ static void on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick
     (void)tick;
 
     Jackoviz* app = (Jackoviz*)user_data;
+    if (!app->running)
+        return;
+
+    /* Apply gRPC requests on this thread before touching Datoviz / FFT uploads. */
+    ctrl_mailbox_drain(app);
     if (!app->running)
         return;
 
@@ -1029,7 +1206,7 @@ static bool setup_jack(Jackoviz* app, const char* client_name, const char* sourc
 
     if (source != NULL)
     {
-        if (connect_jack_port(app, source) != 0)
+        if (apply_connect_jack_port(app, source) != 0)
             fprintf(stderr, "warning: could not connect %s → %s\n", source,
                 jack_port_name(app->in_port));
     }
@@ -1357,23 +1534,21 @@ double set_plot_freq(Jackoviz* app, double freq)
 {
     if (app == NULL || freq < 1000.0 || freq > 48000.0)
         return -1.0;
-    app->plot_freq_limit = freq;
-    if (!apply_plot_freq_limit(app))
-    {
-        fprintf(stderr, "setting max plot frequency failed\n");
-        return -1.0;
-    }
-    fprintf(
-        stderr, "max plot frequency: %.0f Hz (0 … %.1f Hz, %u bins)\n", app->plot_freq_limit,
-        app->plot_freq_max, app->n_plot_bins);
-    return app->plot_freq_max;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.plot_freq = true;
+    app->ctrl.pending.plot_freq_v = freq;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    /* Optimistic return: actual apply runs on the Datoviz thread. */
+    const uint32_t n =
+        bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, freq);
+    return (double)(n > 0u ? n - 1u : 0u) * (double)app->sample_rate / (double)app->fft_size;
 }
 
 static void cycle_plot_freq(Jackoviz* app)
 {
     if (app == NULL || app->plot_freq_locked)
         return;
-    /* 3D band is fixed; ignore fmax while that view is active (gRPC later). */
+    /* 3D band is fixed; ignore fmax while that view is active. */
     if (app->view_mode == VIEW_MODE_3D)
     {
         fprintf(
@@ -1396,11 +1571,13 @@ static void cycle_plot_freq(Jackoviz* app)
 
 double set_kaiser_beta(Jackoviz* app, double beta)
 {
-    if (app == NULL || app->window == NULL || beta < 1.0 || beta > 10.0)
+    if (app == NULL || beta < 1.0 || beta > 10.0)
         return -1.0;
-    app->kaiser_beta = beta;
-    kaiser_window(app->window, app->fft_size, app->kaiser_beta);
-    return app->kaiser_beta;
+    pthread_mutex_lock(&app->ctrl.mu);
+    app->ctrl.pending.kaiser_beta = true;
+    app->ctrl.pending.kaiser_beta_v = beta;
+    pthread_mutex_unlock(&app->ctrl.mu);
+    return beta;
 }
 
 static bool setup_datoviz(Jackoviz* app)
@@ -1782,6 +1959,7 @@ static void teardown(Jackoviz* app)
     free(app->scope_color);
     free(app->scope_width);
     spec_ring_destroy(&app->spec);
+    ctrl_mailbox_destroy(&app->ctrl);
 }
 
 /*************************************************************************************************/
@@ -1808,6 +1986,7 @@ int main(int argc, char** argv)
 
     Jackoviz app;
     memset(&app, 0, sizeof(app));
+    ctrl_mailbox_init(&app.ctrl);
     app.fft_size = fft_size;
     app.kaiser_beta = beta;
     app.plot_freq_limit = plot_freq_limit;

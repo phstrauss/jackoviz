@@ -2,8 +2,10 @@
  * jackoviz.h — public controller API for jackoviz (set_* entry points).
  *
  * Opaque app handle + setters used by the gRPC control plane (grpcstub.cpp).
+ * set_* / quit / connect_jack_port are safe to call from the gRPC thread: they
+ * only queue a request; the Datoviz timer applies it on the render thread.
  *
- * Return conventions (applied value on success, sentinel on failure):
+ * Return conventions (applied/requested value on success, sentinel on failure):
  *   set_db_floor / set_db_ceil  → double;  1.0 on error
  *   set_line_width / set_plot_freq / set_kaiser_beta → float/double; -1 on error
  *   set_view_mode / set_pause   → int;    -1 on error, else mode / pause flag
