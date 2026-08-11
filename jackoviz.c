@@ -1212,18 +1212,23 @@ static bool create_surface_mesh(Jackoviz* app)
 }
 
 /*
- * Tear down the live 3D mesh (visual first, then geometry) and recreate both.
- * Spectrogram uploads are held for the duration (no mutex — just a flag).
- * Datoviz has no panel_remove_visual; the destroyed visual slot is skipped when
- * invisible/zeroed, and the new mesh is re-added to the same panel.
+ * Tear down panel_3d entirely (mesh → geometry → panel). Datoviz has no
+ * panel_remove_visual; destroying the panel clears attach slots cleanly.
+ * Holds spectrogram uploads until the caller recreates the panel.
  */
-static bool recreate_surface_mesh(Jackoviz* app)
+static void destroy_panel_3d(Jackoviz* app)
 {
-    if (app == NULL || app->panel_3d == NULL)
-        return false;
+    if (app == NULL)
+        return;
 
-    const bool show_after = (app->view_mode == VIEW_MODE_3D);
     app->uploads_held = true;
+
+    /* Don't leave the view hanging on a panel about to be destroyed. */
+    if (app->view != NULL && app->panel_1d != NULL && app->view_mode == VIEW_MODE_3D)
+        (void)dvz_view_connect_panel(app->view, app->panel_1d);
+
+    if (app->panel_3d != NULL)
+        (void)dvz_panel_connect_input(app->panel_3d, NULL);
 
     if (app->mesh != NULL)
     {
@@ -1236,15 +1241,74 @@ static bool recreate_surface_mesh(Jackoviz* app)
         dvz_geometry_destroy(app->geometry);
         app->geometry = NULL;
     }
-
-    if (!create_surface_mesh(app))
+    if (app->panel_3d != NULL)
     {
-        app->uploads_held = false;
+        dvz_panel_destroy(app->panel_3d);
+        app->panel_3d = NULL;
+    }
+}
+
+/*
+ * Create a fresh panel_3d with camera, surface mesh, and arcball.
+ * full_size: occupy the figure (3D view active); otherwise park in a tiny corner.
+ */
+static bool create_panel_3d(Jackoviz* app, bool full_size)
+{
+    if (app == NULL || app->figure == NULL || app->scene == NULL)
         return false;
+
+    DvzPanelDesc desc = dvz_panel_desc();
+    desc.x = 0.0f;
+    desc.y = 0.0f;
+    if (full_size)
+    {
+        desc.width = 1.0f;
+        desc.height = 1.0f;
+    }
+    else
+    {
+        desc.width = 0.001f;
+        desc.height = 0.001f;
     }
 
-    (void)dvz_visual_set_visible(app->mesh, show_after);
-    app->uploads_held = false;
+    app->panel_3d = dvz_panel(app->figure, &desc);
+    if (app->panel_3d == NULL)
+        return false;
+
+    DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
+    if (dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
+        return false;
+
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[0] = -0.4f;
+    camera.view.eye[1] = 2.4f;
+    camera.view.eye[2] = 4.6f;
+    camera.view.target[0] = 0.0f;
+    camera.view.target[1] = 0.35f;
+    camera.view.target[2] = 0.0f;
+    camera.view.up[0] = 0.0f;
+    camera.view.up[1] = 1.0f;
+    camera.view.up[2] = 0.0f;
+    camera.projection.fov_y = 0.66f;
+    camera.projection.near_clip = 0.05f;
+    camera.projection.far_clip = 100.0f;
+    if (dvz_panel_set_camera_desc(app->panel_3d, &camera) != DVZ_OK)
+        return false;
+
+    if (!create_surface_mesh(app))
+        return false;
+
+    DvzController* arcball = dvz_arcball(app->scene, NULL);
+    if (arcball == NULL ||
+        dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
+        return false;
+
+    const bool show = (app->view_mode == VIEW_MODE_3D);
+    if (dvz_visual_set_visible(app->mesh, show) != DVZ_OK)
+        return false;
+    if (show && app->view != NULL)
+        (void)dvz_view_connect_panel(app->view, app->panel_3d);
+
     return true;
 }
 
@@ -1252,13 +1316,25 @@ static bool apply_plot_freq_limit(Jackoviz* app)
 {
     if (app == NULL)
         return false;
+
+    /* Destroy the whole 3D panel (and its mesh/geometry) before reallocating
+     * heights/colors that the old surface grid still referenced. */
+    if (!app->fast)
+        destroy_panel_3d(app);
+
     if (!configure_plot_band(app))
+    {
+        app->uploads_held = false;
         return false;
+    }
 
     if (app->panel_1d != NULL)
     {
         if (dvz_panel_set_domain(app->panel_1d, DVZ_DIM_X, 0.0, app->plot_freq_max) != DVZ_OK)
+        {
+            app->uploads_held = false;
             return false;
+        }
     }
     if (app->spectrum != NULL)
     {
@@ -1269,10 +1345,12 @@ static bool apply_plot_freq_limit(Jackoviz* app)
             {.attr_name = "stroke_width_px", .data = app->spectrum_width,
                 .item_count = app->n_plot_bins},
         };
-        if (dvz_visual_set_data_many(app->spectrum, updates, 3) != DVZ_OK)
+        if (dvz_visual_set_data_many(app->spectrum, updates, 3) != DVZ_OK ||
+            dvz_path_set_subpaths(app->spectrum, 1, &subpath_len) != DVZ_OK)
+        {
+            app->uploads_held = false;
             return false;
-        if (dvz_path_set_subpaths(app->spectrum, 1, &subpath_len) != DVZ_OK)
-            return false;
+        }
     }
 
     if (!app->fast)
@@ -1282,7 +1360,10 @@ static bool apply_plot_freq_limit(Jackoviz* app)
         if (app->panel_2d != NULL)
         {
             if (dvz_panel_set_domain(app->panel_2d, DVZ_DIM_Y, 0.0, y_max) != DVZ_OK)
+            {
+                app->uploads_held = false;
                 return false;
+            }
         }
         if (app->image != NULL)
         {
@@ -1293,7 +1374,10 @@ static bool apply_plot_freq_limit(Jackoviz* app)
                 {(float)x_max, (float)y_max, 0.0f},
             };
             if (dvz_visual_set_data(app->image, "position", positions, 4) != DVZ_OK)
+            {
+                app->uploads_held = false;
                 return false;
+            }
         }
         if (app->field != NULL && app->field_values != NULL)
         {
@@ -1303,10 +1387,18 @@ static bool apply_plot_freq_limit(Jackoviz* app)
             view.rows_per_image = app->n_plot_bins;
             if (dvz_sampled_field_resize(
                     app->field, app->history, app->n_plot_bins, 1u, &view) != DVZ_OK)
+            {
+                app->uploads_held = false;
                 return false;
+            }
         }
-        if (!recreate_surface_mesh(app))
+
+        if (!create_panel_3d(app, app->view_mode == VIEW_MODE_3D))
+        {
+            app->uploads_held = false;
             return false;
+        }
+        app->uploads_held = false;
     }
 
     return true;
@@ -1381,20 +1473,18 @@ static bool setup_datoviz(Jackoviz* app)
     }
     else
     {
-        /* Default view is 1D spectrum; 3D / 2D / scope start parked. */
+        /* Default view is 1D spectrum; 2D / scope start parked. 3D panel is
+         * created below via create_panel_3d() (same path as fmax rebuild). */
         app->panel_1d = dvz_panel_full(app->figure);
         if (app->panel_1d == NULL)
             return false;
-        app->panel_3d = dvz_panel(app->figure, &parked_desc);
         app->panel_2d = dvz_panel(app->figure, &parked_desc);
         app->panel_scope = dvz_panel(app->figure, &parked_desc);
-        if (app->panel_3d == NULL || app->panel_2d == NULL || app->panel_scope == NULL)
+        if (app->panel_2d == NULL || app->panel_scope == NULL)
             return false;
     }
 
     DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
-    if (app->panel_3d != NULL && dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
-        return false;
     if (app->panel_2d != NULL && dvz_panel_set_background_color(app->panel_2d, bg) != DVZ_OK)
         return false;
     if (dvz_panel_set_background_color(app->panel_1d, bg) != DVZ_OK)
@@ -1409,32 +1499,7 @@ static bool setup_datoviz(Jackoviz* app)
 
     if (!app->fast)
     {
-        DvzCameraDesc camera = dvz_camera_desc();
-        camera.view.eye[0] = -0.4f;
-        camera.view.eye[1] = 2.4f;
-        camera.view.eye[2] = 4.6f;
-        camera.view.target[0] = 0.0f;
-        camera.view.target[1] = 0.35f;
-        camera.view.target[2] = 0.0f;
-        camera.view.up[0] = 0.0f;
-        camera.view.up[1] = 1.0f;
-        camera.view.up[2] = 0.0f;
-        camera.projection.fov_y = 0.66f;
-        camera.projection.near_clip = 0.05f;
-        camera.projection.far_clip = 100.0f;
-        if (dvz_panel_set_camera_desc(app->panel_3d, &camera) != DVZ_OK)
-            return false;
-
-        /* ---- 3D surface ---- */
-        if (!create_surface_mesh(app))
-            return false;
-        /* Default view is 1D; keep the surface hidden until key 3 / SetViewMode. */
-        if (dvz_visual_set_visible(app->mesh, false) != DVZ_OK)
-            return false;
-
-        DvzController* arcball = dvz_arcball(app->scene, NULL);
-        if (arcball == NULL ||
-            dvz_panel_bind_controller(app->panel_3d, arcball, DVZ_DIM_MASK_XYZ) != DVZ_OK)
+        if (!create_panel_3d(app, false))
             return false;
 
         /* ---- 2D STFT image (time × frequency) with axes, grid, colorbar ---- */
