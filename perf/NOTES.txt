@@ -1,3 +1,5 @@
+2026-08-12, Datoviz 0.4.0-rc2 (pre-rc3) :
+
 Those macOS Instruments.app time profile trace were ran on a macbook air 2026, m5 CPU with 10 cores, the cheapest of the
 macbook air 2026. 13-inch screen, 16GB of DRAM, OS is Tahoe 26.5.2.
 
