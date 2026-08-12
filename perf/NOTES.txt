@@ -7,6 +7,10 @@ occurs as the box was not hot.
 CPU usage shown by Instruments.app, htop and Activity Monitor diverges significantly, especially when jackoviz is run
 in fast mode, I don't have any explanation on it.
 
+Datoviz is built by following your BUILD doco, hence in debug mode. Git pull of Sun Aug 9 21:22:57 2026 +0200, b689442bb1239cb43a7dc81b1021000d25469754.
+
+My code is also built in debug mode.
+
 the --fast mode disables the 3D path with "if" statement. The view is in both cases the 1D spectrum view, but jackoviz
 when in non --fast mode stills prepare the data thru datoviz API in case of a view change, the view change occurs by
 parking the panel in a subpixel area of the window and unparking it.
