@@ -129,7 +129,7 @@ The time resolution is, using our customized jack ringbuffer, finer when using a
 
 ## Remote controller
 
-![jackoviz-remote](./screenshots/jackoviz-remote.png "Jackoviz-remote control GUI" =150x)
+![jackoviz-remote](./screenshots/jackoviz-remote.png "Jackoviz-remote control GUI" | width=150)
 
 Qt Quick UI that launches a sibling `jackoviz` via `fork`/`execve` with `-n`,
 optional `--fast`, and `--rpc-only`. The JACK port dropdown is filled from a
