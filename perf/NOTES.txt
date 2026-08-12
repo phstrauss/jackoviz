@@ -10,3 +10,11 @@ in fast mode, I don't have any explanation on it.
 the --fast mode disables the 3D path with "if" statement. The view is in both cases the 1D spectrum view, but jackoviz
 when in non --fast mode stills prepare the data thru datoviz API in case of a view change, the view change occurs by
 parking the panel in a subpixel area of the window and unparking it.
+
+GPU usage is as reported by activity monitor in normal mode:
+1D spectrum view: 11.1%
+2D spectrogram view: 7.4%
+3D spectrogram view: 17.1%
+
+in --fast mode:
+1D spectrum view: 10.5%
