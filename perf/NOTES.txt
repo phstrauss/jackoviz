@@ -16,6 +16,16 @@ The --fast mode disables the 3D path with "if" statement. The view is in both ca
 when in non --fast mode stills prepare the data thru datoviz API in case of a view change, the view change occurs by
 parking the panel in a subpixel area of the window and unparking it.
 
+The traces were ran with Jack sample rate of 44.1kHz, screen refresh of 60Hz. I've made the bandwidth in 3D view 6kHz,
+when the CPU is cold I get a 60Hz refresh rate even in non-fast mode on the "1"D spectrum. Grid size on the 3D panel is 256x558.
+
+FPS:
+1D: 60Hz
+2D: 26.7Hz
+3D: 31Hz
+
+The 2D view appears somewhat slow but it's very constant, while the 3D view use more CPU is more prone to environmental change and vary from 29Hz to 34Hz.
+
 GPU usage is as reported by activity monitor in normal mode:
 1D spectrum view: 11.1%
 2D spectrogram view: 7.4%
