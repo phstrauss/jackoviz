@@ -10,6 +10,4 @@ That’s either a Datoviz bug or a missing documented teardown rule (especially 
 
 Do report: minimal C repro that creates a surface mesh, destroys it, recreates with fewer cols, draws a few frames → emit/validation error.
 
-Don’t lead with: the original gRPC race / off-thread mutation — that’s an app issue. Mention only as “we also hit races when mutating off the Datoviz thread,” separate from the shrink bug.
-
 A good title: something like “Surface grid recreate with fewer cols leaves stale index buffer (draw validation fails on shrink)”.
