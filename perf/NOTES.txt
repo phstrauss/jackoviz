@@ -1,7 +1,7 @@
 Those macOS Instruments.app time profile trace were ran on a macbook air 2026, m5 CPU with 10 cores, the cheapest of the
-macbook air 2026.
+macbook air 2026. 13-inch screen, 16GB of DRAM, OS is Tahoe 26.5.2.
 
-Those tiny boxes don't have a fan, CPU throttling kick-in pretty fast, but those trace should be before such throttling
+Those tiny boxes don't have a fan, CPU throttling kick-in pretty fast, but those traces should be before such throttling
 occurs as the box was not hot.
 
 CPU usage shown by Instruments.app, htop and Activity Monitor diverges significantly, especially when jackoviz is run
