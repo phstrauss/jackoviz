@@ -8,7 +8,7 @@ https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/proposals/future/SAM
 After that, make it v1.0.0
 For the future, towards v2.0.0, just some ideas:
 
-- Use the new Datoviz code as outlined from the URL above, DVZ 0.4.0-rc4).
+- Use the new Datoviz code as outlined from the URL above, DVZ v0.4.0-rc4 to v0.5.0).
 - Performance profiling.
 - True stereo (one FFT per channel, sum the magnitude).
 - Act from file, give a play option?

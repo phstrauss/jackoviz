@@ -1,0 +1,12 @@
+Those macOS Instruments.app time profile trace were ran on a macbook air 2026, m5 CPU with 10 cores, the cheapest of the
+macbook air 2026.
+
+Those tiny boxes don't have a fan, CPU throttling kick-in pretty fast, but those trace should be before such throttling
+occurs as the box was not hot.
+
+CPU usage shown by Instruments.app, htop and Activity Monitor diverges significantly, especially when jackoviz is run
+in fast mode, I don't have any explanation on it.
+
+the --fast mode disables the 3D path with "if" statement. The view is in both cases the 1D spectrum view, but jackoviz
+when in non --fast mode stills prepare the data thru datoviz API in case of a view change, the view change occurs by
+parking the panel in a subpixel area of the window and unparking it.
