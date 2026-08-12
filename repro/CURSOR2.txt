@@ -8,6 +8,4 @@ What we actually showed:
 
 That’s either a Datoviz bug or a missing documented teardown rule (especially with no panel_remove_visual).
 
-Do report: minimal C repro that creates a surface mesh, destroys it, recreates with fewer cols, draws a few frames → emit/validation error.
-
 A good title: something like “Surface grid recreate with fewer cols leaves stale index buffer (draw validation fails on shrink)”.

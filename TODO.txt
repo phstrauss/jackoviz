@@ -1,0 +1,6 @@
+2026-08-12 - v0.9.0, two main bugs fixed to what can be done with the current Datoviz (0.4.0-rc2, see
+https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md):
+
+- Single instance app for the whole host (ADC, jack server, vulkan use).
+- About dialog in the GUI, with single version string shared by jackoviz and remote ctrl.
+- MacOS app bundle including everything, Qt related AND what is needed from Homebrew.
