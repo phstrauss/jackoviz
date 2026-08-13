@@ -983,38 +983,45 @@ static void toggle_pause(Jackoviz* app)
     fprintf(stderr, "processing: %s\n", app->paused ? "paused" : "running");
 }
 
-static void on_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
+static void on_text(DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
 {
     (void)router;
     Jackoviz* app = (Jackoviz*)user_data;
-    if (app == NULL || event == NULL || event->type != DVZ_KEYBOARD_EVENT_PRESS)
+    if (app == NULL || event == NULL || event->utf8 == NULL || event->byte_size == 0u)
         return;
     if (app->rpc_only)
         return;
+    /* Character shortcuts: unmodified, single UTF-8 scalar (layout-aware). */
+    if (event->mods != DVZ_KEY_MODIFIER_NONE || event->byte_size != 1u)
+        return;
 
-    if (event->key == DVZ_KEY_0)
+    char ch = event->utf8[0];
+    if (ch >= 'A' && ch <= 'Z')
+        ch = (char)(ch - 'A' + 'a');
+
+    if (ch == '0')
         (void)apply_view_mode(app, VIEW_MODE_SCOPE);
-    else if (event->key == DVZ_KEY_1)
+    else if (ch == '1')
         (void)apply_view_mode(app, VIEW_MODE_1D);
-    else if (event->key == DVZ_KEY_2)
+    else if (ch == '2')
     {
         if (!app->fast)
             (void)apply_view_mode(app, VIEW_MODE_2D);
     }
-    else if (event->key == DVZ_KEY_3)
+    else if (ch == '3')
     {
         if (!app->fast)
             (void)apply_view_mode(app, VIEW_MODE_3D);
     }
-    else if (event->key == DVZ_KEY_F)
+    else if (ch == 'f')
         cycle_db_floor(app);
-    else if (event->key == DVZ_KEY_C)
+    else if (ch == 'c')
         cycle_db_ceil(app);
-    else if (event->key == DVZ_KEY_M)
+    else if (ch == 'm')
         cycle_plot_freq(app);
-    else if (event->key == DVZ_KEY_W)
+    else if (ch == 'w')
         toggle_line_width(app);
-    else if (event->key == DVZ_KEY_P)
+    else if (ch == 'p')
         toggle_pause(app);
 }
 
@@ -1926,7 +1933,7 @@ static bool setup_datoviz(Jackoviz* app)
 
     DvzInputRouter* input = dvz_view_input(app->view);
     if (input == NULL ||
-        dvz_input_subscribe_keyboard(input, on_keyboard, app) == DVZ_CALLBACK_ID_NONE)
+        dvz_input_subscribe_text(input, on_text, app) == DVZ_CALLBACK_ID_NONE)
         return false;
 
     return true;

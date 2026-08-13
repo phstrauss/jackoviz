@@ -5,6 +5,6 @@
 #ifndef JVZ_VERSION_H
 #define JVZ_VERSION_H
 
-#define JACKOVIZ_VERSION "0.9.1"
+#define JACKOVIZ_VERSION "0.9.2"
 
 #endif /* JVZ_VERSION_H */
