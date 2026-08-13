@@ -23,7 +23,7 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 | CMake ≥ 3.20 | |
 | JACK | `pkg-config jack` — jackd must be running |
 | FFTW3 | `pkg-config fftw3` |
-| Datoviz ≥ 0.4 | Set `DATOVIZ_ROOT` to a built checkout |
+| Datoviz 0.4-dev_git-ef3905bc2ca0 or later | Set `DATOVIZ_ROOT` to a built checkout |
 | POSIX | macOS / Linux (`shm_open` + mirrored `mmap`) |
 | Protobuf | Optional (`JVZ_ENABLE_GRPC`, default ON). CMake **FindProtobuf** module (`libprotobuf-dev` / `protobuf-compiler`); not `CONFIG` mode |
 | gRPC C++ | Optional with gRPC. `pkg-config grpc++` + `grpc_cpp_plugin` (`libgrpc++-dev` / `protobuf-compiler-grpc`) |

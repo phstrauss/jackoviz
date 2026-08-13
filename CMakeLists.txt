@@ -193,6 +193,12 @@ endif()
 # jackoviz-remote — Qt Quick controller (fork/exec launch + JACK list + gRPC)
 # ---------------------------------------------------------------------------
 option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-remote controller" ON)
+# macOS .app bundle (Jackoviz.app). Ignored on other platforms.
+if(APPLE)
+  option(JVZ_REMOTE_MACOS_BUNDLE "Build jackoviz-remote as Jackoviz.app on macOS" ON)
+else()
+  set(JVZ_REMOTE_MACOS_BUNDLE OFF CACHE BOOL "Build jackoviz-remote as Jackoviz.app on macOS" FORCE)
+endif()
 
 if(JVZ_BUILD_REMOTE)
   find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
@@ -214,10 +220,24 @@ if(JVZ_BUILD_REMOTE)
 
   set_target_properties(jackoviz-remote PROPERTIES
     WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE FALSE
   )
+  if(JVZ_REMOTE_MACOS_BUNDLE)
+    set_target_properties(jackoviz-remote PROPERTIES
+      OUTPUT_NAME "Jackoviz"
+      MACOSX_BUNDLE TRUE
+      MACOSX_BUNDLE_BUNDLE_NAME "Jackoviz"
+      MACOSX_BUNDLE_GUI_IDENTIFIER "org.jackoviz.remote"
+      MACOSX_BUNDLE_BUNDLE_VERSION "0.9.2"
+      MACOSX_BUNDLE_SHORT_VERSION_STRING "0.9.2"
+    )
+  else()
+    set_target_properties(jackoviz-remote PROPERTIES
+      OUTPUT_NAME "jackoviz-remote"
+      MACOSX_BUNDLE FALSE
+    )
+  endif()
 
-    target_link_libraries(jackoviz-remote PRIVATE
+  target_link_libraries(jackoviz-remote PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     PkgConfig::JACK
@@ -248,4 +268,6 @@ if(JVZ_BUILD_REMOTE)
     USES_TERMINAL
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
+
+  message(STATUS "jackoviz-remote: JVZ_REMOTE_MACOS_BUNDLE=${JVZ_REMOTE_MACOS_BUNDLE}")
 endif()
