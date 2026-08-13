@@ -67,8 +67,6 @@
 #define DB_STORAGE_FLOOR          (-140.0) /* deepest clamp for stored spectra */
 #define DB_STORAGE_CEIL           (0.0)   /* highest clamp for stored spectra */
 #define DEFAULT_PLOT_FREQ_MAX_HZ  6000.0
-/* 3D surface is fixed at this band; fmax (key m / later gRPC) only affects 1D/2D. */
-#define MESH_PLOT_FREQ_HZ         6000.0
 #define DB_FLOOR_OPTION_COUNT     5u
 #define DB_CEIL_OPTION_COUNT      3u
 #define DB_TICK_MAX               16u
@@ -339,7 +337,7 @@ typedef struct Jackoviz
     SpecRing spec;
     uint32_t history;
     uint32_t n_plot_bins; /* bins kept for 1D/2D: 0 … plot_freq_limit */
-    uint32_t n_mesh_bins; /* fixed 3D surface cols at MESH_PLOT_FREQ_HZ; ignores fmax */
+    uint32_t n_mesh_bins; /* 3D surface cols (= n_plot_bins; rebuilt on fmax) */
     double plot_freq_limit; /* requested max display frequency (Hz) */
     double plot_freq_max; /* Hz covered by n_plot_bins */
     uint32_t plot_freq_index; /* index into PLOT_FREQ_OPTIONS when cycling */
@@ -495,8 +493,7 @@ static void fill_spectrogram_buffers(Jackoviz* app)
         return;
 
     /* Newest spectrum at high time index for the 3D surface (far edge).
-     * 2D columns are mirrored so on-screen time increases to the right.
-     * 3D always fills n_mesh_bins (fixed MESH_PLOT_FREQ_HZ); 2D uses n_plot_bins. */
+     * 2D columns are mirrored so on-screen time increases to the right. */
     const uint32_t t0 = n_time - available;
     const double db_span = app->db_ceil - app->db_floor;
     for (uint32_t t = 0; t < available; t++)
@@ -806,14 +803,6 @@ static void apply_plot_freq_request(Jackoviz* app, double freq)
 {
     if (app == NULL)
         return;
-    /* Match key m: 3D mesh band is fixed. */
-    if (app->view_mode == VIEW_MODE_3D)
-    {
-        fprintf(
-            stderr, "max plot frequency: ignored in 3D view (mesh fixed at %.0f Hz)\n",
-            MESH_PLOT_FREQ_HZ);
-        return;
-    }
     app->plot_freq_limit = freq;
     if (!apply_plot_freq_limit(app))
     {
@@ -1293,18 +1282,16 @@ static bool configure_plot_band(Jackoviz* app)
 {
     app->n_plot_bins =
         bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, app->plot_freq_limit);
+    app->n_mesh_bins = app->n_plot_bins;
 
-    /* 3D mesh is always MESH_PLOT_FREQ_HZ; fmax only resizes 1D/2D buffers. */
-    if (app->n_mesh_bins == 0u)
-    {
-        app->n_mesh_bins =
-            bins_up_to_hz(app->fft_size, app->n_bins, app->sample_rate, MESH_PLOT_FREQ_HZ);
-    }
-
+    free(app->heights);
+    free(app->colors);
     free(app->field_values);
     free(app->spectrum_pos);
     free(app->spectrum_color);
     free(app->spectrum_width);
+    app->heights = NULL;
+    app->colors = NULL;
     app->field_values = NULL;
     app->spectrum_pos = (vec3*)calloc(app->n_plot_bins, sizeof(vec3));
     app->spectrum_color = (DvzColor*)calloc(app->n_plot_bins, sizeof(DvzColor));
@@ -1314,25 +1301,19 @@ static bool configure_plot_band(Jackoviz* app)
 
     if (!app->fast)
     {
-        if (app->heights == NULL)
-        {
-            app->heights =
-                (double*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(double));
-            app->colors =
-                (DvzColor*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(DvzColor));
-            if (app->heights == NULL || app->colors == NULL)
-                return false;
-
-            viridis_lut_init();
-            const DvzColor floor_color = g_viridis_lut[0];
-            for (uint32_t i = 0; i < app->history * app->n_mesh_bins; i++)
-                app->colors[i] = floor_color;
-        }
-
+        app->heights =
+            (double*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(double));
+        app->colors =
+            (DvzColor*)calloc((size_t)app->history * (size_t)app->n_mesh_bins, sizeof(DvzColor));
         app->field_values =
             (float*)calloc((size_t)app->history * (size_t)app->n_plot_bins, sizeof(float));
-        if (app->field_values == NULL)
+        if (app->heights == NULL || app->colors == NULL || app->field_values == NULL)
             return false;
+
+        viridis_lut_init();
+        const DvzColor floor_color = g_viridis_lut[0];
+        for (uint32_t i = 0; i < app->history * app->n_mesh_bins; i++)
+            app->colors[i] = floor_color;
         for (uint32_t i = 0; i < app->history * app->n_plot_bins; i++)
             app->field_values[i] = (float)app->db_floor;
     }
@@ -1350,16 +1331,16 @@ static bool configure_plot_band(Jackoviz* app)
     app->plot_freq_max =
         (double)(app->n_plot_bins - 1u) * (double)app->sample_rate / (double)app->fft_size;
     fprintf(
-        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz; 3D fixed %.0f Hz / %u cols)\n",
+        stderr, "plot band: 0 … %.1f Hz (%u of %u bins @ %u Hz; 3D mesh %u cols)\n",
         app->plot_freq_max, app->n_plot_bins, app->n_bins, (unsigned)app->sample_rate,
-        MESH_PLOT_FREQ_HZ, app->n_mesh_bins);
+        app->n_mesh_bins);
     return true;
 }
 
 /*
  * Build a new surface geometry + mesh and attach it to panel_3d.
  * Caller must have already destroyed any previous mesh and geometry.
- * Grid cols are fixed at n_mesh_bins (MESH_PLOT_FREQ_HZ).
+ * Grid cols follow n_mesh_bins (= n_plot_bins).
  */
 static bool create_surface_mesh(Jackoviz* app)
 {
@@ -1409,6 +1390,39 @@ static bool create_surface_mesh(Jackoviz* app)
     if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
         return false;
     return true;
+}
+
+/*
+ * Tear down panel_3d entirely (mesh → geometry → panel). Datoviz has no
+ * panel_remove_visual; destroying the panel clears attach slots cleanly.
+ */
+static void destroy_panel_3d(Jackoviz* app)
+{
+    if (app == NULL)
+        return;
+
+    if (app->view != NULL && app->panel_1d != NULL && app->view_mode == VIEW_MODE_3D)
+        (void)dvz_view_connect_panel(app->view, app->panel_1d);
+
+    if (app->panel_3d != NULL)
+        (void)dvz_panel_connect_input(app->panel_3d, NULL);
+
+    if (app->mesh != NULL)
+    {
+        (void)dvz_visual_set_visible(app->mesh, false);
+        dvz_visual_destroy(app->mesh);
+        app->mesh = NULL;
+    }
+    if (app->geometry != NULL)
+    {
+        dvz_geometry_destroy(app->geometry);
+        app->geometry = NULL;
+    }
+    if (app->panel_3d != NULL)
+    {
+        dvz_panel_destroy(app->panel_3d);
+        app->panel_3d = NULL;
+    }
 }
 
 /*
@@ -1480,7 +1494,10 @@ static bool apply_plot_freq_limit(Jackoviz* app)
     if (app == NULL)
         return false;
 
-    /* 3D mesh stays at MESH_PLOT_FREQ_HZ for the whole run; only 1D/2D follow fmax. */
+    /* Destroy 3D mesh/geometry/panel before reallocating heights/colors. */
+    if (!app->fast)
+        destroy_panel_3d(app);
+
     if (!configure_plot_band(app))
         return false;
 
@@ -1533,6 +1550,9 @@ static bool apply_plot_freq_limit(Jackoviz* app)
                     app->field, app->history, app->n_plot_bins, 1u, &view) != DVZ_OK)
                 return false;
         }
+
+        if (!create_panel_3d(app, app->view_mode == VIEW_MODE_3D))
+            return false;
     }
 
     return true;
@@ -1556,14 +1576,6 @@ static void cycle_plot_freq(Jackoviz* app)
 {
     if (app == NULL || app->plot_freq_locked)
         return;
-    /* 3D band is fixed; ignore fmax while that view is active. */
-    if (app->view_mode == VIEW_MODE_3D)
-    {
-        fprintf(
-            stderr, "max plot frequency: ignored in 3D view (mesh fixed at %.0f Hz)\n",
-            MESH_PLOT_FREQ_HZ);
-        return;
-    }
 
     app->plot_freq_index = (app->plot_freq_index + 1u) % PLOT_FREQ_OPTION_COUNT;
     app->plot_freq_limit = PLOT_FREQ_OPTIONS[app->plot_freq_index];
@@ -1616,7 +1628,7 @@ static bool setup_datoviz(Jackoviz* app)
     else
     {
         /* Default view is 1D spectrum; 2D / scope start parked. 3D panel is
-         * created once here; fmax changes keep the mesh and only refill cols. */
+         * created below; fmax rebuilds it via destroy_panel_3d + create_panel_3d. */
         app->panel_1d = dvz_panel_full(app->figure);
         if (app->panel_1d == NULL)
             return false;

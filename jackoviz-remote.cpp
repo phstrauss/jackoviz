@@ -44,7 +44,7 @@ class RemoteController : public QObject
     Q_PROPERTY(bool launched READ launched NOTIFY launchedChanged)
     Q_PROPERTY(bool paused READ paused NOTIFY pausedChanged)
     Q_PROPERTY(int viewModeIndex READ viewModeIndex NOTIFY viewModeIndexChanged)
-    /* False in scope (unused) and 3D (mesh fixed at 6 kHz). */
+    /* False in oscilloscope (fmax unused there). */
     Q_PROPERTY(bool plotFreqEnabled READ plotFreqEnabled NOTIFY viewModeIndexChanged)
     /* dB floor/ceil unused on oscilloscope (time × amplitude). */
     Q_PROPERTY(bool dbRangeEnabled READ dbRangeEnabled NOTIFY viewModeIndexChanged)
@@ -75,8 +75,8 @@ public:
     bool launched() const { return m_pid > 0; }
     bool paused() const { return m_paused; }
     int viewModeIndex() const { return m_view_index; }
-    /* qmlIndex: 0=scope, 3=3D — fmax unused / mesh fixed. */
-    bool plotFreqEnabled() const { return m_view_index != 0 && m_view_index != 3; }
+    /* qmlIndex: 0=scope — fmax unused on oscilloscope. */
+    bool plotFreqEnabled() const { return m_view_index != 0; }
     bool dbRangeEnabled() const { return m_view_index != 0; }
     /* qmlIndex: 0=scope, 1=1D — only those use stroke width. */
     bool lineWidthEnabled() const { return m_view_index == 0 || m_view_index == 1; }
@@ -294,10 +294,7 @@ public:
         m_plot_freq = freqHz;
         if (!plotFreqEnabled())
         {
-            setStatus(
-                m_view_index == 3
-                    ? QStringLiteral("max freq: ignored in 3D view (mesh fixed at 6000 Hz)")
-                    : QStringLiteral("max freq: ignored in oscilloscope view"));
+            setStatus(QStringLiteral("max freq: ignored in oscilloscope view"));
             return;
         }
         if (!requireLaunched(QStringLiteral("max freq %1 Hz queued").arg(freqHz, 0, 'f', 0)))

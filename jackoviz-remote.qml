@@ -276,13 +276,9 @@ ApplicationWindow {
             }
 
             Label {
-                text: {
-                    if (controller.viewModeIndex === 0)
-                        return "Max frequency (n/a in scope)"
-                    if (controller.viewModeIndex === 3)
-                        return "Max frequency (fixed 6 kHz in 3D)"
-                    return "Max frequency"
-                }
+                text: controller.plotFreqEnabled
+                      ? "Max frequency"
+                      : "Max frequency (n/a in scope)"
                 font.bold: true
                 font.pixelSize: 11
             }
