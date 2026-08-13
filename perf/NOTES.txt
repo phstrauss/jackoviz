@@ -35,3 +35,9 @@ GPU usage is as reported by activity monitor in normal mode:
 
 in --fast mode:
 1D spectrum view: 10.5%
+
+-
+2026-08-13, Datoviz 0.4-dev git commit b8fdc6c311e3a027b3a2e6c31cdde92463ac86ef :
+
+Your work on the simplified geometry of regular grids made it 100%, now the FPS are all at 60Hz without touching my
+code, with datoviz still in debug mode! Still on the 6kHz bandwidth.
