@@ -40,8 +40,12 @@ class RemoteController : public QObject
     Q_PROPERTY(bool launched READ launched NOTIFY launchedChanged)
     Q_PROPERTY(bool paused READ paused NOTIFY pausedChanged)
     Q_PROPERTY(int viewModeIndex READ viewModeIndex NOTIFY viewModeIndexChanged)
-    /* False in 3D: jackoviz mesh is fixed at 6 kHz (same as key m). */
+    /* False in scope (unused) and 3D (mesh fixed at 6 kHz). */
     Q_PROPERTY(bool plotFreqEnabled READ plotFreqEnabled NOTIFY viewModeIndexChanged)
+    /* dB floor/ceil unused on oscilloscope (time × amplitude). */
+    Q_PROPERTY(bool dbRangeEnabled READ dbRangeEnabled NOTIFY viewModeIndexChanged)
+    /* Line width only affects scope + 1D paths (not 2D/3D spectrograms). */
+    Q_PROPERTY(bool lineWidthEnabled READ lineWidthEnabled NOTIFY viewModeIndexChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
 
@@ -66,8 +70,11 @@ public:
     bool launched() const { return m_pid > 0; }
     bool paused() const { return m_paused; }
     int viewModeIndex() const { return m_view_index; }
-    /* 3D spectrogram ignores fmax (mesh fixed at MESH_PLOT_FREQ_HZ / 6 kHz). */
-    bool plotFreqEnabled() const { return m_view_index != 3; }
+    /* qmlIndex: 0=scope, 3=3D — fmax unused / mesh fixed. */
+    bool plotFreqEnabled() const { return m_view_index != 0 && m_view_index != 3; }
+    bool dbRangeEnabled() const { return m_view_index != 0; }
+    /* qmlIndex: 0=scope, 1=1D — only those use stroke width. */
+    bool lineWidthEnabled() const { return m_view_index == 0 || m_view_index == 1; }
     QString statusText() const { return m_status; }
     QStringList jackPorts() const { return m_jack_ports; }
 
@@ -279,10 +286,12 @@ public:
     Q_INVOKABLE void setPlotFreq(double freqHz)
     {
         m_plot_freq = freqHz;
-        /* Match jackoviz key m: 3D surface band is fixed; do not send SetPlotFreq. */
         if (!plotFreqEnabled())
         {
-            setStatus(QStringLiteral("max freq: ignored in 3D view (mesh fixed at 6000 Hz)"));
+            setStatus(
+                m_view_index == 3
+                    ? QStringLiteral("max freq: ignored in 3D view (mesh fixed at 6000 Hz)")
+                    : QStringLiteral("max freq: ignored in oscilloscope view"));
             return;
         }
         if (!requireLaunched(QStringLiteral("max freq %1 Hz queued").arg(freqHz, 0, 'f', 0)))
@@ -302,6 +311,11 @@ public:
     Q_INVOKABLE void setDbCeil(double ceilDb)
     {
         m_db_ceil = ceilDb;
+        if (!dbRangeEnabled())
+        {
+            setStatus(QStringLiteral("dB ceil: ignored in oscilloscope view"));
+            return;
+        }
         if (!requireLaunched(QStringLiteral("dB ceil %1 queued").arg(ceilDb, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
@@ -319,6 +333,11 @@ public:
     Q_INVOKABLE void setDbFloor(double floorDb)
     {
         m_db_floor = floorDb;
+        if (!dbRangeEnabled())
+        {
+            setStatus(QStringLiteral("dB floor: ignored in oscilloscope view"));
+            return;
+        }
         if (!requireLaunched(QStringLiteral("dB floor %1 queued").arg(floorDb, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)
@@ -353,6 +372,11 @@ public:
     Q_INVOKABLE void setLineWidth(float widthPx)
     {
         m_line_width = widthPx;
+        if (!lineWidthEnabled())
+        {
+            setStatus(QStringLiteral("line width: ignored in 2D/3D spectrogram view"));
+            return;
+        }
         if (!requireLaunched(QStringLiteral("line width %1 px queued").arg(widthPx, 0, 'f', 0)))
             return;
 #if defined(JVZ_HAS_GRPC)

@@ -238,9 +238,13 @@ ApplicationWindow {
             }
 
             Label {
-                text: controller.plotFreqEnabled
-                      ? "Max frequency"
-                      : "Max frequency (fixed 6 kHz in 3D)"
+                text: {
+                    if (controller.viewModeIndex === 0)
+                        return "Max frequency (n/a in scope)"
+                    if (controller.viewModeIndex === 3)
+                        return "Max frequency (fixed 6 kHz in 3D)"
+                    return "Max frequency"
+                }
                 font.bold: true
                 font.pixelSize: 11
             }
@@ -257,7 +261,13 @@ ApplicationWindow {
                     controller.setPlotFreq(root.maxFreqValues[currentIndex])
             }
 
-            Label { text: "dB ceiling"; font.bold: true; font.pixelSize: 11 }
+            Label {
+                text: controller.dbRangeEnabled
+                      ? "dB ceiling"
+                      : "dB ceiling (n/a in scope)"
+                font.bold: true
+                font.pixelSize: 11
+            }
             ComboBox {
                 id: dbCeilBox
                 Layout.fillWidth: true
@@ -265,12 +275,19 @@ ApplicationWindow {
                 font.pixelSize: 11
                 model: root.dbCeils
                 currentIndex: 2 // -20 dB
+                enabled: controller.dbRangeEnabled
                 onActivated: controller.setDbCeil(root.dbCeilValues[currentIndex])
                 Component.onCompleted:
                     controller.setDbCeil(root.dbCeilValues[currentIndex])
             }
 
-            Label { text: "dB floor"; font.bold: true; font.pixelSize: 11 }
+            Label {
+                text: controller.dbRangeEnabled
+                      ? "dB floor"
+                      : "dB floor (n/a in scope)"
+                font.bold: true
+                font.pixelSize: 11
+            }
             ComboBox {
                 id: dbFloorBox
                 Layout.fillWidth: true
@@ -278,6 +295,7 @@ ApplicationWindow {
                 font.pixelSize: 11
                 model: root.dbFloors
                 currentIndex: 2 // -120 dB
+                enabled: controller.dbRangeEnabled
                 onActivated: controller.setDbFloor(root.dbFloorValues[currentIndex])
                 Component.onCompleted:
                     controller.setDbFloor(root.dbFloorValues[currentIndex])
@@ -311,7 +329,13 @@ ApplicationWindow {
                 Label { text: "10.0"; opacity: 0.6; font.pixelSize: 9 }
             }
 
-            Label { text: "Line width"; font.bold: true; font.pixelSize: 11 }
+            Label {
+                text: controller.lineWidthEnabled
+                      ? "Line width"
+                      : "Line width (scope / 1D only)"
+                font.bold: true
+                font.pixelSize: 11
+            }
             ComboBox {
                 id: lineWidthBox
                 Layout.fillWidth: true
@@ -319,6 +343,7 @@ ApplicationWindow {
                 font.pixelSize: 11
                 model: root.lineWidths
                 currentIndex: 0 // 1 px
+                enabled: controller.lineWidthEnabled
                 onActivated: controller.setLineWidth(root.lineWidthValues[currentIndex])
                 Component.onCompleted:
                     controller.setLineWidth(root.lineWidthValues[currentIndex])

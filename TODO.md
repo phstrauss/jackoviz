@@ -8,10 +8,11 @@ see Datoviz author's [proposal for the future of mesh-grid fields](https://githu
 ### Before jackoviz v1.0.0
 
 - Grey-out the maximum frequency, dB ceil and floor in the remote GUI when in Oscilloscope mode.
+- Grey-out the line width setting in the remote GUI when in 2D and 3D spectrogram view.
 - Make the jackoviz and jackoviz-remote a single instance app (singleton app) on the whole host.
-- Add an "About" dialog in the GUI, with a single version string shared by jackoviz.c and remote ctrl.
+- Add an "About" dialog in the GUI, with a single version string shared by jackoviz.c and remote GUI.
   Display the version string from jackoviz.c to the terminal when launching jackoviz.
-- Provide two icons for the following step.
+- Provide two icons for the following steps.
 - Under MacOS, bundle a .app including everything, Qt related AND all other dependencies from Homebrew.
 - Bundle everything in an AppImage under Linux.
 
