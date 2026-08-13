@@ -7,8 +7,10 @@
  */
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QLockFile>
 #include <QObject>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -586,6 +588,15 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
     QCoreApplication::setApplicationName(QStringLiteral("jackoviz-remote"));
     QCoreApplication::setOrganizationName(QStringLiteral("jackoviz"));
+
+    /* Host-wide singleton (separate from jackoviz's /tmp/jackoviz.lock). */
+    QLockFile instance_lock(QStringLiteral("/tmp/jackoviz-remote.lock"));
+    instance_lock.setStaleLockTime(5000);
+    if (!instance_lock.tryLock(100))
+    {
+        qWarning("jackoviz-remote: another instance is already running on this host");
+        return 1;
+    }
 
     RemoteController controller;
 

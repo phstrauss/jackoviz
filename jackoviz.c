@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -1966,6 +1967,26 @@ static void teardown(Jackoviz* app)
 /*  main                                                                                         */
 /*************************************************************************************************/
 
+/* Host-wide singleton: hold an exclusive flock on /tmp/jackoviz.lock for process life. */
+static int acquire_single_instance(void)
+{
+    const char* path = "/tmp/jackoviz.lock";
+    const int fd = open(path, O_CREAT | O_RDWR, 0644);
+    if (fd < 0)
+    {
+        fprintf(stderr, "single-instance: cannot open %s: %s\n", path, strerror(errno));
+        return -1;
+    }
+    if (flock(fd, LOCK_EX | LOCK_NB) != 0)
+    {
+        fprintf(stderr, "jackoviz: another instance is already running on this host\n");
+        close(fd);
+        return -1;
+    }
+    /* Keep fd open so the lock is released only on process exit. */
+    return fd;
+}
+
 int main(int argc, char** argv)
 {
     uint32_t fft_size = DEFAULT_FFT_SIZE;
@@ -1983,6 +2004,11 @@ int main(int argc, char** argv)
         &fast, &plot_freq_locked, &rpc_only);
     if (parg != 0)
         return parg < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+
+    const int instance_lock_fd = acquire_single_instance();
+    if (instance_lock_fd < 0)
+        return EXIT_FAILURE;
+    (void)instance_lock_fd;
 
     Jackoviz app;
     memset(&app, 0, sizeof(app));
