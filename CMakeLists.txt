@@ -217,11 +217,12 @@ if(JVZ_BUILD_REMOTE)
     MACOSX_BUNDLE FALSE
   )
 
-  target_link_libraries(jackoviz-remote PRIVATE
+    target_link_libraries(jackoviz-remote PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     PkgConfig::JACK
   )
+  target_include_directories(jackoviz-remote PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   if(JVZ_ENABLE_GRPC)
     target_sources(jackoviz-remote PRIVATE

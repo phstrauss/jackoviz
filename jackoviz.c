@@ -40,6 +40,7 @@
 #include <jack/jack.h>
 #include "jvz_jack_ringbuffer.h"
 #include "jackoviz.h"
+#include "jvz_version.h"
 
 #include <datoviz.h>
 
@@ -1071,7 +1072,7 @@ static void usage(const char* prog)
     fprintf(
         stderr,
         "Usage: %s [-n 1024|2048|4096|8192] [-f hz] [-b beta] [-c client] [-s jack_source] "
-        "[--frames N] [--fast] [--rpc-only]\n"
+        "[--frames N] [--fast] [--rpc-only] [-v]\n"
         "  -n     FFT size (default %u)\n"
         "  -f     max plot frequency in Hz (locks key m; default %.0f, else key m cycles "
         "8/12/16/20/4/6 kHz)\n"
@@ -1081,6 +1082,7 @@ static void usage(const char* prog)
         "  --frames N  exit after N rendered frames (smoke / CI)\n"
         "  --fast      scope + 1D spectrum only (skip 2D/3D spectrogram uploads)\n"
         "  --rpc-only  disable keyboard settings (control via gRPC / jackoviz-remote)\n"
+        "  -v          print version and exit\n"
         "Keys: 0 = oscilloscope, 1 = spectrum XY, 2 = 2D STFT image, 3 = 3D surface, "
         "f = cycle dB floor, c = cycle dB ceiling, "
         "m = cycle max plot frequency (unless -f given), "
@@ -1154,6 +1156,11 @@ static int parse_args(
         else if (strcmp(argv[i], "--rpc-only") == 0)
         {
             *rpc_only = true;
+        }
+        else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0)
+        {
+            printf("%s\n", JACKOVIZ_VERSION);
+            return 1;
         }
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -2009,6 +2016,8 @@ int main(int argc, char** argv)
     if (instance_lock_fd < 0)
         return EXIT_FAILURE;
     (void)instance_lock_fd;
+
+    fprintf(stderr, "jackoviz %s\n", JACKOVIZ_VERSION);
 
     Jackoviz app;
     memset(&app, 0, sizeof(app));

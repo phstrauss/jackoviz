@@ -43,9 +43,47 @@ ApplicationWindow {
     readonly property bool launched: controller.launched
     readonly property bool paused: controller.paused
     readonly property string statusText: controller.statusText
+    readonly property string appVersion: controller.appVersion
 
     property int syncStep: 0
     readonly property int syncStepCount: 8
+
+    menuBar: MenuBar {
+        Menu {
+            title: qsTr("About")
+            Action {
+                text: qsTr("About jackoviz…")
+                onTriggered: aboutDialog.open()
+            }
+        }
+    }
+
+    Dialog {
+        id: aboutDialog
+        title: qsTr("About jackoviz")
+        modal: true
+        anchors.centerIn: Overlay.overlay
+        standardButtons: Dialog.Ok
+        width: Math.min(280, root.width - 24)
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 8
+            Label {
+                Layout.fillWidth: true
+                text: "jackoviz " + root.appVersion
+                font.bold: true
+                font.pixelSize: 13
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                Layout.fillWidth: true
+                text: qsTr("Realtime JACK → FFTW3 → Datoviz spectrogram, with this remote controller.")
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+            }
+        }
+    }
 
     function pushAllSettings() {
         if (!root.launched)

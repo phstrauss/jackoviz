@@ -31,6 +31,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "jvz_version.h"
+
 #if defined(JVZ_HAS_GRPC)
 #include "jvzcontroller.grpc.pb.h"
 #include <grpcpp/grpcpp.h>
@@ -50,6 +52,7 @@ class RemoteController : public QObject
     Q_PROPERTY(bool lineWidthEnabled READ lineWidthEnabled NOTIFY viewModeIndexChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
+    Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
 
 public:
     explicit RemoteController(QObject* parent = nullptr)
@@ -79,6 +82,7 @@ public:
     bool lineWidthEnabled() const { return m_view_index == 0 || m_view_index == 1; }
     QString statusText() const { return m_status; }
     QStringList jackPorts() const { return m_jack_ports; }
+    QString appVersion() const { return QStringLiteral(JACKOVIZ_VERSION); }
 
     Q_INVOKABLE void launch(int fftSize, bool fast)
     {
@@ -588,6 +592,7 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
     QCoreApplication::setApplicationName(QStringLiteral("jackoviz-remote"));
     QCoreApplication::setOrganizationName(QStringLiteral("jackoviz"));
+    QCoreApplication::setApplicationVersion(QStringLiteral(JACKOVIZ_VERSION));
 
     /* Host-wide singleton (separate from jackoviz's /tmp/jackoviz.lock). */
     QLockFile instance_lock(QStringLiteral("/tmp/jackoviz-remote.lock"));
