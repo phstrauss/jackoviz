@@ -12,11 +12,11 @@ ApplicationWindow {
     id: root
     title: "jackoviz remote"
     width: 260
-    height: 728
+    height: 740
     minimumWidth: 260
     maximumWidth: 260
-    minimumHeight: 728
-    maximumHeight: 728
+    minimumHeight: 740
+    maximumHeight: 740
     visible: true
     font.pixelSize: 11
 
