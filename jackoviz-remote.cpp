@@ -15,6 +15,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
 #include <QTimer>
@@ -54,11 +55,22 @@ class RemoteController : public QObject
     Q_PROPERTY(bool jackRunning READ jackRunning NOTIFY jackRunningChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
     Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
+    /* Persisted UI prefs (QSettings); restored at startup, saved on exit. */
+    Q_PROPERTY(int fftSize READ fftSize WRITE setFftSize NOTIFY fftSizeChanged)
+    Q_PROPERTY(bool fastMode READ fastMode WRITE setFastMode NOTIFY fastModeChanged)
+    Q_PROPERTY(QString jackPort READ jackPort NOTIFY jackPortChanged)
+    Q_PROPERTY(double plotFreq READ plotFreq NOTIFY plotFreqChanged)
+    Q_PROPERTY(double dbCeil READ dbCeil NOTIFY dbCeilChanged)
+    Q_PROPERTY(double dbFloor READ dbFloor NOTIFY dbFloorChanged)
+    Q_PROPERTY(double kaiserBeta READ kaiserBeta NOTIFY kaiserBetaChanged)
+    Q_PROPERTY(double lineWidth READ lineWidth NOTIFY lineWidthChanged)
 
 public:
     explicit RemoteController(QObject* parent = nullptr)
         : QObject(parent)
     {
+        loadSettings();
+
         auto* timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, &RemoteController::reapChild);
         timer->start(400);
@@ -85,6 +97,49 @@ public:
     bool jackRunning() const { return m_jack_running; }
     QStringList jackPorts() const { return m_jack_ports; }
     QString appVersion() const { return QStringLiteral(JACKOVIZ_VERSION); }
+    int fftSize() const { return m_fft_size; }
+    bool fastMode() const { return m_fast_mode; }
+    QString jackPort() const { return m_jack_port; }
+    double plotFreq() const { return m_plot_freq; }
+    double dbCeil() const { return m_db_ceil; }
+    double dbFloor() const { return m_db_floor; }
+    double kaiserBeta() const { return m_kaiser_beta; }
+    double lineWidth() const { return static_cast<double>(m_line_width); }
+
+    void setFftSize(int fftSize)
+    {
+        if (fftSize != 1024 && fftSize != 2048 && fftSize != 4096 && fftSize != 8192)
+            return;
+        if (m_fft_size == fftSize)
+            return;
+        m_fft_size = fftSize;
+        emit fftSizeChanged();
+    }
+
+    void setFastMode(bool fast)
+    {
+        if (m_fast_mode == fast)
+            return;
+        m_fast_mode = fast;
+        emit fastModeChanged();
+    }
+
+    Q_INVOKABLE void saveSettings()
+    {
+        QSettings s;
+        s.beginGroup(QStringLiteral("ui"));
+        s.setValue(QStringLiteral("fftSize"), m_fft_size);
+        s.setValue(QStringLiteral("fastMode"), m_fast_mode);
+        s.setValue(QStringLiteral("jackPort"), m_jack_port);
+        s.setValue(QStringLiteral("viewMode"), m_view_index);
+        s.setValue(QStringLiteral("plotFreq"), m_plot_freq);
+        s.setValue(QStringLiteral("dbCeil"), m_db_ceil);
+        s.setValue(QStringLiteral("dbFloor"), m_db_floor);
+        s.setValue(QStringLiteral("kaiserBeta"), m_kaiser_beta);
+        s.setValue(QStringLiteral("lineWidth"), static_cast<double>(m_line_width));
+        s.endGroup();
+        s.sync();
+    }
 
     Q_INVOKABLE void launch(int fftSize, bool fast)
     {
@@ -228,7 +283,11 @@ public:
 
     Q_INVOKABLE void connectJackPort(const QString& portName)
     {
-        m_jack_port = portName;
+        if (m_jack_port != portName)
+        {
+            m_jack_port = portName;
+            emit jackPortChanged();
+        }
         if (!m_jack_running)
         {
             setStatus(QStringLiteral("JACK is not running"));
@@ -301,7 +360,11 @@ public:
 
     Q_INVOKABLE void setPlotFreq(double freqHz)
     {
-        m_plot_freq = freqHz;
+        if (m_plot_freq != freqHz)
+        {
+            m_plot_freq = freqHz;
+            emit plotFreqChanged();
+        }
         if (!plotFreqEnabled())
         {
             setStatus(QStringLiteral("max freq: ignored in oscilloscope view"));
@@ -323,7 +386,11 @@ public:
 
     Q_INVOKABLE void setDbCeil(double ceilDb)
     {
-        m_db_ceil = ceilDb;
+        if (m_db_ceil != ceilDb)
+        {
+            m_db_ceil = ceilDb;
+            emit dbCeilChanged();
+        }
         if (!dbRangeEnabled())
         {
             setStatus(QStringLiteral("dB ceil: ignored in oscilloscope view"));
@@ -345,7 +412,11 @@ public:
 
     Q_INVOKABLE void setDbFloor(double floorDb)
     {
-        m_db_floor = floorDb;
+        if (m_db_floor != floorDb)
+        {
+            m_db_floor = floorDb;
+            emit dbFloorChanged();
+        }
         if (!dbRangeEnabled())
         {
             setStatus(QStringLiteral("dB floor: ignored in oscilloscope view"));
@@ -367,7 +438,11 @@ public:
 
     Q_INVOKABLE void setKaiserBeta(double beta)
     {
-        m_kaiser_beta = beta;
+        if (m_kaiser_beta != beta)
+        {
+            m_kaiser_beta = beta;
+            emit kaiserBetaChanged();
+        }
         if (!requireLaunched(QStringLiteral("Kaiser β %1 queued").arg(beta, 0, 'f', 1)))
             return;
 #if defined(JVZ_HAS_GRPC)
@@ -384,7 +459,11 @@ public:
 
     Q_INVOKABLE void setLineWidth(float widthPx)
     {
-        m_line_width = widthPx;
+        if (m_line_width != widthPx)
+        {
+            m_line_width = widthPx;
+            emit lineWidthChanged();
+        }
         if (!lineWidthEnabled())
         {
             setStatus(QStringLiteral("line width: ignored in 2D/3D spectrogram view"));
@@ -430,6 +509,14 @@ signals:
     void statusTextChanged();
     void jackRunningChanged();
     void jackPortsChanged();
+    void fftSizeChanged();
+    void fastModeChanged();
+    void jackPortChanged();
+    void plotFreqChanged();
+    void dbCeilChanged();
+    void dbFloorChanged();
+    void kaiserBetaChanged();
+    void lineWidthChanged();
 
 public slots:
     void handleJackShutdown()
@@ -440,6 +527,30 @@ public slots:
     }
 
 private:
+    void loadSettings()
+    {
+        QSettings s;
+        s.beginGroup(QStringLiteral("ui"));
+        const int fft = s.value(QStringLiteral("fftSize"), 4096).toInt();
+        if (fft == 1024 || fft == 2048 || fft == 4096 || fft == 8192)
+            m_fft_size = fft;
+        m_fast_mode = s.value(QStringLiteral("fastMode"), false).toBool();
+        m_jack_port = s.value(QStringLiteral("jackPort"), QStringLiteral("(none)")).toString();
+        if (m_jack_port.isEmpty())
+            m_jack_port = QStringLiteral("(none)");
+        const int view = s.value(QStringLiteral("viewMode"), 1).toInt();
+        if (view >= 0 && view <= 3)
+            m_view_index = view;
+        if (m_fast_mode && m_view_index >= 2)
+            m_view_index = 1;
+        m_plot_freq = s.value(QStringLiteral("plotFreq"), 6000.0).toDouble();
+        m_db_ceil = s.value(QStringLiteral("dbCeil"), -20.0).toDouble();
+        m_db_floor = s.value(QStringLiteral("dbFloor"), -120.0).toDouble();
+        m_kaiser_beta = s.value(QStringLiteral("kaiserBeta"), 4.5).toDouble();
+        m_line_width = static_cast<float>(s.value(QStringLiteral("lineWidth"), 1.0).toDouble());
+        s.endGroup();
+    }
+
     void setViewModeIndex(int index)
     {
         if (m_view_index == index)
@@ -616,6 +727,8 @@ private:
 
     pid_t m_pid = -1;
     bool m_fast = false;
+    bool m_fast_mode = false;
+    int m_fft_size = 4096;
     bool m_paused = false;
     QString m_status = QStringLiteral("OK");
     bool m_jack_running = false;
@@ -649,6 +762,8 @@ int main(int argc, char* argv[])
     }
 
     RemoteController controller;
+    QObject::connect(
+        &app, &QGuiApplication::aboutToQuit, &controller, &RemoteController::saveSettings);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("controller"), &controller);

@@ -12,11 +12,11 @@ ApplicationWindow {
     id: root
     title: "jackoviz remote"
     width: 260
-    height: 680
+    height: 690
     minimumWidth: 260
     maximumWidth: 260
-    minimumHeight: 680
-    maximumHeight: 680
+    minimumHeight: 690
+    maximumHeight: 690
     visible: true
     font.pixelSize: 11
 
@@ -223,8 +223,13 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.fftSizes
-                currentIndex: 2 // 4096
                 enabled: !root.launched
+                Component.onCompleted: {
+                    const i = root.fftSizes.indexOf(String(controller.fftSize))
+                    currentIndex = i >= 0 ? i : 2
+                    controller.fftSize = parseInt(currentText, 10)
+                }
+                onActivated: controller.fftSize = parseInt(currentText, 10)
             }
 
             CheckBox {
@@ -233,7 +238,9 @@ ApplicationWindow {
                 font.pixelSize: 11
                 text: "Fast mode (spectrum and scope only)"
                 enabled: !root.launched
+                Component.onCompleted: checked = controller.fastMode
                 onCheckedChanged: {
+                    controller.fastMode = checked
                     if (checked && viewModeBox.currentIndex > 1)
                         viewModeBox.currentIndex = 1
                 }
@@ -269,7 +276,9 @@ ApplicationWindow {
                     const ports = controller.jackPorts
                     if (!ports || ports.length === 0)
                         return
-                    let i = ports.indexOf(currentText)
+                    let i = ports.indexOf(controller.jackPort)
+                    if (i < 0)
+                        i = ports.indexOf(currentText)
                     if (i < 0)
                         i = ports.indexOf("system:capture_1")
                     if (i < 0)
@@ -297,9 +306,16 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: fastModeBox.checked ? root.viewModesFast : root.viewModesFull
-                currentIndex: 1 // 1D spectrum
+                Component.onCompleted: {
+                    let i = controller.viewModeIndex
+                    if (fastModeBox.checked && i > 1)
+                        i = 1
+                    if (i < 0 || i >= model.length)
+                        i = 1
+                    currentIndex = i
+                    controller.setViewMode(currentIndex)
+                }
                 onActivated: controller.setViewMode(currentIndex)
-                Component.onCompleted: controller.setViewMode(currentIndex)
             }
 
             Label {
@@ -315,11 +331,15 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.maxFreqs
-                currentIndex: 1 // 6000 Hz
                 enabled: controller.plotFreqEnabled
-                onActivated: controller.setPlotFreq(root.maxFreqValues[currentIndex])
-                Component.onCompleted:
+                Component.onCompleted: {
+                    let i = root.maxFreqValues.indexOf(controller.plotFreq)
+                    if (i < 0)
+                        i = 1
+                    currentIndex = i
                     controller.setPlotFreq(root.maxFreqValues[currentIndex])
+                }
+                onActivated: controller.setPlotFreq(root.maxFreqValues[currentIndex])
             }
 
             Label {
@@ -335,11 +355,15 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.dbCeils
-                currentIndex: 2 // -20 dB
                 enabled: controller.dbRangeEnabled
-                onActivated: controller.setDbCeil(root.dbCeilValues[currentIndex])
-                Component.onCompleted:
+                Component.onCompleted: {
+                    let i = root.dbCeilValues.indexOf(controller.dbCeil)
+                    if (i < 0)
+                        i = 2
+                    currentIndex = i
                     controller.setDbCeil(root.dbCeilValues[currentIndex])
+                }
+                onActivated: controller.setDbCeil(root.dbCeilValues[currentIndex])
             }
 
             Label {
@@ -355,11 +379,15 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.dbFloors
-                currentIndex: 2 // -120 dB
                 enabled: controller.dbRangeEnabled
-                onActivated: controller.setDbFloor(root.dbFloorValues[currentIndex])
-                Component.onCompleted:
+                Component.onCompleted: {
+                    let i = root.dbFloorValues.indexOf(controller.dbFloor)
+                    if (i < 0)
+                        i = 2
+                    currentIndex = i
                     controller.setDbFloor(root.dbFloorValues[currentIndex])
+                }
+                onActivated: controller.setDbFloor(root.dbFloorValues[currentIndex])
             }
 
             Label {
@@ -374,9 +402,11 @@ ApplicationWindow {
                 from: 1.0
                 to: 10.0
                 stepSize: 0.1
-                value: 4.5
+                Component.onCompleted: {
+                    value = controller.kaiserBeta
+                    controller.setKaiserBeta(value)
+                }
                 onMoved: kaiserDebounce.restart()
-                Component.onCompleted: controller.setKaiserBeta(value)
             }
             Timer {
                 id: kaiserDebounce
@@ -403,11 +433,15 @@ ApplicationWindow {
                 Layout.preferredHeight: 28
                 font.pixelSize: 11
                 model: root.lineWidths
-                currentIndex: 0 // 1 px
                 enabled: controller.lineWidthEnabled
-                onActivated: controller.setLineWidth(root.lineWidthValues[currentIndex])
-                Component.onCompleted:
+                Component.onCompleted: {
+                    let i = root.lineWidthValues.indexOf(controller.lineWidth)
+                    if (i < 0)
+                        i = 0
+                    currentIndex = i
                     controller.setLineWidth(root.lineWidthValues[currentIndex])
+                }
+                onActivated: controller.setLineWidth(root.lineWidthValues[currentIndex])
             }
 
             Button {
