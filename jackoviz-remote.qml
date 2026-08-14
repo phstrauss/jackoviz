@@ -63,11 +63,16 @@ ApplicationWindow {
         title: qsTr("About jackoviz")
         modal: true
         anchors.centerIn: Overlay.overlay
-        standardButtons: Dialog.Ok
-        width: Math.min(280, root.width - 24)
+        standardButtons: Dialog.NoButton
+        width: root.width
+        leftPadding: 12
+        rightPadding: 12
+        topPadding: 12
+        bottomPadding: 12
 
         ColumnLayout {
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
             spacing: 8
             Label {
                 Layout.fillWidth: true
@@ -78,9 +83,26 @@ ApplicationWindow {
             }
             Label {
                 Layout.fillWidth: true
-                text: qsTr("Realtime JACK → FFTW3 → Datoviz spectrogram, with this remote controller.")
+                text: qsTr("Realtime JACK → FFTW3 → Datoviz spectrogram, with this remote GUI")
                 font.pixelSize: 11
                 wrapMode: Text.WordWrap
+            }
+            Label {
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+                text: "Copyright © 2026 Philippe Strauss"
+                font.pixelSize: 11
+                wrapMode: Text.WordWrap
+                opacity: 0.8
+            }
+            Button {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                Layout.topMargin: 4
+                padding: 6
+                font.pixelSize: 11
+                text: qsTr("OK")
+                onClicked: aboutDialog.accept()
             }
         }
     }
