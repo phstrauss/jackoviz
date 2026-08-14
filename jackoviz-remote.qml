@@ -53,68 +53,6 @@ ApplicationWindow {
     property int syncStep: 0
     readonly property int syncStepCount: 8
 
-    menuBar: MenuBar {
-        /* Imagine ships no MenuBar assets by default; without a delegate the bar is
-         * clickable but invisible on Linux. Paint a simple in-window menubar. */
-        background: Rectangle {
-            implicitHeight: 28
-            color: palette.window
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                height: 1
-                color: palette.mid
-            }
-        }
-        delegate: MenuBarItem {
-            id: menuBarItem
-            contentItem: Text {
-                text: menuBarItem.text
-                font.pixelSize: 11
-                color: menuBarItem.highlighted ? palette.highlightedText : palette.windowText
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-                leftPadding: 10
-                rightPadding: 10
-            }
-            background: Rectangle {
-                implicitHeight: 28
-                color: menuBarItem.highlighted ? palette.highlight : "transparent"
-            }
-        }
-
-        Menu {
-            title: qsTr("About")
-            background: Rectangle {
-                implicitWidth: 200
-                color: palette.window
-                border.color: palette.mid
-                border.width: 1
-            }
-            delegate: MenuItem {
-                id: menuItem
-                contentItem: Text {
-                    text: menuItem.text
-                    font.pixelSize: 11
-                    color: menuItem.highlighted ? palette.highlightedText : palette.windowText
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    leftPadding: 12
-                    rightPadding: 12
-                }
-                background: Rectangle {
-                    implicitHeight: 28
-                    color: menuItem.highlighted ? palette.highlight : "transparent"
-                }
-            }
-            Action {
-                text: qsTr("About jackoviz…")
-                onTriggered: aboutDialog.open()
-            }
-        }
-    }
-
     Dialog {
         id: aboutDialog
         title: qsTr("About jackoviz")
@@ -516,6 +454,17 @@ ApplicationWindow {
                 text: "Status: " + root.statusText
                 color: root.jackRunning ? palette.windowText : "#b00020"
                 opacity: (!root.jackRunning || root.statusText !== "OK") ? 1.0 : 0.7
+            }
+
+            Button {
+                id: aboutButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                Layout.topMargin: 6
+                padding: 6
+                font.pixelSize: 11
+                text: qsTr("About Jackoviz")
+                onClicked: aboutDialog.open()
             }
 
             Item { Layout.preferredHeight: 6 }
