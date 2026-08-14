@@ -16,7 +16,33 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 3. Magnitude spectra (dB, normalized) are appended as columns into a **bidimensional doubly-mapped** ringbuffer (time × frequency), so a wrapping history can be read as one contiguous block.
 4. That history drives a Datoviz **`dvz_geometry_surface_grid`** mesh, updated every frame.
 
-## Requirements
+## Binary install of macOS
+
+Starting with version 0.9.2, a [.dmg binary app bundle](https://github.com/phstrauss/jackoviz/releases) is provided for macOS.
+It depends on an existing installation of [Jack audio connection kit](https://jackaudio.org/) and [QJackCtl](https://qjackctl.sourceforge.io/), both available through Homebrew, [https://brew.sh/](https://brew.sh/)
+
+Install Homebrew, then open a Terminal and type :
+
+```
+brew update
+brew install jack qjackctl
+```
+
+Then still from the terminal launch QJackCtl :
+
+```qjackctl &```
+
+Keep its icon in the dock.
+
+Configure QJackCtl with the following settings :
+
+- First, if QJackCtl shows jack is running, stop it by hitting the "Stop" button.
+- Then, push the Setup button, select "Parameters", "Sample Rate" 44100 Hz or 48000 Hz, "Frames/Period" 128, and on the lest check the "Realtime" checkbox.
+- Then go to the "Advanced" tab and enter "/opt/homebrew/bin/jackd" (on Apple Silicon) as the "Server Prefix".
+- In the "Misc" of setup tab check "Start JACK audio server on application startup".
+- Hit "OK" then "Start" on the main panel. The main QJackCtl panel window should display "Started" after a few seconds.
+
+## Source build requirements
 
 | Dependency | Notes |
 |---|---|
