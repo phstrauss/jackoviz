@@ -37,10 +37,6 @@ codesign --force --sign - Jackoviz.app/Contents/Frameworks/libdatoviz.dylib
 
 cd ~/work/mysrc.mac/jackoviz
 
-./scripts/mypng2icns.py icons/icon-big.png
-./scripts/mypng2icns.py icons/icon-big.png -o icons/JackovizIcon.icns
 ./scripts/mypng2icns.py icons/icon-big.png -o icons/Jackoviz.icns -s 16,32,128,256,512
 
-* Open Disk Utility -> File -> New Image -> Image From Folder.
-* Select the folder where you have placed the App. Give a name for the DMG and save. This creates a distributable image for you.
-* If needed you can add a link to applications to DMG. It helps user in installing by drag and drop.
+diskutil image create from ...
