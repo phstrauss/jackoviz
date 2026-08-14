@@ -18,6 +18,7 @@ see Datoviz author's [proposal for the future of mesh-grid fields](https://githu
 - Write install instruction for the .dmg, its dependencies, Homebrew, jack, qjackctl. DONE.
 - Locks the GUI size. DONE.
 - Provide a status in the GUI if Jack is not running. DONE.
+- Serialize GUI settings in a (Qt) config file on exit.
 - Bundle everything in an AppImage under Linux.
 
 ### For the future, towards v2.0.0
