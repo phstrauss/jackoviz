@@ -51,6 +51,7 @@ class RemoteController : public QObject
     /* Line width only affects scope + 1D paths (not 2D/3D spectrograms). */
     Q_PROPERTY(bool lineWidthEnabled READ lineWidthEnabled NOTIFY viewModeIndexChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
+    Q_PROPERTY(bool jackRunning READ jackRunning NOTIFY jackRunningChanged)
     Q_PROPERTY(QStringList jackPorts READ jackPorts NOTIFY jackPortsChanged)
     Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
 
@@ -81,6 +82,7 @@ public:
     /* qmlIndex: 0=scope, 1=1D — only those use stroke width. */
     bool lineWidthEnabled() const { return m_view_index == 0 || m_view_index == 1; }
     QString statusText() const { return m_status; }
+    bool jackRunning() const { return m_jack_running; }
     QStringList jackPorts() const { return m_jack_ports; }
     QString appVersion() const { return QStringLiteral(JACKOVIZ_VERSION); }
 
@@ -215,15 +217,23 @@ public:
             }
         }
 
-        if (ports == m_jack_ports)
-            return;
-        m_jack_ports = ports;
-        emit jackPortsChanged();
+        updateJackRunning(m_jack != nullptr);
+
+        if (ports != m_jack_ports)
+        {
+            m_jack_ports = ports;
+            emit jackPortsChanged();
+        }
     }
 
     Q_INVOKABLE void connectJackPort(const QString& portName)
     {
         m_jack_port = portName;
+        if (!m_jack_running)
+        {
+            setStatus(QStringLiteral("JACK is not running"));
+            return;
+        }
         if (portName.isEmpty() || portName == QLatin1String("(none)"))
         {
             setStatus(QStringLiteral("JACK port: (none)"));
@@ -418,7 +428,16 @@ signals:
     void pausedChanged();
     void viewModeIndexChanged();
     void statusTextChanged();
+    void jackRunningChanged();
     void jackPortsChanged();
+
+public slots:
+    void handleJackShutdown()
+    {
+        /* Client pointer is invalid after shutdown; do not jack_client_close. */
+        m_jack = nullptr;
+        updateJackRunning(false);
+    }
 
 private:
     void setViewModeIndex(int index)
@@ -445,6 +464,23 @@ private:
         return false;
     }
 
+    void updateJackRunning(bool running)
+    {
+        if (m_jack_running != running)
+        {
+            m_jack_running = running;
+            emit jackRunningChanged();
+        }
+        if (!running)
+        {
+            setStatus(QStringLiteral("JACK is not running"));
+            return;
+        }
+        if (m_status == QLatin1String("JACK is not running")
+            || m_status.startsWith(QLatin1String("JACK open failed")))
+            setStatus(QStringLiteral("OK"));
+    }
+
     void openJackClient()
     {
         if (m_jack != nullptr)
@@ -454,9 +490,19 @@ private:
         m_jack = jack_client_open("jackoviz-remote", JackNoStartServer, &status);
         if (m_jack == nullptr)
         {
-            setStatus(QStringLiteral("JACK open failed (status 0x%1) — is jackd running?")
-                          .arg(static_cast<unsigned>(status), 0, 16));
+            updateJackRunning(false);
+            return;
         }
+        jack_on_shutdown(
+            m_jack,
+            [](void* arg) {
+                QMetaObject::invokeMethod(
+                    static_cast<RemoteController*>(arg),
+                    "handleJackShutdown",
+                    Qt::QueuedConnection);
+            },
+            this);
+        updateJackRunning(true);
     }
 
     void closeJackClient()
@@ -465,6 +511,7 @@ private:
             return;
         jack_client_close(m_jack);
         m_jack = nullptr;
+        m_jack_running = false;
     }
 
     void forceKillChild()
@@ -571,6 +618,7 @@ private:
     bool m_fast = false;
     bool m_paused = false;
     QString m_status = QStringLiteral("OK");
+    bool m_jack_running = false;
     QStringList m_jack_ports;
     QString m_jack_port = QStringLiteral("(none)");
     int m_view_index = 1; /* 1D spectrum */

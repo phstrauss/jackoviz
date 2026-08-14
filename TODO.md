@@ -15,7 +15,9 @@ see Datoviz author's [proposal for the future of mesh-grid fields](https://githu
 - Use the new Datoviz text input API instead of raw keycodes. DONE. Now v0.9.2
 - Provide two icons for the following steps. DONE.
 - Under MacOS, bundle a .app including everything, Qt related AND all other dependencies from Homebrew. DONE.
-- Write install instruction for the .dmg, its dependencies, Homebrew, jack, qjackctl.
+- Write install instruction for the .dmg, its dependencies, Homebrew, jack, qjackctl. DONE.
+- Locks the GUI size. DONE.
+- Provide a status in the GUI if Jack is not running. DONE.
 - Bundle everything in an AppImage under Linux.
 
 ### For the future, towards v2.0.0

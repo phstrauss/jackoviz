@@ -37,7 +37,7 @@ Keep its icon in the dock.
 Configure QJackCtl with the following settings :
 
 - First, if QJackCtl shows jack is running, stop it by hitting the "Stop" button.
-- Then, push the Setup button, select "Parameters", "Sample Rate" 44100 Hz or 48000 Hz, "Frames/Period" 128, and on the lest check the "Realtime" checkbox.
+- Then, push the "Setup" button, select "Parameters", "Sample Rate" 44100 Hz or 48000 Hz, "Frames/Period" 128, and on the lest check the "Realtime" checkbox.
 - Then go to the "Advanced" tab and enter "/opt/homebrew/bin/jackd" (on Apple Silicon) as the "Server Prefix".
 - In the "Misc" of setup tab check "Start JACK audio server on application startup".
 - Hit "OK" then "Start" on the main panel. The main QJackCtl panel window should display "Started" after a few seconds.

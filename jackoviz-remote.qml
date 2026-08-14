@@ -13,6 +13,10 @@ ApplicationWindow {
     title: "jackoviz remote"
     width: 260
     height: 680
+    minimumWidth: 260
+    maximumWidth: 260
+    minimumHeight: 680
+    maximumHeight: 680
     visible: true
     font.pixelSize: 11
 
@@ -43,6 +47,7 @@ ApplicationWindow {
     readonly property bool launched: controller.launched
     readonly property bool paused: controller.paused
     readonly property string statusText: controller.statusText
+    readonly property bool jackRunning: controller.jackRunning
     readonly property string appVersion: controller.appVersion
 
     property int syncStep: 0
@@ -423,7 +428,8 @@ ApplicationWindow {
                 font.pixelSize: 11
                 wrapMode: Text.WordWrap
                 text: "Status: " + root.statusText
-                opacity: root.statusText === "OK" ? 0.7 : 1.0
+                color: root.jackRunning ? palette.windowText : "#b00020"
+                opacity: (!root.jackRunning || root.statusText !== "OK") ? 1.0 : 0.7
             }
 
             Item { Layout.preferredHeight: 6 }
