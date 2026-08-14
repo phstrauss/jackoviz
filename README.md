@@ -42,6 +42,8 @@ Configure QJackCtl with the following settings :
 - In the "Misc" of setup tab check "Start JACK audio server on application startup".
 - Hit "OK" then "Start" on the main panel. The main QJackCtl panel window should display "Started" after a few seconds.
 
+For the non-over-technically minded, once the Jack and Jackoviz GUI are running, just play with the "Launch Jackoviz" button, then the "View" dropdown, and the "dB floor" setting. 
+
 ## Source build requirements
 
 | Dependency | Notes |
