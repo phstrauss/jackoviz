@@ -12,11 +12,11 @@ ApplicationWindow {
     id: root
     title: "jackoviz remote"
     width: 260
-    height: 720
+    height: 728
     minimumWidth: 260
     maximumWidth: 260
-    minimumHeight: 720
-    maximumHeight: 720
+    minimumHeight: 728
+    maximumHeight: 728
     visible: true
     font.pixelSize: 11
 
@@ -445,6 +445,16 @@ ApplicationWindow {
                 onClicked: controller.setPaused(!root.paused)
             }
 
+            Button {
+                id: aboutButton
+                Layout.fillWidth: true
+                Layout.preferredHeight: 28
+                padding: 6
+                font.pixelSize: 11
+                text: qsTr("About Jackoviz")
+                onClicked: aboutDialog.open()
+            }
+
             Label {
                 id: statusLabel
                 Layout.fillWidth: true
@@ -454,17 +464,6 @@ ApplicationWindow {
                 text: "Status: " + root.statusText
                 color: root.jackRunning ? palette.windowText : "#b00020"
                 opacity: (!root.jackRunning || root.statusText !== "OK") ? 1.0 : 0.7
-            }
-
-            Button {
-                id: aboutButton
-                Layout.fillWidth: true
-                Layout.preferredHeight: 28
-                Layout.topMargin: 6
-                padding: 6
-                font.pixelSize: 11
-                text: qsTr("About Jackoviz")
-                onClicked: aboutDialog.open()
             }
 
             Item { Layout.preferredHeight: 6 }
