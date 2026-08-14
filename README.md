@@ -1,7 +1,7 @@
-# jackoviz
+# Jackoviz
 
 Scientific visualization of audio signals.
-Realtime mono audio → Kaiser-windowed FFT → 3D Datoviz spectrogram.
+Realtime mono audio → Kaiser-windowed FFT → 3D [Datoviz](https://datoviz.org/) spectrogram.
 
 Screenshots (Suzanne Vega singing Tom's Diner):
 

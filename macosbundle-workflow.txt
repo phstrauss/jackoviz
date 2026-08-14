@@ -1,9 +1,11 @@
-rm -rf build
+cd ~/work/mysrc.mac/jackoviz
+
+rm -rf build-bundle
 mkdir build-bundle; cd build-bundle
 cmake ..
 make -j
 
-../scripts/mymacdeployqt.py Jackoviz.app -verbose=2 -qmldir=/Users/catseye/work/mysrc.mac/jackoviz
+../scripts/mymacdeployqt.py Jackoviz.app -verbose=2 -qmldir=../
 
 ---
 Termination Reason:  Namespace DYLD, Code 1, Library missing
@@ -38,5 +40,8 @@ codesign --force --sign - Jackoviz.app/Contents/Frameworks/libdatoviz.dylib
 cd ~/work/mysrc.mac/jackoviz
 
 ./scripts/mypng2icns.py icons/icon-big.png -o icons/Jackoviz.icns -s 16,32,128,256,512
+cp icons/Jackoviz.icns build-bundle/Jackoviz.app/Resources
+
+vi build-bundle/Jackoviz.app/Contents/Info.plist
 
 diskutil image create from ...
