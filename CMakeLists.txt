@@ -7,7 +7,7 @@ project(jackoviz LANGUAGES C CXX)
 #   cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug    # -g
 #   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  # -O3
 #   cmake --build build
-#   ./build/jackoviz -s system:capture_1
+#   ./build/jackoviz-cli -s system:capture_1
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -110,24 +110,24 @@ if(JVZ_ENABLE_GRPC)
     ${JVZ_GRPC_SRCS}
   )
 endif()
-add_executable(jackoviz ${JVZ_SOURCES})
+add_executable(jackoviz-cli ${JVZ_SOURCES})
 
-target_include_directories(jackoviz PRIVATE
+target_include_directories(jackoviz-cli PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${DATOVIZ_INCLUDE_DIR}
 )
 
 if(JVZ_ENABLE_GRPC)
-  target_include_directories(jackoviz PRIVATE ${JVZ_GEN_DIR})
-  target_compile_definitions(jackoviz PRIVATE JVZ_HAS_GRPC=1)
+  target_include_directories(jackoviz-cli PRIVATE ${JVZ_GEN_DIR})
+  target_compile_definitions(jackoviz-cli PRIVATE JVZ_HAS_GRPC=1)
 endif()
 
-target_compile_options(jackoviz PRIVATE
+target_compile_options(jackoviz-cli PRIVATE
   $<$<COMPILE_LANGUAGE:C>:-Wall -Wextra -Wno-unused-parameter -Wno-typedef-redefinition>
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wno-unused-parameter>
 )
 
-target_link_libraries(jackoviz PRIVATE
+target_link_libraries(jackoviz-cli PRIVATE
   PkgConfig::JACK
   PkgConfig::FFTW3
   Threads::Threads
@@ -135,33 +135,33 @@ target_link_libraries(jackoviz PRIVATE
 )
 
 if(DATOVIZ_LIB_DIR)
-  target_link_directories(jackoviz PRIVATE ${DATOVIZ_LIB_DIR})
-  target_link_libraries(jackoviz PRIVATE datoviz)
-  set_target_properties(jackoviz PROPERTIES
+  target_link_directories(jackoviz-cli PRIVATE ${DATOVIZ_LIB_DIR})
+  target_link_libraries(jackoviz-cli PRIVATE datoviz)
+  set_target_properties(jackoviz-cli PROPERTIES
     BUILD_RPATH "${DATOVIZ_LIB_DIR}"
     INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
   )
 else()
-  target_link_libraries(jackoviz PRIVATE ${DATOVIZ_LIBRARY})
+  target_link_libraries(jackoviz-cli PRIVATE ${DATOVIZ_LIBRARY})
 endif()
 
 if(JVZ_ENABLE_GRPC)
   if(TARGET protobuf::libprotobuf)
-    target_link_libraries(jackoviz PRIVATE protobuf::libprotobuf)
+    target_link_libraries(jackoviz-cli PRIVATE protobuf::libprotobuf)
   else()
-    target_include_directories(jackoviz PRIVATE ${Protobuf_INCLUDE_DIRS})
-    target_link_libraries(jackoviz PRIVATE ${Protobuf_LIBRARIES})
+    target_include_directories(jackoviz-cli PRIVATE ${Protobuf_INCLUDE_DIRS})
+    target_link_libraries(jackoviz-cli PRIVATE ${Protobuf_LIBRARIES})
   endif()
-  target_link_libraries(jackoviz PRIVATE ${JVZ_GRPC_LINK_LIBS})
+  target_link_libraries(jackoviz-cli PRIVATE ${JVZ_GRPC_LINK_LIBS})
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  target_link_libraries(jackoviz PRIVATE rt)
+  target_link_libraries(jackoviz-cli PRIVATE rt)
 endif()
 
 # Convenience: cmake --build build --target run
 add_custom_target(run
-  COMMAND $<TARGET_FILE:jackoviz> -s system:capture_1
-  DEPENDS jackoviz
+  COMMAND $<TARGET_FILE:jackoviz-cli> -s system:capture_1
+  DEPENDS jackoviz-cli
   USES_TERMINAL
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -190,14 +190,14 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
-# jackoviz-remote — Qt Quick controller (fork/exec launch + JACK list + gRPC)
+# jackoviz-gui — Qt Quick controller (fork/exec launch + JACK list + gRPC)
 # ---------------------------------------------------------------------------
-option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-remote controller" ON)
+option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-gui controller" ON)
 # macOS .app bundle (Jackoviz.app). Ignored on other platforms.
 if(APPLE)
-  option(JVZ_REMOTE_MACOS_BUNDLE "Build jackoviz-remote as Jackoviz.app on macOS" ON)
+  option(JVZ_REMOTE_MACOS_BUNDLE "Build jackoviz-gui as Jackoviz.app on macOS" ON)
 else()
-  set(JVZ_REMOTE_MACOS_BUNDLE OFF CACHE BOOL "Build jackoviz-remote as Jackoviz.app on macOS" FORCE)
+  set(JVZ_REMOTE_MACOS_BUNDLE OFF CACHE BOOL "Build jackoviz-gui as Jackoviz.app on macOS" FORCE)
 endif()
 
 if(JVZ_BUILD_REMOTE)
@@ -205,12 +205,12 @@ if(JVZ_BUILD_REMOTE)
 
   qt_standard_project_setup(REQUIRES 6.5)
 
-  qt_add_executable(jackoviz-remote
+  qt_add_executable(jackoviz-gui
     jackoviz-remote.cpp
   )
-  add_dependencies(jackoviz-remote jackoviz)
+  add_dependencies(jackoviz-gui jackoviz-cli)
 
-  qt_add_qml_module(jackoviz-remote
+  qt_add_qml_module(jackoviz-gui
     URI JackovizRemote
     VERSION 1.0
     QML_FILES
@@ -218,11 +218,11 @@ if(JVZ_BUILD_REMOTE)
     RESOURCE_PREFIX /
   )
 
-  set_target_properties(jackoviz-remote PROPERTIES
+  set_target_properties(jackoviz-gui PROPERTIES
     WIN32_EXECUTABLE TRUE
   )
   if(JVZ_REMOTE_MACOS_BUNDLE)
-    set_target_properties(jackoviz-remote PROPERTIES
+    set_target_properties(jackoviz-gui PROPERTIES
       OUTPUT_NAME "Jackoviz"
       MACOSX_BUNDLE TRUE
       MACOSX_BUNDLE_BUNDLE_NAME "Jackoviz"
@@ -231,43 +231,43 @@ if(JVZ_BUILD_REMOTE)
       MACOSX_BUNDLE_SHORT_VERSION_STRING "0.9.2"
     )
   else()
-    set_target_properties(jackoviz-remote PROPERTIES
-      OUTPUT_NAME "jackoviz-remote"
+    set_target_properties(jackoviz-gui PROPERTIES
+      OUTPUT_NAME "jackoviz-gui"
       MACOSX_BUNDLE FALSE
     )
   endif()
 
-  target_link_libraries(jackoviz-remote PRIVATE
+  target_link_libraries(jackoviz-gui PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     PkgConfig::JACK
   )
-  target_include_directories(jackoviz-remote PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(jackoviz-gui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   if(JVZ_ENABLE_GRPC)
-    target_sources(jackoviz-remote PRIVATE
+    target_sources(jackoviz-gui PRIVATE
       ${JVZ_PROTO_SRCS}
       ${JVZ_GRPC_SRCS}
     )
-    target_include_directories(jackoviz-remote PRIVATE ${JVZ_GEN_DIR})
-    target_compile_definitions(jackoviz-remote PRIVATE JVZ_HAS_GRPC=1)
+    target_include_directories(jackoviz-gui PRIVATE ${JVZ_GEN_DIR})
+    target_compile_definitions(jackoviz-gui PRIVATE JVZ_HAS_GRPC=1)
     if(TARGET protobuf::libprotobuf)
-      target_link_libraries(jackoviz-remote PRIVATE protobuf::libprotobuf)
+      target_link_libraries(jackoviz-gui PRIVATE protobuf::libprotobuf)
     else()
-      target_include_directories(jackoviz-remote PRIVATE ${Protobuf_INCLUDE_DIRS})
-      target_link_libraries(jackoviz-remote PRIVATE ${Protobuf_LIBRARIES})
+      target_include_directories(jackoviz-gui PRIVATE ${Protobuf_INCLUDE_DIRS})
+      target_link_libraries(jackoviz-gui PRIVATE ${Protobuf_LIBRARIES})
     endif()
-    target_link_libraries(jackoviz-remote PRIVATE ${JVZ_GRPC_LINK_LIBS})
+    target_link_libraries(jackoviz-gui PRIVATE ${JVZ_GRPC_LINK_LIBS})
   else()
     message(WARNING "JVZ_BUILD_REMOTE is ON but JVZ_ENABLE_GRPC is OFF — JACK port connect RPC disabled")
   endif()
 
   add_custom_target(run-remote
-    COMMAND $<TARGET_FILE:jackoviz-remote>
-    DEPENDS jackoviz-remote
+    COMMAND $<TARGET_FILE:jackoviz-gui>
+    DEPENDS jackoviz-gui
     USES_TERMINAL
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
-  message(STATUS "jackoviz-remote: JVZ_REMOTE_MACOS_BUNDLE=${JVZ_REMOTE_MACOS_BUNDLE}")
+  message(STATUS "jackoviz-gui: JVZ_REMOTE_MACOS_BUNDLE=${JVZ_REMOTE_MACOS_BUNDLE}")
 endif()

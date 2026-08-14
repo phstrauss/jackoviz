@@ -1,5 +1,5 @@
 rm -rf build
-mkdir build; cd build
+mkdir build-bundle; cd build-bundle
 cmake ..
 make -j
 
@@ -20,14 +20,21 @@ work/mysrc.mac/jackoviz/build/Jackoviz.app/Contents/Frameworks/libicuuc.78.3.dyl
 	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2000.67.0)
 ---
 
-cp /opt/homebrew/Cellar/icu4c@78/78.3/lib/libicudata.78.dylib work/mysrc.mac/jackoviz/build/Jackoviz.app/Contents/Frameworks
-cd /Users/catseye/work/mysrc.mac/jackoviz/build/Jackoviz.app/Contents/Frameworks/
+cp /opt/homebrew/Cellar/icu4c@78/78.3/lib/libicudata.78.dylib ~/work/mysrc.mac/jackoviz/build-bundle/Jackoviz.app/Contents/Frameworks
+cd ~/work/mysrc.mac/jackoviz/build-bundle/Jackoviz.app/Contents/Frameworks/
 ln -s libicuuc.78.3.dylib libicuuc.78.dylib
 
-dylibbundler -of -x Jackoviz.app/Contents/MacOS/jackoviz -b -p '@executable_path/../Frameworks/' -d Jackoviz.app/Contents/Frameworks -s ~/work/datoviz/build/src
+cp ~/work/mysrc.mac/jackoviz/build-bundle/jackoviz-cli ~/work/mysrc.mac/jackoviz/build-bundle/Jackoviz.app/Contents/MacOS
+
+cd ~/work/mysrc.mac/jackoviz/build-bundle
+
+dylibbundler -of -x Jackoviz.app/Contents/MacOS/jackoviz-cli -b -p '@executable_path/../Frameworks/' -d Jackoviz.app/Contents/Frameworks -s ~/work/datoviz/build/src
 
 otool -l Jackoviz.app/Contents/Frameworks/libdatoviz.dylib | grep -A2 LC_RPATH
 
 install_name_tool -delete_rpath '@executable_path/../Frameworks/' Jackoviz.app/Contents/Frameworks/libdatoviz.dylib
 codesign --force --sign - Jackoviz.app/Contents/Frameworks/libdatoviz.dylib
 
+* Open Disk Utility -> File -> New Image -> Image From Folder.
+* Select the folder where you have placed the App. Give a name for the DMG and save. This creates a distributable image for you.
+* If needed you can add a link to applications to DMG. It helps user in installing by drag and drop.

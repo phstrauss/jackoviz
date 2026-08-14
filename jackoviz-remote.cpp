@@ -1,7 +1,7 @@
 /*
  * jackoviz-remote.cpp — Qt Quick remote controller for jackoviz.
  *
- * Launch: fork + execve of sibling `jackoviz` (-n / --fast / --rpc-only).
+ * Launch: fork + execve of sibling `jackoviz-cli` (-n / --fast / --rpc-only).
  * JACK: list audio output ports for the capture dropdown.
  * gRPC: all runtime settings + Quit via JvzController on 127.0.0.1:50051.
  */
@@ -99,10 +99,10 @@ public:
         }
 
         const QString binPath =
-            QCoreApplication::applicationDirPath() + QStringLiteral("/jackoviz");
+            QCoreApplication::applicationDirPath() + QStringLiteral("/jackoviz-cli");
         if (!QFileInfo::exists(binPath))
         {
-            setStatus(QStringLiteral("jackoviz not found: %1").arg(binPath));
+            setStatus(QStringLiteral("jackoviz-cli not found: %1").arg(binPath));
             return;
         }
 
@@ -146,7 +146,7 @@ public:
         m_stub.reset();
         m_channel.reset();
 #endif
-        QString cmd = QStringLiteral("jackoviz -n %1").arg(fftSize);
+        QString cmd = QStringLiteral("jackoviz-cli -n %1").arg(fftSize);
         if (fast)
             cmd += QStringLiteral(" --fast");
         cmd += QStringLiteral(" --rpc-only");
