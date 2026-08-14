@@ -16,7 +16,7 @@ Screenshots (Suzanne Vega singing Tom's Diner):
 3. Magnitude spectra (dB, normalized) are appended as columns into a **bidimensional doubly-mapped** ringbuffer (time × frequency), so a wrapping history can be read as one contiguous block.
 4. That history drives a Datoviz **`dvz_geometry_surface_grid`** mesh, updated every frame.
 
-## Binary install of macOS
+## Binary install on macOS
 
 Starting with version 0.9.2, a [.dmg binary app bundle](https://github.com/phstrauss/jackoviz/releases) is provided for macOS.
 It depends on an existing installation of [Jack audio connection kit](https://jackaudio.org/) and [QJackCtl](https://qjackctl.sourceforge.io/), both available through Homebrew, [https://brew.sh/](https://brew.sh/)
