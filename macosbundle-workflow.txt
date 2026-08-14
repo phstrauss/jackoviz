@@ -23,9 +23,9 @@ work/mysrc.mac/jackoviz/build/Jackoviz.app/Contents/Frameworks/libicuuc.78.3.dyl
 ---
 
 cp /opt/homebrew/Cellar/icu4c@78/78.3/lib/libicudata.78.dylib Jackoviz.app/Contents/Frameworks
+
 cd Jackoviz.app/Contents/Frameworks/
 ln -s libicuuc.78.3.dylib libicuuc.78.dylib
-
 cd ~/work/mysrc.mac/jackoviz/build-bundle
 
 cp jackoviz-cli Jackoviz.app/Contents/MacOS

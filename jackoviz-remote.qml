@@ -12,11 +12,11 @@ ApplicationWindow {
     id: root
     title: "jackoviz remote"
     width: 260
-    height: 690
+    height: 720
     minimumWidth: 260
     maximumWidth: 260
-    minimumHeight: 690
-    maximumHeight: 690
+    minimumHeight: 720
+    maximumHeight: 720
     visible: true
     font.pixelSize: 11
 
@@ -54,8 +54,60 @@ ApplicationWindow {
     readonly property int syncStepCount: 8
 
     menuBar: MenuBar {
+        /* Imagine ships no MenuBar assets by default; without a delegate the bar is
+         * clickable but invisible on Linux. Paint a simple in-window menubar. */
+        background: Rectangle {
+            implicitHeight: 28
+            color: palette.window
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: 1
+                color: palette.mid
+            }
+        }
+        delegate: MenuBarItem {
+            id: menuBarItem
+            contentItem: Text {
+                text: menuBarItem.text
+                font.pixelSize: 11
+                color: menuBarItem.highlighted ? palette.highlightedText : palette.windowText
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                leftPadding: 10
+                rightPadding: 10
+            }
+            background: Rectangle {
+                implicitHeight: 28
+                color: menuBarItem.highlighted ? palette.highlight : "transparent"
+            }
+        }
+
         Menu {
             title: qsTr("About")
+            background: Rectangle {
+                implicitWidth: 200
+                color: palette.window
+                border.color: palette.mid
+                border.width: 1
+            }
+            delegate: MenuItem {
+                id: menuItem
+                contentItem: Text {
+                    text: menuItem.text
+                    font.pixelSize: 11
+                    color: menuItem.highlighted ? palette.highlightedText : palette.windowText
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 12
+                    rightPadding: 12
+                }
+                background: Rectangle {
+                    implicitHeight: 28
+                    color: menuItem.highlighted ? palette.highlight : "transparent"
+                }
+            }
             Action {
                 text: qsTr("About jackoviz…")
                 onTriggered: aboutDialog.open()
