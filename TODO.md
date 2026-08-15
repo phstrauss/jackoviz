@@ -19,6 +19,7 @@ see Datoviz author's [proposal for the future of mesh-grid fields](https://githu
 - Locks the GUI size. DONE.
 - Provide a status in the GUI if Jack is not running. DONE.
 - Serialize GUI settings in a (Qt) config file on exit. DONE.
+- Don't destroy the mesh visual and panel on geometry change about fmax, since Datoviz is fixed. DONE, now v0.9.4
 - Bundle everything in an AppImage under Linux.
 
 ### For the future, towards v2.0.0
