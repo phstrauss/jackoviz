@@ -44,6 +44,8 @@ Configure QJackCtl with the following settings :
 
 For the non-over-technically minded, once the Jack and Jackoviz GUI are running, just play with the "Launch Jackoviz" button, select an input port with the "Jack capture port" dropdown, then use the "View" dropdown, and the "dB floor" setting. 
 
+Note that it is unclear to me if the [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home) is a dependency to this project or not (an older version may well be shipped by macOS), in case of failure to start the plot window, install it in its standard location.
+
 ## Source build requirements
 
 | Dependency | Notes |
