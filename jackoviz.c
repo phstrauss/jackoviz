@@ -337,7 +337,7 @@ typedef struct Jackoviz
     SpecRing spec;
     uint32_t history;
     uint32_t n_plot_bins; /* bins kept for 1D/2D: 0 … plot_freq_limit */
-    uint32_t n_mesh_bins; /* 3D surface cols (= n_plot_bins; rebuilt on fmax) */
+    uint32_t n_mesh_bins; /* 3D surface cols (= n_plot_bins; geometry replaced on fmax) */
     double plot_freq_limit; /* requested max display frequency (Hz) */
     double plot_freq_max; /* Hz covered by n_plot_bins */
     uint32_t plot_freq_index; /* index into PLOT_FREQ_OPTIONS when cycling */
@@ -1345,9 +1345,10 @@ static bool configure_plot_band(Jackoviz* app)
 }
 
 /*
- * Build a new surface geometry + mesh and attach it to panel_3d.
- * Caller must have already destroyed any previous mesh and geometry.
- * Grid cols follow n_mesh_bins (= n_plot_bins).
+ * Build surface geometry for the current n_mesh_bins and bind it to the mesh.
+ * If the mesh visual already exists (fmax change), replace geometry in place —
+ * keep panel_3d, mesh visual, camera, and arcball. Otherwise create the mesh
+ * and attach it to panel_3d (initial setup).
  */
 static bool create_surface_mesh(Jackoviz* app)
 {
@@ -1374,62 +1375,51 @@ static bool create_surface_mesh(Jackoviz* app)
     desc.height_axis[2] = 0.0;
     desc.height_scale = 1.35;
 
-    app->geometry = dvz_geometry_surface_grid(&desc);
-    if (app->geometry == NULL)
+    DvzGeometry* geometry = dvz_geometry_surface_grid(&desc);
+    if (geometry == NULL)
         return false;
 
-    app->mesh = dvz_mesh(app->scene, 0);
     if (app->mesh == NULL)
-        return false;
+    {
+        app->mesh = dvz_mesh(app->scene, 0);
+        if (app->mesh == NULL)
+        {
+            dvz_geometry_destroy(geometry);
+            return false;
+        }
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -1.0f;
-    material.light_direction[1] = 1.0f;
-    material.light_direction[2] = 1.0f;
-    material.phong.ambient = 0.28f;
-    material.phong.diffuse = 0.72f;
-    material.phong.specular = 0.42f;
-    material.phong.shininess = 48.0f;
-    if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK)
-        return false;
-    if (dvz_mesh_set_geometry(app->mesh, app->geometry) != DVZ_OK)
-        return false;
-    if (dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
-        return false;
+        DvzMaterialDesc material = dvz_phong_material_desc();
+        material.light_direction[0] = -1.0f;
+        material.light_direction[1] = 1.0f;
+        material.light_direction[2] = 1.0f;
+        material.phong.ambient = 0.28f;
+        material.phong.diffuse = 0.72f;
+        material.phong.specular = 0.42f;
+        material.phong.shininess = 48.0f;
+        if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK ||
+            dvz_mesh_set_geometry(app->mesh, geometry) != DVZ_OK ||
+            dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
+        {
+            dvz_visual_destroy(app->mesh);
+            app->mesh = NULL;
+            dvz_geometry_destroy(geometry);
+            return false;
+        }
+    }
+    else
+    {
+        /* Datoviz supports mesh geometry replacement (incl. shrink/grow). */
+        if (dvz_mesh_set_geometry(app->mesh, geometry) != DVZ_OK)
+        {
+            dvz_geometry_destroy(geometry);
+            return false;
+        }
+        if (app->geometry != NULL)
+            dvz_geometry_destroy(app->geometry);
+    }
+
+    app->geometry = geometry;
     return true;
-}
-
-/*
- * Tear down panel_3d entirely (mesh → geometry → panel). Datoviz has no
- * panel_remove_visual; destroying the panel clears attach slots cleanly.
- */
-static void destroy_panel_3d(Jackoviz* app)
-{
-    if (app == NULL)
-        return;
-
-    if (app->view != NULL && app->panel_1d != NULL && app->view_mode == VIEW_MODE_3D)
-        (void)dvz_view_connect_panel(app->view, app->panel_1d);
-
-    if (app->panel_3d != NULL)
-        (void)dvz_panel_connect_input(app->panel_3d, NULL);
-
-    if (app->mesh != NULL)
-    {
-        (void)dvz_visual_set_visible(app->mesh, false);
-        dvz_visual_destroy(app->mesh);
-        app->mesh = NULL;
-    }
-    if (app->geometry != NULL)
-    {
-        dvz_geometry_destroy(app->geometry);
-        app->geometry = NULL;
-    }
-    if (app->panel_3d != NULL)
-    {
-        dvz_panel_destroy(app->panel_3d);
-        app->panel_3d = NULL;
-    }
 }
 
 /*
@@ -1501,10 +1491,6 @@ static bool apply_plot_freq_limit(Jackoviz* app)
     if (app == NULL)
         return false;
 
-    /* Destroy 3D mesh/geometry/panel before reallocating heights/colors. */
-    if (!app->fast)
-        destroy_panel_3d(app);
-
     if (!configure_plot_band(app))
         return false;
 
@@ -1558,7 +1544,13 @@ static bool apply_plot_freq_limit(Jackoviz* app)
                 return false;
         }
 
-        if (!create_panel_3d(app, app->view_mode == VIEW_MODE_3D))
+        /* Keep panel_3d + mesh visual; only replace surface geometry for new cols. */
+        if (app->panel_3d != NULL && app->mesh != NULL)
+        {
+            if (!create_surface_mesh(app))
+                return false;
+        }
+        else if (!create_panel_3d(app, app->view_mode == VIEW_MODE_3D))
             return false;
     }
 
@@ -1635,7 +1627,7 @@ static bool setup_datoviz(Jackoviz* app)
     else
     {
         /* Default view is 1D spectrum; 2D / scope start parked. 3D panel is
-         * created below; fmax rebuilds it via destroy_panel_3d + create_panel_3d. */
+         * created below; fmax replaces mesh geometry in place (panel kept). */
         app->panel_1d = dvz_panel_full(app->figure);
         if (app->panel_1d == NULL)
             return false;
