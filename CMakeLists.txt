@@ -8,6 +8,17 @@ project(jackoviz LANGUAGES C CXX)
 #   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  # -O3
 #   cmake --build build
 #   ./build/jackoviz-cli -s system:capture_1
+#
+# Linux fully-static musl build (both jackoviz-cli and jackoviz-gui):
+#   cmake -S . -B build-musl -DJVZ_STATIC_MUSL=ON \
+#     --toolchain cmake/toolchain-musl-static.cmake \
+#     -DDATOVIZ_ROOT=$HOME/work/datoviz-musl \
+#     -DCMAKE_PREFIX_PATH=/path/to/qt6-static-musl
+#   cmake --build build-musl --target static-musl
+#
+# Requires a musl toolchain and *static* (.a) builds of every dependency
+# (JACK, FFTW3, Datoviz, protobuf/gRPC, Qt 6 Quick). Vulkan/JACK still need
+# their usual runtime services (ICD / jackd) on the target host.
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -31,6 +42,65 @@ add_compile_options(
 )
 
 option(JVZ_ENABLE_GRPC "Build and link the gRPC controller (jvzcontroller.proto)" ON)
+option(JVZ_STATIC_MUSL
+  "Linux: fully static executables linked against musl (prefer .a, -static)" OFF)
+
+# ---------------------------------------------------------------------------
+# Fully-static musl mode (configure-time; must run before find_package/pkg-config)
+# ---------------------------------------------------------------------------
+function(jvz_apply_static_musl_exe target)
+  if(NOT TARGET ${target})
+    message(FATAL_ERROR "jvz_apply_static_musl_exe: unknown target '${target}'")
+  endif()
+  set_target_properties(${target} PROPERTIES
+    LINK_SEARCH_START_STATIC ON
+    LINK_SEARCH_END_STATIC ON
+    BUILD_RPATH ""
+    INSTALL_RPATH ""
+    SKIP_BUILD_RPATH TRUE
+    SKIP_INSTALL_RPATH TRUE
+  )
+  target_link_options(${target} PRIVATE
+    -static
+    -static-libgcc
+    -static-libstdc++
+  )
+endfunction()
+
+if(JVZ_STATIC_MUSL)
+  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "JVZ_STATIC_MUSL is only supported on Linux")
+  endif()
+  if(CMAKE_VERSION VERSION_LESS "3.24")
+    message(FATAL_ERROR "JVZ_STATIC_MUSL requires CMake ≥ 3.24 (for PKG_CONFIG_USE_STATIC_LIBS)")
+  endif()
+
+  # Prefer static archives everywhere.
+  set(BUILD_SHARED_LIBS OFF)
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+  set(CMAKE_LINK_SEARCH_START_STATIC TRUE)
+  set(CMAKE_LINK_SEARCH_END_STATIC TRUE)
+  set(PKG_CONFIG_USE_STATIC_LIBS ON)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+
+  # Refuse accidental glibc toolchains; use Alpine or cmake/toolchain-musl-static.cmake.
+  execute_process(
+    COMMAND ${CMAKE_C_COMPILER} -dumpmachine
+    OUTPUT_VARIABLE JVZ_C_DUMPMACHINE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  if(NOT JVZ_C_DUMPMACHINE MATCHES "musl")
+    message(FATAL_ERROR
+      "JVZ_STATIC_MUSL requires a musl C toolchain (got '${JVZ_C_DUMPMACHINE}').\n"
+      "  cmake -S . -B build-musl -DJVZ_STATIC_MUSL=ON \\\n"
+      "    --toolchain ${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain-musl-static.cmake \\\n"
+      "    -DDATOVIZ_ROOT=… -DCMAKE_PREFIX_PATH=…/qt6-static-musl")
+  endif()
+
+  message(STATUS "jackoviz: JVZ_STATIC_MUSL=ON (toolchain ${JVZ_C_DUMPMACHINE})")
+  message(STATUS "jackoviz: all dependencies must provide musl-compatible static (.a) libraries")
+endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JACK REQUIRED IMPORTED_TARGET jack)
@@ -136,11 +206,17 @@ target_link_libraries(jackoviz-cli PRIVATE
 
 if(DATOVIZ_LIB_DIR)
   target_link_directories(jackoviz-cli PRIVATE ${DATOVIZ_LIB_DIR})
-  target_link_libraries(jackoviz-cli PRIVATE datoviz)
-  set_target_properties(jackoviz-cli PROPERTIES
-    BUILD_RPATH "${DATOVIZ_LIB_DIR}"
-    INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
-  )
+  if(JVZ_STATIC_MUSL)
+    find_library(JVZ_DATOVIZ_STATIC datoviz
+      PATHS "${DATOVIZ_LIB_DIR}" NO_DEFAULT_PATH REQUIRED)
+    target_link_libraries(jackoviz-cli PRIVATE ${JVZ_DATOVIZ_STATIC})
+  else()
+    target_link_libraries(jackoviz-cli PRIVATE datoviz)
+    set_target_properties(jackoviz-cli PROPERTIES
+      BUILD_RPATH "${DATOVIZ_LIB_DIR}"
+      INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
+    )
+  endif()
 else()
   target_link_libraries(jackoviz-cli PRIVATE ${DATOVIZ_LIBRARY})
 endif()
@@ -154,8 +230,13 @@ if(JVZ_ENABLE_GRPC)
   endif()
   target_link_libraries(jackoviz-cli PRIVATE ${JVZ_GRPC_LINK_LIBS})
 endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT JVZ_STATIC_MUSL)
+  # shm_open lives in librt on glibc; musl folds it into libc.a.
   target_link_libraries(jackoviz-cli PRIVATE rt)
+endif()
+
+if(JVZ_STATIC_MUSL)
+  jvz_apply_static_musl_exe(jackoviz-cli)
 endif()
 
 # Convenience: cmake --build build --target run
@@ -180,13 +261,21 @@ target_compile_options(surface_grid_shrink_repro PRIVATE
 target_link_libraries(surface_grid_shrink_repro PRIVATE m)
 if(DATOVIZ_LIB_DIR)
   target_link_directories(surface_grid_shrink_repro PRIVATE ${DATOVIZ_LIB_DIR})
-  target_link_libraries(surface_grid_shrink_repro PRIVATE datoviz)
-  set_target_properties(surface_grid_shrink_repro PROPERTIES
-    BUILD_RPATH "${DATOVIZ_LIB_DIR}"
-    INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
-  )
+  if(JVZ_STATIC_MUSL)
+    target_link_libraries(surface_grid_shrink_repro PRIVATE ${JVZ_DATOVIZ_STATIC})
+    jvz_apply_static_musl_exe(surface_grid_shrink_repro)
+  else()
+    target_link_libraries(surface_grid_shrink_repro PRIVATE datoviz)
+    set_target_properties(surface_grid_shrink_repro PROPERTIES
+      BUILD_RPATH "${DATOVIZ_LIB_DIR}"
+      INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
+    )
+  endif()
 else()
   target_link_libraries(surface_grid_shrink_repro PRIVATE ${DATOVIZ_LIBRARY})
+  if(JVZ_STATIC_MUSL)
+    jvz_apply_static_musl_exe(surface_grid_shrink_repro)
+  endif()
 endif()
 
 # ---------------------------------------------------------------------------
@@ -202,6 +291,14 @@ endif()
 
 if(JVZ_BUILD_REMOTE)
   find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+  if(JVZ_STATIC_MUSL)
+    get_target_property(_jvz_qt_core_type Qt6::Core TYPE)
+    if(_jvz_qt_core_type STREQUAL "SHARED_LIBRARY")
+      message(WARNING
+        "JVZ_STATIC_MUSL: Qt6::Core is a shared library. "
+        "Point CMAKE_PREFIX_PATH at a Qt 6 build configured with -static for musl.")
+    endif()
+  endif()
 
   qt_standard_project_setup(REQUIRES 6.5)
 
@@ -262,6 +359,10 @@ if(JVZ_BUILD_REMOTE)
     message(WARNING "JVZ_BUILD_REMOTE is ON but JVZ_ENABLE_GRPC is OFF — JACK port connect RPC disabled")
   endif()
 
+  if(JVZ_STATIC_MUSL)
+    jvz_apply_static_musl_exe(jackoviz-gui)
+  endif()
+
   add_custom_target(run-remote
     COMMAND $<TARGET_FILE:jackoviz-gui>
     DEPENDS jackoviz-gui
@@ -271,3 +372,26 @@ if(JVZ_BUILD_REMOTE)
 
   message(STATUS "jackoviz-gui: JVZ_REMOTE_MACOS_BUNDLE=${JVZ_REMOTE_MACOS_BUNDLE}")
 endif()
+
+# ---------------------------------------------------------------------------
+# Convenience target: fully static musl build of both shipping binaries
+# ---------------------------------------------------------------------------
+if(JVZ_STATIC_MUSL)
+  set(_jvz_static_deps jackoviz-cli)
+  if(JVZ_BUILD_REMOTE)
+    list(APPEND _jvz_static_deps jackoviz-gui)
+  endif()
+  add_custom_target(static-musl
+    DEPENDS ${_jvz_static_deps}
+    COMMENT "Fully static musl binaries: ${_jvz_static_deps}"
+  )
+  message(STATUS "jackoviz: build with: cmake --build <dir> --target static-musl")
+else()
+  add_custom_target(static-musl
+    COMMAND ${CMAKE_COMMAND} -E echo
+      "static-musl: reconfigure with -DJVZ_STATIC_MUSL=ON on Linux (see cmake/toolchain-musl-static.cmake)"
+    VERBATIM
+  )
+endif()
+
+message(STATUS "jackoviz: JVZ_STATIC_MUSL=${JVZ_STATIC_MUSL}")

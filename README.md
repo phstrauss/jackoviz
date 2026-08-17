@@ -123,6 +123,26 @@ cmake --build build
 
 `jvzcontroller.proto` is compiled into C++ gRPC stubs under `build/generated/` during the build.
 
+## Experimental
+
+### Fully static musl build (Linux)
+
+Linux-only support for fully static binaries linked against musl:
+
+- **Switch:** `-DJVZ_STATIC_MUSL=ON` (prefers `.a`, `-static`, pkg-config `--static`)
+- **Target:** `static-musl` → builds `jackoviz-cli` and `jackoviz-gui`
+- **Toolchain:** `cmake/toolchain-musl-static.cmake`
+
+```bash
+cmake -S . -B build-musl -DJVZ_STATIC_MUSL=ON \
+  --toolchain cmake/toolchain-musl-static.cmake \
+  -DDATOVIZ_ROOT=/path/to/datoviz-musl-static \
+  -DCMAKE_PREFIX_PATH=/path/to/qt6-static-musl
+cmake --build build-musl --target static-musl
+```
+
+All dependencies (JACK, FFTW3, Datoviz, protobuf/gRPC, Qt) must be **musl-built static libraries**. jackd and Vulkan ICDs are still needed at runtime. Requires CMake ≥ 3.24 when this option is enabled.
+
 ## Run
 
 ```bash

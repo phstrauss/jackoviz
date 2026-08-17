@@ -20,20 +20,14 @@ see Datoviz author's [proposal for the future of mesh-grid fields](https://githu
 - Provide a status in the GUI if Jack is not running. DONE.
 - Serialize GUI settings in a (Qt) config file on exit. DONE.
 - Don't destroy the mesh visual and panel on geometry change about fmax, since Datoviz is fixed. DONE, now v0.9.4
+- True stereo (one FFT per channel, sum the magnitude).
 - Bundle everything in an AppImage under Linux.
 
-### For the future, towards v2.0.0
-
-Just some rough ideas :
+### For the future
 
 - Use the new Datoviz code as outlined from the URL above, landing in between Datoviz v0.4.0-rc4 and v0.5.0.
 - Host the Datoviz scene in the Datoviz Qt adapter if Qt itself is fit for a high update rate app. GTK is just ok,
   fine when the mouse pointer outside of the widgets scope and even the whole GTK window, borderline otherwise.
   Qt is unknown to me in this area. For documentation, see $DATOVIZ_ROOT/spec/scene/integration/QT_HOSTING.md and
   $DATOVIZ_ROOT/examples/qt/qt_hosting.cpp
-- Performance profiling.
-- True stereo (one FFT per channel, sum the magnitude).
-- Some basic form of formant analysis by akima interpolation of the magnitude peaks leading to a spectral enveloppe?
-- LPC formant analysis?
-- Act from a file, give a "Play" option?
-- Hilbert-Huang Transform (spectrum), only from files, not real-time?
+- Performance profiling and tuning (real-world testbench for Datoviz perf. evolution).
