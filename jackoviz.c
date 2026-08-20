@@ -1389,14 +1389,12 @@ static bool create_surface_mesh(Jackoviz* app)
         }
 
         DvzMaterialDesc material = dvz_phong_material_desc();
-        material.light_direction[0] = -1.0f;
-        material.light_direction[1] = 1.0f;
-        material.light_direction[2] = 1.0f;
         material.phong.ambient = 0.28f;
         material.phong.diffuse = 0.72f;
         material.phong.specular = 0.42f;
         material.phong.shininess = 48.0f;
         if (dvz_visual_set_material(app->mesh, &material) != DVZ_OK ||
+            dvz_visual_set_depth_test(app->mesh, true) != DVZ_OK ||
             dvz_mesh_set_geometry(app->mesh, geometry) != DVZ_OK ||
             dvz_panel_add_visual(app->panel_3d, app->mesh, NULL) != DVZ_OK)
         {
@@ -1451,6 +1449,23 @@ static bool create_panel_3d(Jackoviz* app, bool full_size)
 
     DvzColor bg = dvz_color_rgba(12, 14, 20, 255);
     if (dvz_panel_set_background_color(app->panel_3d, bg) != DVZ_OK)
+        return false;
+
+    /* Lights are scene-owned; materials only hold surface response (no light_direction). */
+    DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+    light_desc.direction[0] = -1.0f;
+    light_desc.direction[1] = 1.0f;
+    light_desc.direction[2] = 1.0f;
+    DvzLight* key = dvz_light(app->scene, &light_desc);
+    if (key == NULL)
+        return false;
+    DvzLight* ambient = dvz_scene_default_ambient(app->scene);
+    DvzLight* panel_lights[2];
+    uint32_t light_count = 0;
+    if (ambient != NULL)
+        panel_lights[light_count++] = ambient;
+    panel_lights[light_count++] = key;
+    if (dvz_panel_set_lights(app->panel_3d, panel_lights, light_count) != DVZ_OK)
         return false;
 
     DvzCameraDesc camera = dvz_camera_desc();

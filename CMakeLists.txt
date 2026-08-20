@@ -252,33 +252,6 @@ message(STATUS "jackoviz: DATOVIZ_INCLUDE_DIR=${DATOVIZ_INCLUDE_DIR}")
 message(STATUS "jackoviz: JVZ_ENABLE_GRPC=${JVZ_ENABLE_GRPC}")
 
 # ---------------------------------------------------------------------------
-# Datoviz bug repro: surface grid shrink leaves stale index buffer
-# ---------------------------------------------------------------------------
-add_executable(surface_grid_shrink_repro repro/surface_grid_shrink.c)
-target_include_directories(surface_grid_shrink_repro PRIVATE ${DATOVIZ_INCLUDE_DIR})
-target_compile_options(surface_grid_shrink_repro PRIVATE
-  -Wall -Wextra -Wno-unused-parameter -Wno-typedef-redefinition)
-target_link_libraries(surface_grid_shrink_repro PRIVATE m)
-if(DATOVIZ_LIB_DIR)
-  target_link_directories(surface_grid_shrink_repro PRIVATE ${DATOVIZ_LIB_DIR})
-  if(JVZ_STATIC_MUSL)
-    target_link_libraries(surface_grid_shrink_repro PRIVATE ${JVZ_DATOVIZ_STATIC})
-    jvz_apply_static_musl_exe(surface_grid_shrink_repro)
-  else()
-    target_link_libraries(surface_grid_shrink_repro PRIVATE datoviz)
-    set_target_properties(surface_grid_shrink_repro PROPERTIES
-      BUILD_RPATH "${DATOVIZ_LIB_DIR}"
-      INSTALL_RPATH "${DATOVIZ_LIB_DIR}"
-    )
-  endif()
-else()
-  target_link_libraries(surface_grid_shrink_repro PRIVATE ${DATOVIZ_LIBRARY})
-  if(JVZ_STATIC_MUSL)
-    jvz_apply_static_musl_exe(surface_grid_shrink_repro)
-  endif()
-endif()
-
-# ---------------------------------------------------------------------------
 # jackoviz-gui — Qt Quick controller (fork/exec launch + JACK list + gRPC)
 # ---------------------------------------------------------------------------
 option(JVZ_BUILD_REMOTE "Build the Qt Quick jackoviz-gui controller" ON)
