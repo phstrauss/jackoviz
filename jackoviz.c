@@ -1453,7 +1453,7 @@ static bool create_panel_3d(Jackoviz* app, bool full_size)
 
     /* Lights are scene-owned; materials only hold surface response (no light_direction). */
     DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
-    light_desc.direction[0] = -1.0f;
+    light_desc.direction[0] = 0.1f;
     light_desc.direction[1] = 1.0f;
     light_desc.direction[2] = 1.0f;
     DvzLight* key = dvz_light(app->scene, &light_desc);
